@@ -1,0 +1,8 @@
+.idea
+.nyc_output
+.settings
+.vscode
+coverage
+debug.log
+docs
+node_modules
