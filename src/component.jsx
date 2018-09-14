@@ -19,6 +19,7 @@ export default class Component extends React.Component {
         super(props, context);
 
         this.config = context.config || {};
+        this.componentGlue = this.config.componentGlue || (window.Synergy && Synergy.componentGlue) || '_';
         this.tag = props.component || props.tag || (HTMLTags.includes(props.name) ? props.name : 'div');
         this.module = props.module || context.module;
         this.propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CssClassProps));
@@ -26,7 +27,7 @@ export default class Component extends React.Component {
         this.passedModifiers = renderModifiers(props.modifiers);
         this.modifiers = this.propModifiers + this.passedModifiers + this.contextModifiers;
         this.classes = getModuleFromProps(props, props.className ? ' ' + props.className : '');
-        this.selector = `${this.module}_${props.name + this.modifiers}${this.classes}`.replace(/,/g, '_');
+        this.selector = `${this.module + this.componentGlue + props.name + this.modifiers + this.classes}`.replace(/,/g, this.componentGlue);
 
         this.getEventHandlers([
             props, this.config[props.name] ? this.config[props.name] : {}
@@ -130,13 +131,13 @@ export class SubComponent extends Component {
     constructor(props, context) {
         super(props, context);
 
-        let namespace = `${context.component}_${props.name}`;
+        let namespace = `${context.component + this.componentGlue + props.name}`;
 
         if (context.subComponent) {
-            namespace = `${namespace}_${context.subComponent.join('_')}`;
+            namespace = `${namespace + this.componentGlue + context.subComponent.join(this.componentGlue)}`;
         }
 
-        this.selector = `${this.module}_${namespace + this.modifiers}${this.classes}`;
+        this.selector = `${this.module + this.componentGlue + namespace + this.modifiers + this.classes}`;
     }
 
     getChildContext() {

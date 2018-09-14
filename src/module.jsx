@@ -29,12 +29,13 @@ export default class Module extends React.Component {
 
         const styleParser = props.styleParser || Synergy.styleParser;
 
+        this.modifierGlue = props.modifierGlue || (window.Synergy && Synergy.componentGlue) || '-';
         this.tag = props.component || props.tag || (HTMLTags.includes(props.name) ? props.name : 'div');
         this.propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CssClassProps));
         this.passedModifiers = renderModifiers(props.modifiers);
         this.modifiers = this.propModifiers + this.passedModifiers;
         this.classes = props.className ? ' ' + props.className : '';
-        this.classNames = getModuleFromProps(props, props.name + this.modifiers + this.classes);
+        this.classNames = getModuleFromProps(props, props.name + this.modifiers + this.classes, this.modifierGlue);
         this.id = (props.before || props.after) && !props.id ? `synergy-module-${increment}` : props.id;
         this.ref = node => refHandler(node, props, styleParser);
 
@@ -154,7 +155,7 @@ export class Wrapper extends Module {
 
     render() {
         return (
-            <Module name={ this.namespace } { ...this.dynamicProps } { ...this.props }>{this.props.children}</Module>
+            <Module name={this.namespace} {...this.dynamicProps} {...this.props}>{this.props.children}</Module>
         )
     }
 }
