@@ -6,7 +6,7 @@ import deepExtend from 'deep-extend';
 
 import getHtmlProps from './utilities/getHtmlProps';
 import getModifiersFromProps from './utilities/getModifiersFromProps';
-import getModuleFromProps from './utilities/getModulesFromProps';
+import getModulesFromProps from './utilities/getModulesFromProps';
 import renderModifiers from './utilities/renderModifiers';
 import refHandler from './utilities/refHandler';
 
@@ -28,16 +28,23 @@ export default class Module extends React.Component {
         increment++;
 
         const styleParser = props.styleParser || Synergy.styleParser;
+        const modifierGlue = props.modifierGlue || (window.Synergy && Synergy.modifierGlue) || '-';
+        const propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CssClassProps));
+        const passedModifiers = renderModifiers(props.modifiers);
+        const modifiers = propModifiers + passedModifiers;
+        const classes = props.className ? ' ' + props.className : '';
 
-        this.modifierGlue = props.modifierGlue || (window.Synergy && Synergy.componentGlue) || '-';
-        this.tag = props.component || props.tag || (HTMLTags.includes(props.name) ? props.name : 'div');
-        this.propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CssClassProps));
-        this.passedModifiers = renderModifiers(props.modifiers);
-        this.modifiers = this.propModifiers + this.passedModifiers;
-        this.classes = props.className ? ' ' + props.className : '';
-        this.classNames = getModuleFromProps(props, props.name + this.modifiers + this.classes, this.modifierGlue);
-        this.id = (props.before || props.after) && !props.id ? `synergy-module-${increment}` : props.id;
+        let config = {};
+
+        if (window[props.name] && window[props.name].defaults) {
+            config = Module.config(window[props.name].defaults(window.theme), window.theme[props.name]);
+        }
+
+        this.namespace = config.name || props.name;
         this.ref = node => refHandler(node, props, styleParser);
+        this.id = (props.before || props.after) && !props.id ? `synergy-module-${increment}` : props.id;
+        this.tag = props.component || props.tag || (HTMLTags.includes(this.namespace) ? this.namespace : 'div');
+        this.classNames = getModulesFromProps(props, this.namespace + modifiers + classes, modifierGlue);
 
         if (Synergy.CssClassProps) Synergy.CssClassProps.forEach(prop => {
             if (Object.keys(props).includes(prop)) {
@@ -47,24 +54,15 @@ export default class Module extends React.Component {
     }
 
     getChildContext() {
-        let config;
-
-        try {
-            config = global.Synergy.modules[this.props.name].config;
-        } catch(error) {
-            config = null;
-        }
-
         return { 
-            module: this.props.name,
+            module: this.namespace,
             modifiers: this.props.modifiers,
-            config,
             props: this.props
         };
     }
 
     componentDidMount() {
-        const _module = Synergy.modules ? Synergy.modules[this.props.name] : null;
+        const _module = Synergy.modules ? Synergy.modules[this.namespace] : null;
 
         if (_module && _module.methods) {
             if (_module.methods.init) {
@@ -107,7 +105,7 @@ export default class Module extends React.Component {
                 <this.tag
                     id={this.id}
                     className={this.classNames}
-                    data-module={this.props.name}
+                    data-module={this.namespace}
                     ref={this.ref}
 
                     {...getHtmlProps(this.props)}

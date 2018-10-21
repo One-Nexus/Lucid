@@ -1,5 +1,5 @@
 /**
- * 
+ * Get module and modifiers from props
  */
 export default function getModulesFromProps(props, classes, modifierGlue) {
     Object.entries(props).forEach(prop => {

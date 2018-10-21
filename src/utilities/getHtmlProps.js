@@ -16,9 +16,12 @@ export default function getHtmlProps(props) {
         }
         else if (prop === 'tag') {
             continue;
-        }  
+        }
         else if (prop === 'elementname') {
             HtmlProps.name = props[prop];
+        }
+        else if (prop.indexOf('html') === 0) {
+            HtmlProps[prop] = props[prop];
         }
         else if (Object.values(HTMLAttributes).includes(prop)) {
             HtmlProps[prop] = props[prop];
