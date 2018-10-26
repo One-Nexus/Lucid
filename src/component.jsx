@@ -58,8 +58,7 @@ export default class Component extends React.Component {
                 if (typeof value === 'function') {
                     this.eventHandlers[key] = value;
                 } else {
-                    //@TODO be smarter here, don't hardcode any properties
-                    if (key !== 'name') {
+                    if (key !== 'name' && Synergy.modules && Synergy.modules[this.module]) {
                         this.eventHandlers[key] = Synergy.modules[this.module].methods[value];
                     }
                 }

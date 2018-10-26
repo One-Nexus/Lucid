@@ -15,7 +15,8 @@ export default function refHandler(node, props, styleParser) {
         if (styleParser) {
             if (props.styles) {
                 styleParser(node, ...props.styles);
-            } 
+            }
+
             else if (props.name && window[props.name]) {
                 if (window[props.name] && window[props.name].layout && window[props.name].defaults) {
                     const config = Module.config(window[props.name].defaults(window.theme), window.theme[module]);
@@ -41,6 +42,10 @@ export default function refHandler(node, props, styleParser) {
 
         if (props.init) {
             props.init(node);
+        } 
+
+        else if (window[props.name] && window[props.name].init) {
+            window[props.name].init(node);
         }
     }
 }
