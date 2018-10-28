@@ -41,7 +41,7 @@ export default class Module extends React.Component {
         }
 
         this.namespace = config.name || props.name;
-        this.ref = node => refHandler(node, props, styleParser);
+        this.ref = node => refHandler(node, props, styleParser, true);
         this.id = (props.before || props.after) && !props.id ? `synergy-module-${increment}` : props.id;
         this.tag = props.component || props.tag || (HTMLTags.includes(this.namespace) ? this.namespace : 'div');
         this.classNames = getModulesFromProps(props, this.namespace + modifiers + classes, modifierGlue);

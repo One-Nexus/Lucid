@@ -20,23 +20,21 @@ export default class Component extends React.Component {
         super(props, context);
 
         const styleParser = props.styleParser || Synergy.styleParser;
+        const config = context.config || {};
+        const propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CssClassProps));
+        const contextModifiers = renderModifiers(getModifiersFromProps(context.props && context.props[props.name], Synergy.CssClassProps));
+        const passedModifiers = renderModifiers(props.modifiers);
 
-        this.config = context.config || {};
-        this.componentGlue = this.config.componentGlue || (window.Synergy && Synergy.componentGlue) || '_';
-        this.modifierGlue  = this.config.modifierGlue  || (window.Synergy && Synergy.modifierGlue)  || '-';
+        this.componentGlue = config.componentGlue || (window.Synergy && Synergy.componentGlue) || '_';
+        this.modifierGlue  = config.modifierGlue  || (window.Synergy && Synergy.modifierGlue)  || '-';
         this.tag = props.component || props.tag || (HTMLTags.includes(props.name) ? props.name : 'div');
         this.module = props.module || context.module;
-        this.propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CssClassProps));
-        this.contextModifiers = renderModifiers(getModifiersFromProps(context.props && context.props[props.name], Synergy.CssClassProps));
-        this.passedModifiers = renderModifiers(props.modifiers);
-        this.modifiers = this.propModifiers + this.passedModifiers + this.contextModifiers;
+        this.modifiers = propModifiers + passedModifiers + contextModifiers;
         this.classes = getModulesFromProps(props, props.className ? ' ' + props.className : '', this.modifierGlue);
         this.selector = `${this.module + this.componentGlue + props.name + this.modifiers + this.classes}`.replace(/,/g, this.componentGlue);
         this.ref = node => refHandler(node, props, styleParser, this.module);
 
-        this.getEventHandlers([
-            props, this.config[props.name] ? this.config[props.name] : {}
-        ]);
+        this.getEventHandlers([ props, config[props.name] ? config[props.name] : {} ]);
 
         if (props.href) this.tag = 'a';
     }
@@ -47,20 +45,13 @@ export default class Component extends React.Component {
         if (properties.constructor === Array) {
             properties.forEach(group => this.getEventHandlers(group));
         }
+
         else for (var key in properties) {
             const value = properties[key];
-
-            if (key.indexOf('event') === 0 || key.indexOf('[') === 0) {
-                this.eventHandlers[getParam(key)] = Synergy.modules[this.module].methods[value];
-            }
 
             if (Object.keys(window).includes(key.toLowerCase())) {
                 if (typeof value === 'function') {
                     this.eventHandlers[key] = value;
-                } else {
-                    if (key !== 'name' && Synergy.modules && Synergy.modules[this.module]) {
-                        this.eventHandlers[key] = Synergy.modules[this.module].methods[value];
-                    }
                 }
             }
 

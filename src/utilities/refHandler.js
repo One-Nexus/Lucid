@@ -5,12 +5,16 @@
  * @param {Object} props - the props of the React component
  * @param {Function} styleParser 
  */
-export default function refHandler(node, props, styleParser) {
+export default function refHandler(node, props, styleParser, parentModule) {
     if (node) {
         Object.assign(node, {
             isFirstChild: node === node.parentNode.firstChild,
             isLastChild : node === node.parentNode.lastChild
         });
+
+        if (parentModule && window[props.name] && window[props.name].defaults) {
+            node.config = Module.config(window[props.name].defaults(window.theme), window.theme[module]);
+        }
 
         if (styleParser) {
             if (props.styles) {
