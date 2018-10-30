@@ -24,19 +24,33 @@ export default class Component extends React.Component {
         const propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CssClassProps));
         const contextModifiers = renderModifiers(getModifiersFromProps(context.props && context.props[props.name], Synergy.CssClassProps));
         const passedModifiers = renderModifiers(props.modifiers);
+        const theme = props.theme || window.theme;
 
         this.componentGlue = config.componentGlue || (window.Synergy && Synergy.componentGlue) || '_';
         this.modifierGlue  = config.modifierGlue  || (window.Synergy && Synergy.modifierGlue)  || '-';
+
         this.tag = props.component || props.tag || (HTMLTags.includes(props.name) ? props.name : 'div');
         this.module = props.module || context.module;
         this.modifiers = propModifiers + passedModifiers + contextModifiers;
         this.classes = getModulesFromProps(props, props.className ? ' ' + props.className : '', this.modifierGlue);
-        this.selector = `${this.module + this.componentGlue + props.name + this.modifiers + this.classes}`.replace(/,/g, this.componentGlue);
-        this.ref = node => refHandler(node, props, styleParser, this.module);
+        this.selector = '';
 
+        if (props.name instanceof Array) {
+            props.name.forEach(name => this.selector = (this.selector ? this.selector + ' ' : '') + this.generateSelector(name));
+
+            this.selector = this.selector + this.classes;
+        } else {
+            this.selector = this.generateSelector(props.name) + this.classes;
+        }
+
+        this.ref = node => refHandler(node, props, styleParser, false, theme);
         this.getEventHandlers([ props, config[props.name] ? config[props.name] : {} ]);
 
         if (props.href) this.tag = 'a';
+    }
+
+    generateSelector(name) {
+        return `${this.module + this.componentGlue + name + this.modifiers}`;
     }
 
     getEventHandlers(properties) {
@@ -85,7 +99,7 @@ export default class Component extends React.Component {
 
                 ref={this.ref}
                 className={this.selector}
-                data-component={props.name}
+                data-component={props.name.constructor === Array ? props.name[0] : props.name}
             >
 
                 {props.children}
