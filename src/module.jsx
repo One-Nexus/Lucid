@@ -39,6 +39,8 @@ export default class Module extends React.Component {
 
         if (window[props.name]) {
             config = Module.config(window[props.name].config, config);
+            // config = Object.assign({}, window[props.name].config, config);
+            // config = Module.config(window[props.name].defaults(theme), theme[props.name], config);
         }
 
         this.namespace = config.name || props.name;
@@ -123,7 +125,7 @@ export default class Module extends React.Component {
     }
 }
 
-Module.config = deepExtend;
+Module.config = (...params) => deepExtend({}, ...params);
 
 Module.childContextTypes = {
     module: PropTypes.string,
