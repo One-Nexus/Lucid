@@ -3,7 +3,9 @@
  */
 export default function getModulesFromProps(props, classes, modifierGlue) {
     Object.entries(props).forEach(prop => {
-        if (prop[0][0] === prop[0][0].toUpperCase()) {
+        const firstLetter = prop[0][0];
+
+        if (firstLetter === firstLetter.toUpperCase()) {
             const module = prop[0].toLowerCase();
 
             let modifiers = '';

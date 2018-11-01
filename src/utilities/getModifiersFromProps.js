@@ -7,9 +7,10 @@ export default function getModifiersFromProps(props, blacklist = []) {
 
     for (var prop in props) {
         const [key, value] = [prop, props[prop]];
+        const firstLetter = prop[0];
 
         // if prop is name of module, do not include in list
-        if (prop[0] === prop[0].toUpperCase()) {
+        if (firstLetter === firstLetter.toUpperCase()) {
             continue;
         }
 

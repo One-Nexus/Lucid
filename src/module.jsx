@@ -37,8 +37,8 @@ export default class Module extends React.Component {
 
         let config = props.config || {};
 
-        if (window[props.name] && window[props.name].defaults) {
-            config = Module.config(window[props.name].defaults(theme), theme[props.name], config);
+        if (window[props.name]) {
+            config = Module.config(window[props.name].config, config);
         }
 
         this.namespace = config.name || props.name;

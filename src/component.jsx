@@ -24,6 +24,8 @@ export default class Component extends React.Component {
         const propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CssClassProps));
         const contextModifiers = renderModifiers(getModifiersFromProps(context.props && context.props[props.name], Synergy.CssClassProps));
         const passedModifiers = renderModifiers(props.modifiers);
+
+        // @TODO need to take theme from parent context insead
         const theme = props.theme || window.theme;
 
         this.componentGlue = config.componentGlue || (window.Synergy && Synergy.componentGlue) || '_';

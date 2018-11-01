@@ -6,6 +6,7 @@
  * @param {Function} styleParser 
  * @param {Boolean} parentModule 
  * @param {Object} theme 
+ * @param {Object} config 
  */
 export default function refHandler(node, props, styleParser, parentModule, theme, config) {
     if (node) {
@@ -29,16 +30,16 @@ export default function refHandler(node, props, styleParser, parentModule, theme
                 }
             }
 
-            Object.entries(props).forEach(prop => {
-                if (prop[0][0] === prop[0][0].toUpperCase()) {
-                    const module = prop[0].toLowerCase();
+            Object.keys(props).forEach(prop => {
+                const fistLetter = prop[0];
 
-                    if (window[prop[0]] && window[prop[0]].layout && window[prop[0]].defaults) {
-                        const _config = Module.config(window[prop[0]].defaults(theme), theme[module]);
+                if (fistLetter === fistLetter.toUpperCase()) {
+                    if (window[prop] && window[prop].layout && window[prop].defaults) {
+                        const _config = Module.config(window[prop].defaults(theme), theme[prop]);
 
-                        node.namespace = node.namespace || module;
+                        node.namespace = node.namespace || prop;
 
-                        styleParser(node, window[prop[0]].layout, _config, theme);
+                        styleParser(node, window[prop].layout, _config, theme);
                     }
                 }
             });
