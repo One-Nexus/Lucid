@@ -33,17 +33,16 @@ export default class Module extends React.Component {
         const passedModifiers = renderModifiers(props.modifiers);
         const modifiers = propModifiers + passedModifiers;
         const classes = props.className ? ' ' + props.className : '';
-        const theme = props.theme || window.theme;
 
         let config = props.config || {};
 
         if (window[props.name]) {
             config = Module.config(window[props.name].config, config);
-            // config = Module.config(window[props.name].defaults(theme), theme[props.name], config);
         }
 
+        this.ui = props.ui || window.ui;
         this.namespace = config.name || props.name;
-        this.ref = node => refHandler(node, props, styleParser, true, theme, config);
+        this.ref = node => refHandler(node, props, styleParser, true, this.ui, config);
         this.id = (props.before || props.after) && !props.id ? `synergy-module-${increment}` : props.id;
         this.tag = props.component || props.tag || (HTMLTags.includes(this.namespace) ? this.namespace : 'div');
         this.classNames = getModulesFromProps(props, this.namespace + modifiers + classes, modifierGlue);
@@ -59,7 +58,8 @@ export default class Module extends React.Component {
         return { 
             module: this.namespace,
             modifiers: this.props.modifiers,
-            props: this.props
+            props: this.props,
+            ui: this.ui
         };
     }
 
@@ -128,6 +128,7 @@ Module.config = (...params) => deepExtend({}, ...params);
 
 Module.childContextTypes = {
     module: PropTypes.string,
+    ui: PropTypes.object,
     modifiers: PropTypes.array,
     config: PropTypes.object,
     props: PropTypes.object

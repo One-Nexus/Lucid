@@ -25,9 +25,6 @@ export default class Component extends React.Component {
         const contextModifiers = renderModifiers(getModifiersFromProps(context.props && context.props[props.name], Synergy.CssClassProps));
         const passedModifiers = renderModifiers(props.modifiers);
 
-        // @TODO need to take theme from parent context insead
-        const theme = props.theme || window.theme;
-
         this.componentGlue = config.componentGlue || (window.Synergy && Synergy.componentGlue) || '_';
         this.modifierGlue  = config.modifierGlue  || (window.Synergy && Synergy.modifierGlue)  || '-';
 
@@ -45,7 +42,7 @@ export default class Component extends React.Component {
             this.selector = this.generateSelector(props.name) + this.classes;
         }
 
-        this.ref = node => refHandler(node, props, styleParser, false, theme);
+        this.ref = node => refHandler(node, props, styleParser, false, context.ui);
         this.getEventHandlers([ props, config[props.name] ? config[props.name] : {} ]);
 
         if (props.href) this.tag = 'a';
@@ -130,6 +127,7 @@ Component.contextTypes = {
     module: PropTypes.string,
     modifiers: PropTypes.array,
     component: PropTypes.string,
+    ui: PropTypes.object,
     subComponent: PropTypes.array,
     config: PropTypes.object,
     props: PropTypes.object
