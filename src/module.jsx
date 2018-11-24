@@ -15,15 +15,24 @@ import refHandler from './utilities/refHandler';
  */
 let increment = 1;
 
+const ModuleContext = React.createContext({
+    module: '',
+    modifiers: [],
+    props: {},
+    ui: {},
+    foo: 'bar'
+});
+
+export { ModuleContext };
+
 /**
  * Render a Synergy module
  *
  * @extends React.Component
  */
 export default class Module extends React.Component {
-
-    constructor(props, context) {
-        super(props, context);
+    constructor(props) {
+        super(props);
 
         increment++;
 
@@ -52,15 +61,6 @@ export default class Module extends React.Component {
                 this.classNames = this.classNames + ' ' + prop
             }
         });
-    }
-
-    getChildContext() {
-        return { 
-            module: this.namespace,
-            modifiers: this.props.modifiers,
-            props: this.props,
-            ui: this.ui
-        };
     }
 
     componentDidMount() {
@@ -100,8 +100,16 @@ export default class Module extends React.Component {
     }
 
     render() {
+        const contextValue = { 
+            module: this.namespace,
+            modifiers: this.props.modifiers,
+            props: this.props,
+            ui: this.ui,
+            foo: 'fizz'
+        }
+
         return (
-            <React.Fragment>
+            <ModuleContext.Provider value={contextValue}>
                 { this.props.before && this.props.before(() => document.getElementById(this.id)) }
 
                 <this.tag
@@ -119,24 +127,23 @@ export default class Module extends React.Component {
                 </this.tag>
 
                 { this.props.after && this.props.after(() => document.getElementById(this.id)) }
-            </React.Fragment>
+            </ModuleContext.Provider>
         );
     }
 }
 
 Module.config = (...params) => deepExtend({}, ...params);
 
-Module.childContextTypes = {
-    module: PropTypes.string,
-    ui: PropTypes.object,
-    modifiers: PropTypes.array,
-    config: PropTypes.object,
-    props: PropTypes.object
-};
+Module.child = props => {
+    const childProps = Object.assign({}, props);
+
+    delete childProps.children;
+    return React.Children.map(props.children, child => React.cloneElement(child, childProps));
+}
 
 export class Wrapper extends Module {
-    constructor(props, context) {
-        super(props, context);
+    constructor(props) {
+        super(props);
 
         this.module = props.module;
         this.namespace = props.name || 'wrapper';
