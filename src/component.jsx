@@ -17,15 +17,13 @@ const ComponentContext = React.createContext({
  * Render a Synergy component
  */
 export default class Component extends React.Component {
-    generateSelector(name) {
-        return `${this.module + this.componentGlue + name + this.modifiers}`;
+    generateSelector(moduleName, modifiers, name, componentGlue) {
+        return `${moduleName + componentGlue + name + modifiers}`;
     }
 
-    getEventHandlers(properties) {
-        this.eventHandlers = this.eventHandlers || {};
-
+    getEventHandlers(properties, handlers = {}) {
         if (properties.constructor === Array) {
-            properties.forEach(group => this.getEventHandlers(group));
+            properties.forEach(group => this.getEventHandlers(group, handlers));
         }
 
         else for (var key in properties) {
@@ -33,63 +31,60 @@ export default class Component extends React.Component {
 
             if (Object.keys(window).includes(key.toLowerCase())) {
                 if (typeof value === 'function') {
-                    this.eventHandlers[key] = value;
+                    handlers[key] = value;
                 }
             }
         }
+
+        return handlers;
     }
 
     renderTag(props, Provider, context, subComponent) {
         const styleParser = props.styleParser || Synergy.styleParser;
+        const componentGlue = context.ui['component-glue'];
+        const modifierGlue  = context.ui['component-glue'];
         const config = context.config || {};
+        const module = props.module || context.module;
         const propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CssClassProps));
         const contextModifiers = renderModifiers(getModifiersFromProps(context.props && context.props[props.name], Synergy.CssClassProps));
         const passedModifiers = renderModifiers(props.modifiers);
+        const classes = getModulesFromProps(props, props.className ? ' ' + props.className : '', modifierGlue);
+        const modifiers = propModifiers + passedModifiers + contextModifiers;
+        const eventHandlers = this.getEventHandlers([ props, config[props.name] ? config[props.name] : {} ]);
+        const Tag = (props.href && 'a') || props.component || props.tag || (HTMLTags.includes(props.name) ? props.name : 'div');
+        const ref = node => refHandler(node, props, styleParser, false, context.ui);
 
-        this.componentGlue = context.ui['component-glue'];
-        this.modifierGlue  = context.ui['component-glue'];
-
-        this.tag = props.component || props.tag || (HTMLTags.includes(props.name) ? props.name : 'div');
-        this.module = props.module || context.module;
-        this.modifiers = propModifiers + passedModifiers + contextModifiers;
-        this.classes = getModulesFromProps(props, props.className ? ' ' + props.className : '', this.modifierGlue);
-        this.selector = '';
+        let selector = '';
 
         if (props.name instanceof Array) {
-            props.name.forEach(name => this.selector = (this.selector ? this.selector + ' ' : '') + this.generateSelector(name));
+            props.name.forEach(name => selector = (selector ? selector + ' ' : '') + this.generateSelector(module, modifiers, name, componentGlue));
 
-            this.selector = this.selector + this.classes;
+            selector = selector + classes;
         } else {
-            this.selector = this.generateSelector(props.name) + this.classes;
+            selector = this.generateSelector(module, modifiers, props.name, componentGlue) + classes;
         }
-
-        this.ref = node => refHandler(node, props, styleParser, false, context.ui);
-
-        this.getEventHandlers([ props, config[props.name] ? config[props.name] : {} ]);
-
-        if (props.href) this.tag = 'a';
 
         if (subComponent) {
             context.subComponent = context.subComponent || [props.name];
 
-            const subComponents = (context.subComponent ? context.subComponent.join(this.componentGlue) : '');
-            const namespace = `${context.component + this.componentGlue + subComponents}`;
+            const subComponents = (context.subComponent ? context.subComponent.join(componentGlue) : '');
+            const namespace = `${context.component + componentGlue + subComponents}`;
     
-            this.selector = `${this.module + this.componentGlue + namespace + this.modifiers + this.classes}`;
+            selector = `${module + componentGlue + namespace + modifiers + classes}`;
         }
 
         return (
             <Provider value={context}>
-                <this.tag 
+                <Tag 
                     {...getHtmlProps(props)}
-                    {...this.eventHandlers}
+                    {...eventHandlers}
 
-                    ref={this.ref}
-                    className={this.selector}
+                    ref={ref}
+                    className={selector}
                     data-component={props.name.constructor === Array ? props.name[0] : props.name}
                 >
                     {props.children}
-                </this.tag>
+                </Tag>
             </Provider>
         )
     }
@@ -124,11 +119,7 @@ export class SubComponent extends Component {
                                 {(subComponentContext) => {
                                     Object.assign(context, subComponentContext);
 
-                                    return (
-                                        <SubComponentContext.Provider value={{ subComponent: subComponents, ...context }}>
-                                            {this.renderTag(this.props, ComponentContext.Provider, context, true)}
-                                        </SubComponentContext.Provider>
-                                    )
+                                    return this.renderTag(this.props, SubComponentContext.Provider, context, true);
                                 }}
                             </SubComponentContext.Consumer>
                         )

@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import PropTypes from 'prop-types';
 import HTMLTags from 'html-tags';
 import deepExtend from 'deep-extend';
 
@@ -17,7 +16,6 @@ let increment = 1;
 
 const ModuleContext = React.createContext({
     module: '',
-    modifiers: [],
     props: {},
     ui: {},
     foo: 'bar'
@@ -99,13 +97,20 @@ export default class Module extends React.Component {
         return dataAttributes;
     }
 
+    static child = props => {
+        const childProps = Object.assign({}, props);
+    
+        delete childProps.children;
+        return React.Children.map(props.children, child => React.cloneElement(child, { context: childProps }));
+    }
+
+    static config = (...params) => deepExtend({}, ...params);
+
     render() {
         const contextValue = { 
             module: this.namespace,
-            modifiers: this.props.modifiers,
             props: this.props,
-            ui: this.ui,
-            foo: 'fizz'
+            ui: this.ui
         }
 
         return (
@@ -130,15 +135,6 @@ export default class Module extends React.Component {
             </ModuleContext.Provider>
         );
     }
-}
-
-Module.config = (...params) => deepExtend({}, ...params);
-
-Module.child = props => {
-    const childProps = Object.assign({}, props);
-
-    delete childProps.children;
-    return React.Children.map(props.children, child => React.cloneElement(child, childProps));
 }
 
 export class Wrapper extends Module {
