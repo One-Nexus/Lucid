@@ -7,7 +7,7 @@ import getModulesFromProps from './utilities/getModulesFromProps';
 import renderModifiers from './utilities/renderModifiers';
 import refHandler from './utilities/refHandler';
 
-import { ModuleContext } from './module';
+import { ModuleContext } from './module.jsx';
 
 const ComponentContext = React.createContext({
     component: ''
@@ -17,10 +17,6 @@ const ComponentContext = React.createContext({
  * Render a Synergy component
  */
 export default class Component extends React.Component {
-    generateSelector(moduleName, modifiers, name, componentGlue) {
-        return `${moduleName + componentGlue + name + modifiers}`;
-    }
-
     getEventHandlers(properties, handlers = {}) {
         if (properties.constructor === Array) {
             properties.forEach(group => this.getEventHandlers(group, handlers));
@@ -57,11 +53,11 @@ export default class Component extends React.Component {
         let selector = '';
 
         if (props.name instanceof Array) {
-            props.name.forEach(name => selector = (selector ? selector + ' ' : '') + this.generateSelector(module, modifiers, name, componentGlue));
+            props.name.forEach(name => selector = (selector ? selector + ' ' : '') + `${module + componentGlue + name + modifiers}`);
 
             selector = selector + classes;
         } else {
-            selector = this.generateSelector(module, modifiers, props.name, componentGlue) + classes;
+            selector = `${module + componentGlue + props.name + modifiers}` + classes;
         }
 
         if (subComponent) {
@@ -75,7 +71,7 @@ export default class Component extends React.Component {
 
         return (
             <Provider value={context}>
-                <Tag 
+                <Tag
                     {...getHtmlProps(props)}
                     {...eventHandlers}
 
