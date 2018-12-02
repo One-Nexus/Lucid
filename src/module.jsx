@@ -17,8 +17,8 @@ let increment = 1;
 const ModuleContext = React.createContext({
     module: '',
     props: {},
-    ui: {},
-    foo: 'bar'
+    config: {},
+    ui: {}
 });
 
 export { ModuleContext };
@@ -41,15 +41,15 @@ export default class Module extends React.Component {
         const modifiers = propModifiers + passedModifiers;
         const classes = props.className ? ' ' + props.className : '';
 
-        let config = props.config || {};
+        this.config = props.config || {};
 
         if (window[props.name]) {
-            config = Module.config(window[props.name].config, config);
+            this.config = Module.config(window[props.name].config, this.config);
         }
 
         this.ui = props.ui || window.ui;
-        this.namespace = config.name || props.name;
-        this.ref = node => refHandler(node, props, styleParser, true, this.ui, config);
+        this.namespace = this.config.name || props.name;
+        this.ref = node => refHandler(node, props, styleParser, true, this.ui, this.config);
         this.id = (props.before || props.after) && !props.id ? `synergy-module-${increment}` : props.id;
         this.tag = props.component || props.tag || (HTMLTags.includes(this.namespace) ? this.namespace : 'div');
         this.classNames = getModulesFromProps(props, this.namespace + modifiers + classes, modifierGlue);
@@ -59,6 +59,13 @@ export default class Module extends React.Component {
                 this.classNames = this.classNames + ' ' + prop
             }
         });
+
+        this.contextValue = { 
+            module: this.namespace,
+            props: this.props,
+            config: this.config,
+            ui: this.ui
+        }
     }
 
     componentDidMount() {
@@ -101,20 +108,24 @@ export default class Module extends React.Component {
         const childProps = Object.assign({}, props);
     
         delete childProps.children;
-        return React.Children.map(props.children, child => React.cloneElement(child, { context: childProps }));
+
+        let config = props.config || {};
+
+        if (window[props.name]) {
+            config = Module.config(window[props.name].config, config);
+        }
+
+        return React.Children.map(props.children, child => React.cloneElement(child, { 
+            context: childProps,
+            config: config
+        }));
     }
 
     static config = (...params) => deepExtend({}, ...params);
 
     render() {
-        const contextValue = { 
-            module: this.namespace,
-            props: this.props,
-            ui: this.ui
-        }
-
         return (
-            <ModuleContext.Provider value={contextValue}>
+            <ModuleContext.Provider value={this.contextValue}>
                 { this.props.before && this.props.before(() => document.getElementById(this.id)) }
 
                 <this.tag
