@@ -61,7 +61,7 @@ export default class Component extends React.Component {
         }
 
         if (subComponent) {
-            context.subComponent = context.subComponent || [props.name];
+            context.subComponent = (context.subComponent.length && context.subComponent) || [props.name];
 
             const subComponents = (context.subComponent ? context.subComponent.join(componentGlue) : '');
             const namespace = `${context.component + componentGlue + subComponents}`;
