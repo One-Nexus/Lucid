@@ -105,9 +105,9 @@ export class SubComponent extends Component {
         return (
             <ComponentContext.Consumer>
                 {(context) => {
-                    let subComponents = context.subComponent || [];
+                    context.subComponent = context.subComponent || [];
 
-                    subComponents.push(this.props.name);
+                    !context.subComponent.includes(this.props.name) && context.subComponent.push(this.props.name);
 
                     if (context.subComponent) {
                         return (
