@@ -14,6 +14,9 @@ import refHandler from './utilities/refHandler';
  */
 let increment = 1;
 
+/**
+ * Create a context object
+ */
 const ModuleContext = React.createContext({
     module: '',
     props: {},

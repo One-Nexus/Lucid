@@ -14,6 +14,10 @@ export default function getModifiersFromProps(props, blacklist = []) {
             continue;
         }
 
+        if (prop === 'subComponent') {
+            continue;
+        }
+
         if (typeof value === 'boolean' && value) {
             if (blacklist && blacklist.indexOf(key) < 0) {
                 modifiers.push(key);

@@ -10,7 +10,8 @@ import refHandler from './utilities/refHandler';
 import { ModuleContext } from './module.jsx';
 
 const ComponentContext = React.createContext({
-    component: ''
+    component: '',
+    subComponent: []
 });
 
 /**
@@ -35,7 +36,7 @@ export default class Component extends React.Component {
         return handlers;
     }
 
-    renderTag(props, Provider, context, subComponent) {
+    renderTag(props, context, subComponent) {
         const styleParser = props.styleParser || Synergy.styleParser;
         const componentGlue = context.ui['component-glue'];
         const modifierGlue  = context.ui['component-glue'];
@@ -60,17 +61,21 @@ export default class Component extends React.Component {
             selector = `${module + componentGlue + props.name + modifiers}` + classes;
         }
 
-        if (subComponent) {
-            context.subComponent = (context.subComponent.length && context.subComponent) || [props.name];
+        const contextValues = {};
 
-            const subComponents = (context.subComponent ? context.subComponent.join(componentGlue) : '');
-            const namespace = `${context.component + componentGlue + subComponents}`;
+        if (subComponent) {
+            contextValues.subComponent = [...(context.subComponent || []), props.name];
+
+            const subComponents = (contextValues.subComponent.length ? contextValues.subComponent.join(componentGlue) : '');
+            const namespace = `${(context.component || props.name) + componentGlue + subComponents}`;
     
             selector = `${module + componentGlue + namespace + modifiers + classes}`;
+        } else {
+            contextValues.component = props.name;
         }
-
+    
         return (
-            <Provider value={context}>
+            <ComponentContext.Provider value={contextValues}>
                 <Tag
                     {...getHtmlProps(props)}
                     {...eventHandlers}
@@ -81,49 +86,31 @@ export default class Component extends React.Component {
                 >
                     {props.children}
                 </Tag>
-            </Provider>
+            </ComponentContext.Provider>
         )
     }
 
     render() {
         return (
             <ModuleContext.Consumer>
-                {(context) => this.renderTag(this.props, ComponentContext.Provider, { 
-                    component: this.props.name, ...context 
-                })}
+                {(context) => {
+                    if (this.props.subComponent) {
+                        return (
+                            <ComponentContext.Consumer>
+                                {(componentContext) => {
+                                    return this.renderTag(this.props, { ...context, ...componentContext }, true)
+                                }}
+                            </ComponentContext.Consumer>
+                        )
+                    }
+
+                    return this.renderTag(this.props, context)
+                }}
             </ModuleContext.Consumer>
         )
     }
 }
 
-const SubComponentContext = React.createContext({
-    subComponent: []
-});
-
-export class SubComponent extends Component {
-    render() {
-        return (
-            <ComponentContext.Consumer>
-                {(context) => {
-                    context.subComponent = context.subComponent || [];
-
-                    !context.subComponent.includes(this.props.name) && context.subComponent.push(this.props.name);
-
-                    if (context.subComponent) {
-                        return (
-                            <SubComponentContext.Consumer>
-                                {(subComponentContext) => {
-                                    Object.assign(context, subComponentContext);
-
-                                    return this.renderTag(this.props, SubComponentContext.Provider, context, true);
-                                }}
-                            </SubComponentContext.Consumer>
-                        )
-                    }
-
-                    return this.renderTag(this.props, SubComponentContext.Provider, context, true);
-                }}
-            </ComponentContext.Consumer>
-        );
-    }
-}
+export const SubComponent = props => (
+    <Component subComponent={true} {...props}>{props.children}</Component>
+);
