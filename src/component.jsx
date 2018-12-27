@@ -61,7 +61,9 @@ export default class Component extends React.Component {
             selector = `${module + componentGlue + props.name + modifiers}` + classes;
         }
 
-        const contextValues = {};
+        const contextValues = {
+            component: context.component
+        };
 
         if (subComponent) {
             contextValues.subComponent = [...(context.subComponent || []), props.name];
