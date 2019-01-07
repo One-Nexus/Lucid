@@ -39,7 +39,7 @@ export default class Component extends React.Component {
     renderTag(props, context, subComponent) {
         const styleParser = props.styleParser || Synergy.styleParser;
         const componentGlue = context.ui['component-glue'];
-        const modifierGlue  = context.ui['component-glue'];
+        const modifierGlue  = context.ui['modifier-glue'];
         const config = context.config || {};
         const module = props.module || context.module;
         const propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CssClassProps));
