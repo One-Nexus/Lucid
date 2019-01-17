@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import HTMLTags from 'html-tags';
-import deepExtend from 'deep-extend';
 
 import getHtmlProps from './utilities/getHtmlProps';
 import getModifiersFromProps from './utilities/getModifiersFromProps';
@@ -107,6 +106,14 @@ export default class Module extends React.Component {
         return dataAttributes;
     }
 
+    static config = (...params) => {
+        if (typeof deepExtend === 'function' && (typeof process !== 'undefined' && process.env.SYNERGY)) {
+            return deepExtend({}, ...params);
+        } else {
+            return require('deep-extend')({}, ...params);
+        }
+    };
+
     static child = props => {
         const childProps = Object.assign({}, props);
     
@@ -123,8 +130,6 @@ export default class Module extends React.Component {
             config: config
         }));
     }
-
-    static config = (...params) => deepExtend({}, ...params);
 
     render() {
         return (

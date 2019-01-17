@@ -1,32 +1,51 @@
 import path from 'path';
+import UglifyJsPlugin from 'uglifyjs-webpack-plugin';
 
 export default function() {
     return {
         entry: {
-            'lucid': './src/index.js'
+            'lucid': './src/index.js',
+            'lucid.min': './src/index.js'
         },
 
         output: {
             path: path.resolve(__dirname, 'dist/'),
             filename: '[name].js',
             publicPath: '/',
-            libraryTarget: 'commonjs2'
+            libraryTarget: 'umd'
         },
 
-        target: 'node',
+        optimization: {
+            minimizer: [
+                new UglifyJsPlugin({
+                    include: /\.min\.js$/,
+                    uglifyOptions: {
+                        output: {
+                            comments: false
+                        }
+                    }
+                })
+            ]
+        },
 
         externals: {
             'react': 'react',
-            'react-dom': 'react-dom',
-            'prop-types': 'prop-types'
+            'react-dom': 'react-dom'
         },
 
         module: {
-            loaders: [{
+            rules: [{
                 test: /\.(js|jsx)$/,
                 exclude: /node_modules/,
-                loaders: ['babel-loader'],
+                use: {
+                    loader: 'babel-loader'
+                }
             }]
+        },
+
+        node: {
+            process: false,
+            Buffer: false
         },
 
         stats: { colors: true },
