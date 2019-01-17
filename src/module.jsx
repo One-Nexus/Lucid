@@ -8,6 +8,11 @@ import getModulesFromProps from './utilities/getModulesFromProps';
 import renderModifiers from './utilities/renderModifiers';
 import refHandler from './utilities/refHandler';
 
+// spoof env process to assist bundle size
+if (typeof process === 'undefined') {
+    window.process = { env: {} };
+}
+
 /**
  * Used for generating unique module ID's
  */
@@ -107,9 +112,13 @@ export default class Module extends React.Component {
     }
 
     static config = (...params) => {
-        if (typeof deepExtend === 'function' && (typeof process !== 'undefined' && process.env.SYNERGY)) {
+        if (process.env.SYNERGY) {
             return deepExtend({}, ...params);
-        } else {
+        } 
+        else if (typeof deepExtend !== 'undefined') {
+            return deepExtend({}, ...params);
+        } 
+        else {
             return require('deep-extend')({}, ...params);
         }
     };

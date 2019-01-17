@@ -755,10 +755,17 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 
 
+ // spoof env process to assis bundle size
 
+if (typeof process === 'undefined') {
+  window.process = {
+    env: {}
+  };
+}
 /**
  * Used for generating unique module ID's
  */
+
 
 var increment = 1;
 /**
@@ -893,7 +900,9 @@ _defineProperty(module_Module, "config", function () {
     params[_key] = arguments[_key];
   }
 
-  if (typeof deepExtend === 'function' && typeof process !== 'undefined' && process.env.SYNERGY) {
+  if (process.env.SYNERGY) {
+    return deepExtend.apply(void 0, [{}].concat(params));
+  } else if (typeof deepExtend !== 'undefined') {
     return deepExtend.apply(void 0, [{}].concat(params));
   } else {
     return __webpack_require__(7).apply(void 0, [{}].concat(params));
