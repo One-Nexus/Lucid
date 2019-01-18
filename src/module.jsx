@@ -45,8 +45,6 @@ export default class Module extends React.Component {
         const classes = props.className ? ' ' + props.className : '';
         const styleParser = props.styleParser || Synergy.styleParser;
 
-        Object.assign(ui, { modifierGlue, componentGlue })
-
         this.config = props.config || {};
 
         if (window[props.name]) {

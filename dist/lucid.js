@@ -790,10 +790,6 @@ function (_React$Component) {
     var modifiers = propModifiers + passedModifiers;
     var classes = props.className ? ' ' + props.className : '';
     var styleParser = props.styleParser || Synergy.styleParser;
-    Object.assign(ui, {
-      modifierGlue: modifierGlue,
-      componentGlue: componentGlue
-    });
     _this.config = props.config || {};
 
     if (window[props.name]) {
