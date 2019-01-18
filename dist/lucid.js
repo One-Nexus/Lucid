@@ -636,11 +636,12 @@ function getModifiersFromProps(props) {
 
   return modifiers;
 }
-// CONCATENATED MODULE: ./src/utilities/getModulesFromProps.js
+// CONCATENATED MODULE: ./src/utilities/generateClasses.js
 /**
- * Get module and modifiers from props
+ * Generate CSS classes for a module
  */
-function getModulesFromProps(props, classes, modifierGlue) {
+function generateClasses(props, classes, modifierGlue) {
+  // Get modules from props
   Object.entries(props).forEach(function (prop) {
     var firstLetter = prop[0][0];
 
@@ -665,9 +666,9 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
 /**
  * @param {*} modifiers 
  */
-function renderModifiers(modifiers) {
+function renderModifiers(modifiers, modifierGlue) {
   if (modifiers && _typeof(modifiers) === 'object' && modifiers.length) {
-    return ('-' + modifiers).replace(/,/g, '-');
+    return (modifierGlue + modifiers).replace(/,/g, modifierGlue);
   }
 
   return '';
@@ -769,12 +770,7 @@ var increment = 1;
  * Create a context object
  */
 
-var ModuleContext = external_react_default.a.createContext({
-  module: '',
-  props: {},
-  config: {},
-  ui: {}
-});
+var ModuleContext = external_react_default.a.createContext();
 
 /**
  * Render a Synergy module
@@ -794,38 +790,46 @@ function (_React$Component) {
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(Module).call(this, props));
     increment++;
-    var styleParser = props.styleParser || Synergy.styleParser;
-    var modifierGlue = props.modifierGlue || window.Synergy && Synergy.modifierGlue || '-';
-    var propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CssClassProps));
-    var passedModifiers = renderModifiers(props.modifiers);
+    var Synergy = window.Synergy || {};
+    var ui = props.ui || window.ui;
+    var modifierGlue = props.modifierGlue || Synergy.modifierGlue || '-';
+    var componentGlue = props.componentGlue || Synergy.componentGlue || '_';
+    var propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CssClassProps), modifierGlue);
+    var passedModifiers = renderModifiers(props.modifiers, modifierGlue);
     var modifiers = propModifiers + passedModifiers;
     var classes = props.className ? ' ' + props.className : '';
+    var styleParser = props.styleParser || Synergy.styleParser;
+    Object.assign(ui, {
+      modifierGlue: modifierGlue,
+      componentGlue: componentGlue
+    });
     _this.config = props.config || {};
 
     if (window[props.name]) {
       _this.config = Module.config(window[props.name].config, _this.config);
     }
 
-    _this.ui = props.ui || window.ui;
     _this.namespace = _this.config.name || props.name;
 
     _this.ref = function (node) {
-      return refHandler(node, props, styleParser, true, _this.ui, _this.config);
+      return refHandler(node, props, styleParser, true, ui, _this.config);
     };
 
     _this.id = (props.before || props.after) && !props.id ? "synergy-module-".concat(increment) : props.id;
     _this.tag = props.component || props.tag || (html_tags_default.a.includes(_this.namespace) ? _this.namespace : 'div');
-    _this.classNames = getModulesFromProps(props, _this.namespace + modifiers + classes, modifierGlue);
+    _this.classNames = generateClasses(props, _this.namespace + modifiers + classes, modifierGlue);
     if (Synergy.CssClassProps) Synergy.CssClassProps.forEach(function (prop) {
       if (Object.keys(props).includes(prop)) {
         _this.classNames = _this.classNames + ' ' + prop;
       }
     });
     _this.contextValue = {
+      ui: ui,
+      modifierGlue: modifierGlue,
+      componentGlue: componentGlue,
       module: _this.namespace,
       props: _this.props,
-      config: _this.config,
-      ui: _this.ui
+      config: _this.config
     };
     return _this;
   }
@@ -897,10 +901,15 @@ _defineProperty(module_Module, "config", function () {
     params[_key] = arguments[_key];
   }
 
+  // `process` and `require` are exploited to help reduce bundle size
   if (process.env.SYNERGY) {
-    return deepExtend.apply(void 0, [{}].concat(params));
-  } else if (typeof deepExtend !== 'undefined') {
-    return deepExtend.apply(void 0, [{}].concat(params));
+    var _Synergy;
+
+    return (_Synergy = Synergy).config.apply(_Synergy, [{}].concat(params));
+  } else if (typeof Synergy !== 'undefined' && typeof Synergy.config === 'function') {
+    var _Synergy2;
+
+    return (_Synergy2 = Synergy).config.apply(_Synergy2, [{}].concat(params));
   } else {
     return __webpack_require__(7).apply(void 0, [{}].concat(params));
   }
@@ -1069,18 +1078,19 @@ function (_React$Component) {
   }, {
     key: "renderTag",
     value: function renderTag(props, context, subComponent) {
-      var styleParser = props.styleParser || Synergy.styleParser;
-      var componentGlue = context.ui['component-glue'];
-      var modifierGlue = context.ui['modifier-glue'];
+      var modifierGlue = context.modifierGlue,
+          componentGlue = context.componentGlue;
       var config = context.config || {};
       var module = props.module || context.module;
-      var propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CssClassProps));
-      var contextModifiers = renderModifiers(getModifiersFromProps(context.props && context.props[props.name], Synergy.CssClassProps));
-      var passedModifiers = renderModifiers(props.modifiers);
-      var classes = getModulesFromProps(props, props.className ? ' ' + props.className : '', modifierGlue);
+      var propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CssClassProps), modifierGlue);
+      var getContextModifiers = getModifiersFromProps(context.props && context.props[props.name], Synergy.CssClassProps);
+      var contextModifiers = renderModifiers(getContextModifiers, modifierGlue);
+      var passedModifiers = renderModifiers(props.modifiers, modifierGlue);
+      var classes = generateClasses(props, props.className ? ' ' + props.className : '', modifierGlue);
       var modifiers = propModifiers + passedModifiers + contextModifiers;
       var eventHandlers = this.getEventHandlers([props, config[props.name] ? config[props.name] : {}]);
       var Tag = props.href && 'a' || props.component || props.tag || (html_tags_default.a.includes(props.name) ? props.name : 'div');
+      var styleParser = props.styleParser || Synergy.styleParser;
 
       var ref = function ref(node) {
         return refHandler(node, props, styleParser, false, context.ui);

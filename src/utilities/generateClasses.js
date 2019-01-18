@@ -1,7 +1,8 @@
 /**
- * Get module and modifiers from props
+ * Generate CSS classes for a module
  */
-export default function getModulesFromProps(props, classes, modifierGlue) {
+export default function generateClasses(props, classes, modifierGlue) {
+    // Get modules from props
     Object.entries(props).forEach(prop => {
         const firstLetter = prop[0][0];
 

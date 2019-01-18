@@ -1,9 +1,9 @@
 /**
  * @param {*} modifiers 
  */
-export default function renderModifiers(modifiers) {
+export default function renderModifiers(modifiers, modifierGlue) {
     if (modifiers && typeof modifiers === 'object' && modifiers.length) {
-        return ('-' + modifiers).replace(/,/g, '-');
+        return (modifierGlue + modifiers).replace(/,/g, modifierGlue);
     }
 
     return '';

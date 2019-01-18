@@ -3,7 +3,7 @@ import HTMLTags from 'html-tags';
 
 import getHtmlProps from './utilities/getHtmlProps';
 import getModifiersFromProps from './utilities/getModifiersFromProps';
-import getModulesFromProps from './utilities/getModulesFromProps';
+import generateClasses from './utilities/generateClasses';
 import renderModifiers from './utilities/renderModifiers';
 import refHandler from './utilities/refHandler';
 
@@ -40,10 +40,11 @@ export default class Component extends React.Component {
         const { modifierGlue, componentGlue }  = context;
         const config = context.config || {};
         const module = props.module || context.module;
-        const propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CssClassProps));
-        const contextModifiers = renderModifiers(getModifiersFromProps(context.props && context.props[props.name], Synergy.CssClassProps));
-        const passedModifiers = renderModifiers(props.modifiers);
-        const classes = getModulesFromProps(props, props.className ? ' ' + props.className : '', modifierGlue);
+        const propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CssClassProps), modifierGlue);
+        const getContextModifiers = getModifiersFromProps(context.props && context.props[props.name], Synergy.CssClassProps);
+        const contextModifiers = renderModifiers(getContextModifiers, modifierGlue);
+        const passedModifiers = renderModifiers(props.modifiers, modifierGlue);
+        const classes = generateClasses(props, props.className ? ' ' + props.className : '', modifierGlue);
         const modifiers = propModifiers + passedModifiers + contextModifiers;
         const eventHandlers = this.getEventHandlers([ props, config[props.name] ? config[props.name] : {} ]);
         const Tag = (props.href && 'a') || props.component || props.tag || (HTMLTags.includes(props.name) ? props.name : 'div');

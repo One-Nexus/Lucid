@@ -4,7 +4,7 @@ import HTMLTags from 'html-tags';
 
 import getHtmlProps from './utilities/getHtmlProps';
 import getModifiersFromProps from './utilities/getModifiersFromProps';
-import getModulesFromProps from './utilities/getModulesFromProps';
+import generateClasses from './utilities/generateClasses';
 import renderModifiers from './utilities/renderModifiers';
 import refHandler from './utilities/refHandler';
 
@@ -34,16 +34,18 @@ export default class Module extends React.Component {
 
         increment++;
 
-        var Synergy = Synergy || {};
+        var Synergy = window.Synergy || {};
 
         const ui = props.ui || window.ui;
-        const modifierGlue = props.modifierGlue || ui['modifier-glue'] || Synergy.modifierGlue || '-';
-        const componentGlue = props.componentGlue || ui['component-glue'] || Synergy.componentGlue || '_';
-        const propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CssClassProps));
-        const passedModifiers = renderModifiers(props.modifiers);
+        const modifierGlue = props.modifierGlue || Synergy.modifierGlue || '-';
+        const componentGlue = props.componentGlue || Synergy.componentGlue || '_';
+        const propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CssClassProps), modifierGlue);
+        const passedModifiers = renderModifiers(props.modifiers, modifierGlue);
         const modifiers = propModifiers + passedModifiers;
         const classes = props.className ? ' ' + props.className : '';
         const styleParser = props.styleParser || Synergy.styleParser;
+
+        Object.assign(ui, { modifierGlue, componentGlue })
 
         this.config = props.config || {};
 
@@ -55,7 +57,7 @@ export default class Module extends React.Component {
         this.ref = node => refHandler(node, props, styleParser, true, ui, this.config);
         this.id = (props.before || props.after) && !props.id ? `synergy-module-${increment}` : props.id;
         this.tag = props.component || props.tag || (HTMLTags.includes(this.namespace) ? this.namespace : 'div');
-        this.classNames = getModulesFromProps(props, this.namespace + modifiers + classes, modifierGlue);
+        this.classNames = generateClasses(props, this.namespace + modifiers + classes, modifierGlue);
 
         if (Synergy.CssClassProps) Synergy.CssClassProps.forEach(prop => {
             if (Object.keys(props).includes(prop)) {
@@ -110,12 +112,12 @@ export default class Module extends React.Component {
     }
 
     static config = (...params) => {
-        // `process` and `require` exploited to help reduce bundle size
+        // `process` and `require` are exploited to help reduce bundle size
         if (process.env.SYNERGY) {
-            return deepExtend({}, ...params);
+            return Synergy.config({}, ...params);
         } 
-        else if (typeof deepExtend !== 'undefined') {
-            return deepExtend({}, ...params);
+        else if (typeof Synergy !== 'undefined' && typeof Synergy.config === 'function') {
+            return Synergy.config({}, ...params);
         } 
         else {
             return require('deep-extend')({}, ...params);
