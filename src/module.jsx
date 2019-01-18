@@ -9,9 +9,7 @@ import renderModifiers from './utilities/renderModifiers';
 import refHandler from './utilities/refHandler';
 
 // spoof env process to assist bundle size
-if (typeof process === 'undefined') {
-    window.process = { env: {} };
-}
+if (typeof process === 'undefined') window.process = { env: {} };
 
 /**
  * Used for generating unique module ID's
@@ -21,12 +19,7 @@ let increment = 1;
 /**
  * Create a context object
  */
-const ModuleContext = React.createContext({
-    module: '',
-    props: {},
-    config: {},
-    ui: {}
-});
+const ModuleContext = React.createContext();
 
 export { ModuleContext };
 
@@ -41,12 +34,16 @@ export default class Module extends React.Component {
 
         increment++;
 
-        const styleParser = props.styleParser || Synergy.styleParser;
-        const modifierGlue = props.modifierGlue || (window.Synergy && Synergy.modifierGlue) || '-';
+        var Synergy = Synergy || {};
+
+        const ui = props.ui || window.ui;
+        const modifierGlue = props.modifierGlue || ui['modifier-glue'] || Synergy.modifierGlue || '-';
+        const componentGlue = props.componentGlue || ui['component-glue'] || Synergy.componentGlue || '_';
         const propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CssClassProps));
         const passedModifiers = renderModifiers(props.modifiers);
         const modifiers = propModifiers + passedModifiers;
         const classes = props.className ? ' ' + props.className : '';
+        const styleParser = props.styleParser || Synergy.styleParser;
 
         this.config = props.config || {};
 
@@ -54,9 +51,8 @@ export default class Module extends React.Component {
             this.config = Module.config(window[props.name].config, this.config);
         }
 
-        this.ui = props.ui || window.ui;
         this.namespace = this.config.name || props.name;
-        this.ref = node => refHandler(node, props, styleParser, true, this.ui, this.config);
+        this.ref = node => refHandler(node, props, styleParser, true, ui, this.config);
         this.id = (props.before || props.after) && !props.id ? `synergy-module-${increment}` : props.id;
         this.tag = props.component || props.tag || (HTMLTags.includes(this.namespace) ? this.namespace : 'div');
         this.classNames = getModulesFromProps(props, this.namespace + modifiers + classes, modifierGlue);
@@ -67,11 +63,13 @@ export default class Module extends React.Component {
             }
         });
 
-        this.contextValue = { 
+        this.contextValue = {
+            ui,
+            modifierGlue,
+            componentGlue,
             module: this.namespace,
             props: this.props,
             config: this.config,
-            ui: this.ui
         }
     }
 
@@ -112,6 +110,7 @@ export default class Module extends React.Component {
     }
 
     static config = (...params) => {
+        // `process` and `require` exploited to help reduce bundle size
         if (process.env.SYNERGY) {
             return deepExtend({}, ...params);
         } 

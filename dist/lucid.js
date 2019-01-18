@@ -755,17 +755,14 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 
 
- // spoof env process to assis bundle size
+ // spoof env process to assist bundle size
 
-if (typeof process === 'undefined') {
-  window.process = {
-    env: {}
-  };
-}
+if (typeof process === 'undefined') window.process = {
+  env: {}
+};
 /**
  * Used for generating unique module ID's
  */
-
 
 var increment = 1;
 /**

@@ -37,9 +37,7 @@ export default class Component extends React.Component {
     }
 
     renderTag(props, context, subComponent) {
-        const styleParser = props.styleParser || Synergy.styleParser;
-        const componentGlue = context.ui['component-glue'];
-        const modifierGlue  = context.ui['modifier-glue'];
+        const { modifierGlue, componentGlue }  = context;
         const config = context.config || {};
         const module = props.module || context.module;
         const propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CssClassProps));
@@ -49,6 +47,7 @@ export default class Component extends React.Component {
         const modifiers = propModifiers + passedModifiers + contextModifiers;
         const eventHandlers = this.getEventHandlers([ props, config[props.name] ? config[props.name] : {} ]);
         const Tag = (props.href && 'a') || props.component || props.tag || (HTMLTags.includes(props.name) ? props.name : 'div');
+        const styleParser = props.styleParser || Synergy.styleParser;
         const ref = node => refHandler(node, props, styleParser, false, context.ui);
 
         let selector = '';
