@@ -12,7 +12,7 @@ export default function() {
             path: path.resolve(__dirname, 'dist/'),
             filename: '[name].js',
             publicPath: '/',
-            libraryTarget: 'umd'
+            libraryTarget: 'commonjs2'
         },
 
         optimization: {
