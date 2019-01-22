@@ -1,7 +1,7 @@
 /**
  * Handle the ref callback on the rendered React component
  */
-export default function refHandler(node, props, styleParser, parentModule, theme, config) {
+export default function refHandler(node, props, styleParser, parentModule, ui, config) {
     if (node && node instanceof HTMLElement) {
         Object.assign(node, {
             isFirstChild: node === node.parentNode.firstChild,
@@ -18,8 +18,8 @@ export default function refHandler(node, props, styleParser, parentModule, theme
             }
 
             else if (props.name && window[props.name]) {
-                if (window[props.name] && window[props.name].layout && window[props.name].defaults) {
-                    styleParser(node, window[props.name].layout, config, theme);
+                if (window[props.name] && window[props.name].layout) {
+                    styleParser(node, window[props.name].layout, config, ui);
                 }
             }
 
@@ -27,12 +27,10 @@ export default function refHandler(node, props, styleParser, parentModule, theme
                 const fistLetter = prop[0];
 
                 if (fistLetter === fistLetter.toUpperCase()) {
-                    if (window[prop] && window[prop].layout && window[prop].defaults) {
-                        const _config = Module.config(window[prop].defaults(theme), theme[prop]);
-
+                    if (window[prop] && window[prop].layout && window[prop].config) {
                         node.namespace = node.namespace || prop;
 
-                        styleParser(node, window[prop].layout, _config, theme);
+                        styleParser(node, window[prop].layout, window[prop].config, ui);
                     }
                 }
             });
