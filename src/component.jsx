@@ -9,10 +9,7 @@ import refHandler from './utilities/refHandler';
 
 import { ModuleContext } from './module.jsx';
 
-const ComponentContext = React.createContext({
-    component: '',
-    subComponent: []
-});
+const ComponentContext = React.createContext();
 
 /**
  * Render a Synergy component
@@ -38,7 +35,6 @@ export default class Component extends React.Component {
 
     renderTag(props, context, subComponent) {
         const { modifierGlue, componentGlue }  = context;
-        const config = context.config || {};
         const module = props.module || context.module;
         const propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CssClassProps), modifierGlue);
         const getContextModifiers = getModifiersFromProps(context.props && context.props[props.name], Synergy.CssClassProps);
@@ -46,10 +42,9 @@ export default class Component extends React.Component {
         const passedModifiers = renderModifiers(props.modifiers, modifierGlue);
         const classes = generateClasses(props, props.className ? ' ' + props.className : '', modifierGlue);
         const modifiers = propModifiers + passedModifiers + contextModifiers;
-        const eventHandlers = this.getEventHandlers([ props, config[props.name] ? config[props.name] : {} ]);
+        const eventHandlers = this.getEventHandlers([ props, context.config[props.name] ? context.config[props.name] : {} ]);
         const Tag = (props.href && 'a') || props.component || props.tag || (HTMLTags.includes(props.name) ? props.name : 'div');
-        const styleParser = props.styleParser || Synergy.styleParser;
-        const ref = node => refHandler(node, props, styleParser, false, context.ui);
+        const ref = node => refHandler(node, props, context.styleParser, false, context.ui);
 
         let selector = '';
 
@@ -85,6 +80,8 @@ export default class Component extends React.Component {
                     ref={ref}
                     className={selector}
                     data-component={props.name.constructor === Array ? props.name[0] : props.name}
+
+                    {...this.props.componentProps}
                 >
                     {props.children}
                 </Tag>

@@ -54,7 +54,7 @@ export default class Module extends React.Component {
         this.namespace = this.config.name || props.name;
         this.ref = node => refHandler(node, props, styleParser, true, ui, this.config);
         this.id = (props.before || props.after) && !props.id ? `synergy-module-${increment}` : props.id;
-        this.tag = props.component || props.tag || (HTMLTags.includes(this.namespace) ? this.namespace : 'div');
+        this.tag = props.tag || (HTMLTags.includes(this.namespace) ? this.namespace : 'div');
         this.classNames = generateClasses(props, this.namespace + modifiers + classes, modifierGlue);
 
         if (Synergy.CssClassProps) Synergy.CssClassProps.forEach(prop => {
@@ -65,6 +65,7 @@ export default class Module extends React.Component {
 
         this.contextValue = {
             ui,
+            styleParser,
             modifierGlue,
             componentGlue,
             module: this.namespace,
