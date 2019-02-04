@@ -14,7 +14,12 @@ export default function refHandler(node, props, styleParser, parentModule, ui, c
 
         if (styleParser) {
             if (props.styles) {
-                styleParser(node, ...props.styles);
+                if (props.styles.constructor === Array) {
+                    styleParser(node, ...props.styles);
+                }
+                else {
+                    styleParser(node, props.styles, config, ui);
+                }
             }
 
             else if (props.name && window[props.name]) {
