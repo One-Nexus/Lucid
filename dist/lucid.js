@@ -559,7 +559,11 @@ function refHandler(node, props, styleParser, parentModule, ui, config) {
 
     if (styleParser) {
       if (props.styles) {
-        styleParser.apply(void 0, [node].concat(_toConsumableArray(props.styles)));
+        if (props.styles.constructor === Array) {
+          styleParser.apply(void 0, [node].concat(_toConsumableArray(props.styles)));
+        } else {
+          styleParser(node, props.styles, config, ui);
+        }
       } else if (props.name && window[props.name]) {
         if (window[props.name] && window[props.name].layout) {
           styleParser(node, window[props.name].layout, config, ui);
