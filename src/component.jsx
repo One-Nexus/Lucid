@@ -40,36 +40,39 @@ export default class Component extends React.Component {
         const getContextModifiers = getModifiersFromProps(context.props && context.props[props.name], Synergy.CssClassProps);
         const contextModifiers = renderModifiers(getContextModifiers, modifierGlue);
         const passedModifiers = renderModifiers(props.modifiers, modifierGlue);
-        const classes = generateClasses(props, props.className ? ' ' + props.className : '', modifierGlue);
         const modifiers = propModifiers + passedModifiers + contextModifiers;
         const eventHandlers = this.getEventHandlers([ props, context.config[props.name] ? context.config[props.name] : {} ]);
         const Tag = (props.href && 'a') || props.component || props.tag || (HTMLTags.includes(props.name) ? props.name : 'div');
         const ref = node => refHandler(node, props, context.styleParser, false, context.ui);
 
-        let selector = '';
-
-        if (props.name instanceof Array) {
-            props.name.forEach(name => selector = (selector ? selector + ' ' : '') + `${module + componentGlue + name + modifiers}`);
-
-            selector = selector + classes;
-        } else {
-            selector = `${module + componentGlue + props.name + modifiers}` + classes;
-        }
-
         const contextValues = {
             component: context.component
         };
+
+        let namespace;
 
         if (subComponent) {
             contextValues.subComponent = [...(context.subComponent || []), props.name];
 
             const subComponents = (contextValues.subComponent.length ? contextValues.subComponent.join(componentGlue) : '');
-            const namespace = `${(context.component || props.name) + componentGlue + subComponents}`;
-    
-            selector = `${module + componentGlue + namespace + modifiers + classes}`;
-        } else {
+
+            namespace = `${module + componentGlue + (context.component || props.name) + componentGlue + subComponents}`;
+        } 
+        else {
             contextValues.component = props.name;
+
+            namespace = module + componentGlue + props.name;
         }
+
+        let classes = generateClasses({
+            props,
+            namespace,
+            modifiers,
+            classes: props.className ? props.className : '', 
+            modifierGlue,
+            componentGlue,
+            multipleClasses: context.multipleClasses
+        });
     
         return (
             <ComponentContext.Provider value={contextValues}>
@@ -78,7 +81,7 @@ export default class Component extends React.Component {
                     {...eventHandlers}
 
                     ref={ref}
-                    className={selector}
+                    className={classes}
                     data-component={props.name.constructor === Array ? props.name[0] : props.name}
 
                     {...this.props.componentProps}

@@ -42,8 +42,18 @@ export default class Module extends React.Component {
         const propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CssClassProps), modifierGlue);
         const passedModifiers = renderModifiers(props.modifiers, modifierGlue);
         const modifiers = propModifiers + passedModifiers;
-        const classes = props.className ? ' ' + props.className : '';
+        const classes = props.className ? props.className : '';
         const styleParser = props.styleParser || Synergy.styleParser;
+
+        let multipleClasses = false;
+
+        if (typeof Synergy.multipleClasses !== 'undefined') {
+            multipleClasses = Synergy.multipleClasses;
+        }
+
+        if (typeof props.multipleClasses !== 'undefined') {
+            multipleClasses = props.multipleClasses;
+        }
 
         this.config = props.config || {};
 
@@ -55,7 +65,16 @@ export default class Module extends React.Component {
         this.ref = node => refHandler(node, props, styleParser, true, ui, this.config);
         this.id = (props.before || props.after) && !props.id ? `synergy-module-${increment}` : props.id;
         this.tag = props.tag || (HTMLTags.includes(this.namespace) ? this.namespace : 'div');
-        this.classNames = generateClasses(props, this.namespace + modifiers + classes, modifierGlue);
+
+        this.classNames = generateClasses({
+            props, 
+            namespace: this.namespace,
+            modifiers,
+            classes,
+            modifierGlue,
+            componentGlue,
+            multipleClasses
+        });
 
         if (Synergy.CssClassProps) Synergy.CssClassProps.forEach(prop => {
             if (Object.keys(props).includes(prop)) {
@@ -68,6 +87,7 @@ export default class Module extends React.Component {
             styleParser,
             modifierGlue,
             componentGlue,
+            multipleClasses,
             module: this.namespace,
             props: this.props,
             config: this.config,

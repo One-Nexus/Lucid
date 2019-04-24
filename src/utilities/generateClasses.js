@@ -1,7 +1,17 @@
 /**
  * Generate CSS classes for a module
  */
-export default function generateClasses(props, classes, modifierGlue) {
+export default function generateClasses({ 
+    props, 
+    namespace, 
+    modifiers, 
+    classes, 
+    modifierGlue, 
+    componentGlue, 
+    multipleClasses 
+}) {
+    let classNames = [];
+
     // Get modules from props
     Object.entries(props).forEach(prop => {
         const firstLetter = prop[0][0];
@@ -9,17 +19,47 @@ export default function generateClasses(props, classes, modifierGlue) {
         if (firstLetter === firstLetter.toUpperCase()) {
             const module = prop[0].toLowerCase();
 
-            let modifiers = '';
+            let propModifiers = '';
 
             if (prop[1].constructor === Array) {
-                modifiers = modifierGlue + prop[1].join(modifierGlue);
+                propModifiers = modifierGlue + prop[1].join(modifierGlue);
             } else if (typeof prop[1] === 'string') {
-                modifiers = modifierGlue + prop[1];
+                propModifiers = modifierGlue + prop[1];
             }
 
-            classes = classes + ' ' + module + modifiers;
+            classes = classes + ' ' + module + propModifiers;
         }
     });
+
+    // @TODO
+    // if (props.name instanceof Array) {
+        // props.name.forEach(name => {
+        //     selector = (selector ? selector + ' ' : '') + `${module + componentGlue + name + modifiers}`
+        // });
+
+        // selector = selector + classes;
+    // }
+
+    if (multipleClasses) {
+        // @TODO refactor the whole thing because we are splitting
+        // what was originally unsplit to begin with
+        modifiers.split(modifierGlue).forEach(modifier => {
+            let className;
+
+            if (modifier) {
+                className = namespace + modifierGlue + modifier;
+            } else {
+                className = namespace;
+            }
+            
+            classNames.push(className);
+        });
+    } 
+    else {
+        classNames.push(namespace + modifiers);
+    }
+
+    classes = classNames.join(' ') + (classes ? ' ' + classes : '');
 
     return classes;
 }
