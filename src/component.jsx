@@ -49,6 +49,10 @@ export default class Component extends React.Component {
             component: context.component
         };
 
+        // if (props.name instanceof Array) {
+        //     @TODO
+        // }
+
         let namespace;
 
         if (subComponent) {

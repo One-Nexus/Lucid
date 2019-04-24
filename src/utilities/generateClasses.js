@@ -27,7 +27,12 @@ export default function generateClasses({
                 propModifiers = modifierGlue + prop[1];
             }
 
-            classes = classes + ' ' + module + propModifiers;
+            if (multipleClasses) {
+                // @TODO
+                console.log(prop[1]);
+            } else {
+                classes = classes + ' ' + module + propModifiers;
+            }
         }
     });
 
