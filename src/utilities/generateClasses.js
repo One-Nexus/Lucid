@@ -13,36 +13,41 @@ export default function generateClasses({
     let classNames = [];
 
     // Get modules from props
-    Object.entries(props).forEach(prop => {
-        const firstLetter = prop[0][0];
+    Object.entries(props).forEach(([key, value]) => {
+        const firstLetter = key[0];
 
         if (firstLetter === firstLetter.toUpperCase()) {
-            const module = prop[0].toLowerCase();
-
-            let propModifiers = '';
-
-            if (prop[1].constructor === Array) {
-                propModifiers = modifierGlue + prop[1].join(modifierGlue);
-            } else if (typeof prop[1] === 'string') {
-                propModifiers = modifierGlue + prop[1];
-            }
+            const module = key.toLowerCase();
 
             if (multipleClasses) {
-                // @TODO
-                console.log(prop[1]);
-            } else {
-                classes = classes + ' ' + module + propModifiers;
+                classNames.push(module);
+
+                if (value.constructor === Array) {
+                    value.forEach(modifier => {
+                        classNames.push(module + modifierGlue + modifier);
+                    });
+                } else if (typeof value === 'string') {
+                    classNames.push(module + modifierGlue + value);
+                }
+            } 
+            else {
+                let propModifiers = '';
+    
+                if (value.constructor === Array) {
+                    propModifiers = modifierGlue + value.join(modifierGlue);
+                } else if (typeof value === 'string') {
+                    propModifiers = modifierGlue + value;
+                }
+
+                classNames.push(module + propModifiers);
             }
         }
     });
 
-    // @TODO
-    // if (props.name instanceof Array) {
-        // props.name.forEach(name => {
-        //     selector = (selector ? selector + ' ' : '') + `${module + componentGlue + name + modifiers}`
-        // });
-
-        // selector = selector + classes;
+    // if (namespace.indexOf(componentGlue > 0)) {
+    //     if (props.name instanceof Array) {
+    //         // @TODO
+    //     }
     // }
 
     if (multipleClasses) {
