@@ -1,7 +1,7 @@
 {
   "name": "@onenexus/lucid",
   "version": "1.0.0",
-  "description": "A set of higher-order React components for rendering Synergy modules",
+  "description": "A set of higher-order React components for rendering Synergy modules/BEM DOM elements",
   "main": "dist/lucid.js",
   "author": "(Edmund Reed)[http://twitter.com/esr360] <esr360@live.com>",
   "homepage": "https://github.com/One-Nexus/Lucid",
