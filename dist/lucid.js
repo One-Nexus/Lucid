@@ -501,24 +501,71 @@ function getModifiersFromProps(props) {
 /**
  * Generate CSS classes for a module
  */
-function generateClasses(props, classes, modifierGlue) {
-  // Get modules from props
+function generateClasses(_ref) {
+  var props = _ref.props,
+      namespace = _ref.namespace,
+      modifiers = _ref.modifiers,
+      classes = _ref.classes,
+      modifierGlue = _ref.modifierGlue,
+      componentGlue = _ref.componentGlue,
+      multipleClasses = _ref.multipleClasses;
+  var classNames = []; // Get modules from props
+
   Object.entries(props).forEach(function (prop) {
-    var firstLetter = prop[0][0];
+    var key = prop[0];
+    var value = prop[1];
+    var firstLetter = key[0];
 
     if (firstLetter === firstLetter.toUpperCase()) {
-      var module = prop[0].toLowerCase();
-      var modifiers = '';
+      var module = key.toLowerCase();
 
-      if (prop[1].constructor === Array) {
-        modifiers = modifierGlue + prop[1].join(modifierGlue);
-      } else if (typeof prop[1] === 'string') {
-        modifiers = modifierGlue + prop[1];
+      if (multipleClasses) {
+        classNames.push(module);
+
+        if (value.constructor === Array) {
+          value.forEach(function (modifier) {
+            classNames.push(module + modifierGlue + modifier);
+          });
+        } else if (typeof value === 'string') {
+          classNames.push(module + modifierGlue + value);
+        }
+      } else {
+        var propModifiers = '';
+
+        if (value.constructor === Array) {
+          propModifiers = modifierGlue + value.join(modifierGlue);
+        } else if (typeof value === 'string') {
+          propModifiers = modifierGlue + value;
+        }
+
+        classNames.push(module + propModifiers);
+      }
+    }
+  }); // if (namespace.indexOf(componentGlue > 0)) {
+  //     if (props.name instanceof Array) {
+  //         // @TODO
+  //     }
+  // }
+
+  if (multipleClasses) {
+    // @TODO refactor the whole thing because we are splitting
+    // what was originally unsplit to begin with
+    modifiers.split(modifierGlue).forEach(function (modifier) {
+      var className;
+
+      if (modifier) {
+        className = namespace + modifierGlue + modifier;
+      } else {
+        className = namespace;
       }
 
-      classes = classes + ' ' + module + modifiers;
-    }
-  });
+      classNames.push(className);
+    });
+  } else {
+    classNames.push(namespace + modifiers);
+  }
+
+  classes = classNames.join(' ') + (classes ? ' ' + classes : '');
   return classes;
 }
 // CONCATENATED MODULE: ./src/utilities/renderModifiers.js
@@ -660,8 +707,18 @@ function (_React$Component) {
     var propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CssClassProps), modifierGlue);
     var passedModifiers = renderModifiers(props.modifiers, modifierGlue);
     var modifiers = propModifiers + passedModifiers;
-    var classes = props.className ? ' ' + props.className : '';
+    var classes = props.className ? props.className : '';
     var styleParser = props.styleParser || Synergy.styleParser;
+    var multipleClasses = false;
+
+    if (typeof Synergy.multipleClasses !== 'undefined') {
+      multipleClasses = Synergy.multipleClasses;
+    }
+
+    if (typeof props.multipleClasses !== 'undefined') {
+      multipleClasses = props.multipleClasses;
+    }
+
     _this.config = props.config || {};
 
     if (window[props.name]) {
@@ -676,7 +733,15 @@ function (_React$Component) {
 
     _this.id = (props.before || props.after) && !props.id ? "synergy-module-".concat(increment) : props.id;
     _this.tag = props.tag || (html_tags_default.a.includes(_this.namespace) ? _this.namespace : 'div');
-    _this.classNames = generateClasses(props, _this.namespace + modifiers + classes, modifierGlue);
+    _this.classNames = generateClasses({
+      props: props,
+      namespace: _this.namespace,
+      modifiers: modifiers,
+      classes: classes,
+      modifierGlue: modifierGlue,
+      componentGlue: componentGlue,
+      multipleClasses: multipleClasses
+    });
     if (Synergy.CssClassProps) Synergy.CssClassProps.forEach(function (prop) {
       if (Object.keys(props).includes(prop)) {
         _this.classNames = _this.classNames + ' ' + prop;
@@ -687,6 +752,7 @@ function (_React$Component) {
       styleParser: styleParser,
       modifierGlue: modifierGlue,
       componentGlue: componentGlue,
+      multipleClasses: multipleClasses,
       module: _this.namespace,
       props: _this.props,
       config: _this.config
@@ -942,7 +1008,6 @@ function (_React$Component) {
       var getContextModifiers = getModifiersFromProps(context.props && context.props[props.name], Synergy.CssClassProps);
       var contextModifiers = renderModifiers(getContextModifiers, modifierGlue);
       var passedModifiers = renderModifiers(props.modifiers, modifierGlue);
-      var classes = generateClasses(props, props.className ? ' ' + props.className : '', modifierGlue);
       var modifiers = propModifiers + passedModifiers + contextModifiers;
       var eventHandlers = this.getEventHandlers([props, context.config[props.name] ? context.config[props.name] : {}]);
       var Tag = props.href && 'a' || props.component || props.tag || (html_tags_default.a.includes(props.name) ? props.name : 'div');
@@ -951,35 +1016,37 @@ function (_React$Component) {
         return refHandler(node, props, context.styleParser, false, context.ui);
       };
 
-      var selector = '';
-
-      if (props.name instanceof Array) {
-        props.name.forEach(function (name) {
-          return selector = (selector ? selector + ' ' : '') + "".concat(module + componentGlue + name + modifiers);
-        });
-        selector = selector + classes;
-      } else {
-        selector = "".concat(module + componentGlue + props.name + modifiers) + classes;
-      }
-
       var contextValues = {
         component: context.component
-      };
+      }; // if (props.name instanceof Array) {
+      //     @TODO
+      // }
+
+      var namespace;
 
       if (subComponent) {
         contextValues.subComponent = [].concat(component_toConsumableArray(context.subComponent || []), [props.name]);
         var subComponents = contextValues.subComponent.length ? contextValues.subComponent.join(componentGlue) : '';
-        var namespace = "".concat((context.component || props.name) + componentGlue + subComponents);
-        selector = "".concat(module + componentGlue + namespace + modifiers + classes);
+        namespace = "".concat(module + componentGlue + (context.component || props.name) + componentGlue + subComponents);
       } else {
         contextValues.component = props.name;
+        namespace = module + componentGlue + props.name;
       }
 
+      var classes = generateClasses({
+        props: props,
+        namespace: namespace,
+        modifiers: modifiers,
+        classes: props.className ? props.className : '',
+        modifierGlue: modifierGlue,
+        componentGlue: componentGlue,
+        multipleClasses: context.multipleClasses
+      });
       return external_react_default.a.createElement(ComponentContext.Provider, {
         value: contextValues
       }, external_react_default.a.createElement(Tag, component_extends({}, getHtmlProps(props), eventHandlers, {
         ref: ref,
-        className: selector,
+        className: classes,
         "data-component": props.name.constructor === Array ? props.name[0] : props.name
       }, this.props.componentProps), props.children));
     }
@@ -1010,12 +1077,24 @@ var component_SubComponent = function SubComponent(props) {
   }, props), props.children);
 };
 // CONCATENATED MODULE: ./src/index.js
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BEM", function() { return BEM; });
 /* concated harmony reexport Module */__webpack_require__.d(__webpack_exports__, "Module", function() { return module_Module; });
 /* concated harmony reexport Wrapper */__webpack_require__.d(__webpack_exports__, "Wrapper", function() { return module_Wrapper; });
 /* concated harmony reexport Group */__webpack_require__.d(__webpack_exports__, "Group", function() { return module_Group; });
 /* concated harmony reexport Component */__webpack_require__.d(__webpack_exports__, "Component", function() { return component_Component; });
 /* concated harmony reexport SubComponent */__webpack_require__.d(__webpack_exports__, "SubComponent", function() { return component_SubComponent; });
 
+
+var BEM = {
+  Block: module_Module,
+  Element: component_Component,
+  SubElement: component_SubComponent
+};
+/* harmony default export */ var src = __webpack_exports__["default"] = ({
+  Module: module_Module,
+  Component: component_Component,
+  SubComponent: component_SubComponent
+});
 
 
 /***/ })

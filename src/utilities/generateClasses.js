@@ -13,7 +13,10 @@ export default function generateClasses({
     let classNames = [];
 
     // Get modules from props
-    Object.entries(props).forEach(([key, value]) => {
+    Object.entries(props).forEach(prop => {
+        const key = prop[0];
+        const value = prop[1];
+
         const firstLetter = key[0];
 
         if (firstLetter === firstLetter.toUpperCase()) {
