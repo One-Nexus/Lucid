@@ -1,4 +1,6 @@
-> A set of higher-order React components for rendering Synergy modules
+[![Build Status](https://travis-ci.com/One-Nexus/Lucid.svg?branch=master)](https://travis-ci.com/One-Nexus/Lucid)
+
+> A set of higher-order React components for rendering Synergy modules/BEM DOM elements
 
 <img height="66px" src="http://www.onenexus.io/lucid/images/lucid-logo.png" /><br>
 
@@ -9,34 +11,48 @@
 ## Overview
 
 * Use for [presentational components](https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0)
-* Use for rendering [Synergy Modules](#TODO)
+* Use for rendering [Synergy Modules](https://github.com/One-Nexus/Synergy/wiki/About-Synergy)
 * Use for rendering [BEM DOM elements](https://github.com/One-Nexus/Lucid/wiki/Working-With-BEM)
-* Encourages [Functional Components](https://javascriptplayground.com/functional-stateless-components-react/) over Class Components
 * Adds new [properties and methods](https://github.com/One-Nexus/Lucid/wiki/Interactions#new-element-prototype-propertiesmethods) to Prototype of rendered DOM element
-* Naturally enforces a better architecture
+* Naturally enforces a better UI architecture
 
 ###### Example
 
+> This example uses [React hooks](https://reactjs.org/docs/hooks-overview.html#state-hook) for functionality
+
 ```jsx
-import React from 'react';
+import React, { useState }  from 'react';
 import { Module, Component } from '@onenexus/lucid';
 
-const Accordion = ({name = 'accordion', panels, modifiers}) => (
+const Accordion = ({ name = 'accordion', panels, modifiers }) => {
+  const [activePanel, setActivePanel] = useState(0);
+
+  return (
     <Module name={name} modifiers={modifiers}>
-        {panels.map(({title, content}, index) => (
-            <Component name="panel" key={index}>
-                <Component name="title">{title}</Component>
-                <Component name="content">{content}</Component>
+      {panels.map(({ title, content }, index) => {
+        const isActive = (activePanel === index);
+
+        return (
+          <Component name='panel' modifiers={[isActive ? 'active' : '']}>
+            <Component name='title' onClick={() => setActivePanel(index)}>
+              {title}
             </Component>
-        ))}
+
+            <Component name='content'>
+              {content}
+            </Component>
+          </Component>
+        )
+      })}
     </Module>
-);
+  )
+};
 
 const App = () => (
-    <Accordion modifiers={['foo', 'bar']} panels={[
-        {title: 'foo', content: 'bar'},
-        {title: 'fizz', content: 'buzz'},
-    ]} />, 
+  <Accordion modifiers={['foo', 'bar']} panels={[
+    { title: 'foo', content: 'bar' },
+    { title: 'fizz', content: 'buzz' }
+  ]} />
 );
 
 export default App;
@@ -46,22 +62,24 @@ export default App;
 
 ```html
 <div class="accordion-foo-bar">
-    <div class="accordion_panel">
-        <div class="accordion_title">foo</div>
-        <div class="accordion_content">bar</div>
-    </div>
-    <div class="accordion_panel">
-        <div class="accordion_title">fizz</div>
-        <div class="accordion_content">buzz</div>
-    </div>
+  <div class="accordion_panel-active">
+    <div class="accordion_title">foo</div>
+    <div class="accordion_content">bar</div>
+  </div>
+  <div class="accordion_panel">
+    <div class="accordion_title">fizz</div>
+    <div class="accordion_content">buzz</div>
+  </div>
 </div>
 ```
 
 ### Adding Interactions
 
-> See the [Interactions](Interactions) page to learn how to add interactions
+The above example uses React hoooks for interactive functionality. For a more comprehensive look into adding functioanality, see the [Interactions](Interactions) page.
 
 ## Installation/Setup
+
+> Using BEM? Checkout the [Working With BEM](https://github.com/One-Nexus/Lucid/wiki/Working-With-BEM) page
 
 ```
 npm install --save @onenexus/lucid
@@ -77,15 +95,17 @@ import { Module, Component } from '@onenexus/lucid';
 
 ```js
 import { 
-    Module, 
-    Group, 
-    Wrapper, 
-    Component,
-    SubComponent
+  Module, 
+  Group, 
+  Wrapper, 
+  Component,
+  SubComponent
 } from '@onenexus/lucid';
 ```
 
 > Tip: make `Module` and `Component` globally available so all your React components can easily utilise them
+
+> Using BEM? Checkout the [Working With BEM page](https://github.com/One-Nexus/Lucid/wiki/Working-With-BEM)
 
 ## API
 

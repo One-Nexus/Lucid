@@ -704,7 +704,7 @@ function (_React$Component) {
     var ui = props.ui || window.ui;
     var modifierGlue = props.modifierGlue || Synergy.modifierGlue || '-';
     var componentGlue = props.componentGlue || Synergy.componentGlue || '_';
-    var propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CssClassProps), modifierGlue);
+    var propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CSSClassProps), modifierGlue);
     var passedModifiers = renderModifiers(props.modifiers, modifierGlue);
     var modifiers = propModifiers + passedModifiers;
     var classes = props.className ? props.className : '';
@@ -742,7 +742,7 @@ function (_React$Component) {
       componentGlue: componentGlue,
       multipleClasses: multipleClasses
     });
-    if (Synergy.CssClassProps) Synergy.CssClassProps.forEach(function (prop) {
+    if (Synergy.CSSClassProps) Synergy.CSSClassProps.forEach(function (prop) {
       if (Object.keys(props).includes(prop)) {
         _this.classNames = _this.classNames + ' ' + prop;
       }
@@ -1004,8 +1004,8 @@ function (_React$Component) {
       var modifierGlue = context.modifierGlue,
           componentGlue = context.componentGlue;
       var module = props.module || context.module;
-      var propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CssClassProps), modifierGlue);
-      var getContextModifiers = getModifiersFromProps(context.props && context.props[props.name], Synergy.CssClassProps);
+      var propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CSSClassProps), modifierGlue);
+      var getContextModifiers = getModifiersFromProps(context.props && context.props[props.name], Synergy.CSSClassProps);
       var contextModifiers = renderModifiers(getContextModifiers, modifierGlue);
       var passedModifiers = renderModifiers(props.modifiers, modifierGlue);
       var modifiers = propModifiers + passedModifiers + contextModifiers;

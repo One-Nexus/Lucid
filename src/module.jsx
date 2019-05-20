@@ -39,7 +39,7 @@ export default class Module extends React.Component {
         const ui = props.ui || window.ui;
         const modifierGlue = props.modifierGlue || Synergy.modifierGlue || '-';
         const componentGlue = props.componentGlue || Synergy.componentGlue || '_';
-        const propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CssClassProps), modifierGlue);
+        const propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CSSClassProps), modifierGlue);
         const passedModifiers = renderModifiers(props.modifiers, modifierGlue);
         const modifiers = propModifiers + passedModifiers;
         const classes = props.className ? props.className : '';
@@ -76,7 +76,7 @@ export default class Module extends React.Component {
             multipleClasses
         });
 
-        if (Synergy.CssClassProps) Synergy.CssClassProps.forEach(prop => {
+        if (Synergy.CSSClassProps) Synergy.CSSClassProps.forEach(prop => {
             if (Object.keys(props).includes(prop)) {
                 this.classNames = this.classNames + ' ' + prop
             }

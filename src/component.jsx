@@ -36,8 +36,8 @@ export default class Component extends React.Component {
     renderTag(props, context, subComponent) {
         const { modifierGlue, componentGlue }  = context;
         const module = props.module || context.module;
-        const propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CssClassProps), modifierGlue);
-        const getContextModifiers = getModifiersFromProps(context.props && context.props[props.name], Synergy.CssClassProps);
+        const propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CSSClassProps), modifierGlue);
+        const getContextModifiers = getModifiersFromProps(context.props && context.props[props.name], Synergy.CSSClassProps);
         const contextModifiers = renderModifiers(getContextModifiers, modifierGlue);
         const passedModifiers = renderModifiers(props.modifiers, modifierGlue);
         const modifiers = propModifiers + passedModifiers + contextModifiers;
