@@ -102,12 +102,6 @@ module.exports = __webpack_require__(4);
 
 /***/ }),
 /* 2 */
-/***/ (function(module, exports) {
-
-module.exports = require("react-dom");
-
-/***/ }),
-/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -249,6 +243,12 @@ module.exports = {
   "wrap": "wrap"
 };
 
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports) {
+
+module.exports = require("react-dom");
 
 /***/ }),
 /* 4 */
@@ -425,15 +425,14 @@ var external_react_ = __webpack_require__(0);
 var external_react_default = /*#__PURE__*/__webpack_require__.n(external_react_);
 
 // EXTERNAL MODULE: external "react-dom"
-var external_react_dom_ = __webpack_require__(2);
-var external_react_dom_default = /*#__PURE__*/__webpack_require__.n(external_react_dom_);
+var external_react_dom_ = __webpack_require__(3);
 
 // EXTERNAL MODULE: ./node_modules/html-tags/index.js
 var html_tags = __webpack_require__(1);
 var html_tags_default = /*#__PURE__*/__webpack_require__.n(html_tags);
 
 // EXTERNAL MODULE: ./node_modules/html-attributes/lib/html-attributes.js
-var html_attributes = __webpack_require__(3);
+var html_attributes = __webpack_require__(2);
 var html_attributes_default = /*#__PURE__*/__webpack_require__.n(html_attributes);
 
 // CONCATENATED MODULE: ./src/utilities/getHtmlProps.js
@@ -600,9 +599,11 @@ function refHandler(node, props, styleParser, parentModule, ui, config) {
       isLastChild: node === node.parentNode.lastChild
     });
 
-    if (parentModule && window[props.name] && window[props.name].defaults) {
+    if (parentModule) {
       node.config = config;
     }
+
+    var NAMESPACE = props.name || config.name;
 
     if (styleParser) {
       if (props.styles) {
@@ -611,10 +612,8 @@ function refHandler(node, props, styleParser, parentModule, ui, config) {
         } else {
           styleParser(node, props.styles, config, ui);
         }
-      } else if (props.name && window[props.name]) {
-        if (window[props.name] && window[props.name].layout) {
-          styleParser(node, window[props.name].layout, config, ui);
-        }
+      } else if (window[NAMESPACE] && window[NAMESPACE].layout) {
+        styleParser(node, window[NAMESPACE].layout, config, ui);
       }
 
       Object.keys(props).forEach(function (prop) {
@@ -622,7 +621,7 @@ function refHandler(node, props, styleParser, parentModule, ui, config) {
 
         if (fistLetter === fistLetter.toUpperCase()) {
           if (window[prop] && window[prop].layout && window[prop].config) {
-            node.namespace = node.namespace || prop;
+            node.namespace = node.namespace || window[prop].config.name || prop;
             styleParser(node, window[prop].layout, window[prop].config, ui);
           }
         }
@@ -631,8 +630,8 @@ function refHandler(node, props, styleParser, parentModule, ui, config) {
 
     if (props.init) {
       props.init(node);
-    } else if (window[props.name] && window[props.name].init) {
-      window[props.name].init(node);
+    } else if (window[NAMESPACE] && window[NAMESPACE].init) {
+      window[NAMESPACE].init(node);
     }
   }
 }
@@ -671,14 +670,10 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 if (typeof process === 'undefined') window.process = {
   env: {}
 };
-/**
- * Used for generating unique module ID's
- */
+/** Used for generating unique module ID's */
 
 var increment = 1;
-/**
- * Create a context object
- */
+/** Create a context object */
 
 var ModuleContext = external_react_default.a.createContext();
 
@@ -709,26 +704,19 @@ function (_React$Component) {
     var modifiers = propModifiers + passedModifiers;
     var classes = props.className ? props.className : '';
     var styleParser = props.styleParser || Synergy.styleParser;
+    var config = props.config || {};
+
+    if (window[props.name] && window[props.name].config) {
+      config = Module.config(window[props.name].config, config);
+    }
+
     var multipleClasses = false;
-
-    if (typeof Synergy.multipleClasses !== 'undefined') {
-      multipleClasses = Synergy.multipleClasses;
-    }
-
-    if (typeof props.multipleClasses !== 'undefined') {
-      multipleClasses = props.multipleClasses;
-    }
-
-    _this.config = props.config || {};
-
-    if (window[props.name]) {
-      _this.config = Module.config(window[props.name].config, _this.config);
-    }
-
-    _this.namespace = _this.config.name || props.name;
+    if (typeof Synergy.multipleClasses !== 'undefined') multipleClasses = Synergy.multipleClasses;
+    if (typeof props.multipleClasses !== 'undefined') multipleClasses = props.multipleClasses;
+    _this.namespace = config.name || props.name;
 
     _this.ref = function (node) {
-      return refHandler(node, props, styleParser, true, ui, _this.config);
+      return refHandler(node, props, styleParser, true, ui, config);
     };
 
     _this.id = (props.before || props.after) && !props.id ? "synergy-module-".concat(increment) : props.id;
@@ -753,25 +741,14 @@ function (_React$Component) {
       modifierGlue: modifierGlue,
       componentGlue: componentGlue,
       multipleClasses: multipleClasses,
+      config: config,
       module: _this.namespace,
-      props: _this.props,
-      config: _this.config
+      props: _this.props
     };
     return _this;
   }
 
   _createClass(Module, [{
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      var _module = Synergy.modules ? Synergy.modules[this.namespace] : null;
-
-      if (_module && _module.methods) {
-        if (_module.methods.init) {
-          _module.methods.init(external_react_dom_default.a.findDOMNode(this), this.config);
-        }
-      }
-    }
-  }, {
     key: "getEventHandlers",
     value: function getEventHandlers(properties) {
       var eventHandlers = {};
@@ -1018,10 +995,7 @@ function (_React$Component) {
 
       var contextValues = {
         component: context.component
-      }; // if (props.name instanceof Array) {
-      //     @TODO
-      // }
-
+      };
       var namespace;
 
       if (subComponent) {

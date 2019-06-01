@@ -36,12 +36,10 @@ export default function() {
         module: {
             rules: [{
                 test: /\.(js|jsx)$/,
+                exclude: /node_modules/,
+                loader: 'babel-loader',
                 resolve: { 
                     extensions: ['.js', '.jsx'] 
-                },
-                exclude: /node_modules/,
-                use: {
-                    loader: 'babel-loader'
                 }
             }]
         },
@@ -49,10 +47,6 @@ export default function() {
         node: {
             process: false,
             Buffer: false
-        },
-
-        stats: { colors: true },
-
-        devtool: false
+        }
     }
 };

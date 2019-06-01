@@ -11,14 +11,10 @@ import refHandler from './utilities/refHandler';
 // spoof env process to assist bundle size
 if (typeof process === 'undefined') window.process = { env: {} };
 
-/**
- * Used for generating unique module ID's
- */
+/** Used for generating unique module ID's */
 let increment = 1;
 
-/**
- * Create a context object
- */
+/** Create a context object */
 const ModuleContext = React.createContext();
 
 export { ModuleContext };
@@ -45,24 +41,19 @@ export default class Module extends React.Component {
         const classes = props.className ? props.className : '';
         const styleParser = props.styleParser || Synergy.styleParser;
 
+        let config = props.config || {};
+
+        if (window[props.name] && window[props.name].config) {
+            config = Module.config(window[props.name].config, config);
+        }
+
         let multipleClasses = false;
 
-        if (typeof Synergy.multipleClasses !== 'undefined') {
-            multipleClasses = Synergy.multipleClasses;
-        }
+        if (typeof Synergy.multipleClasses !== 'undefined') multipleClasses = Synergy.multipleClasses;
+        if (typeof props.multipleClasses !== 'undefined') multipleClasses = props.multipleClasses;
 
-        if (typeof props.multipleClasses !== 'undefined') {
-            multipleClasses = props.multipleClasses;
-        }
-
-        this.config = props.config || {};
-
-        if (window[props.name]) {
-            this.config = Module.config(window[props.name].config, this.config);
-        }
-
-        this.namespace = this.config.name || props.name;
-        this.ref = node => refHandler(node, props, styleParser, true, ui, this.config);
+        this.namespace = config.name || props.name;
+        this.ref = node => refHandler(node, props, styleParser, true, ui, config);
         this.id = (props.before || props.after) && !props.id ? `synergy-module-${increment}` : props.id;
         this.tag = props.tag || (HTMLTags.includes(this.namespace) ? this.namespace : 'div');
 
@@ -88,19 +79,9 @@ export default class Module extends React.Component {
             modifierGlue,
             componentGlue,
             multipleClasses,
+            config,
             module: this.namespace,
             props: this.props,
-            config: this.config,
-        }
-    }
-
-    componentDidMount() {
-        const _module = Synergy.modules ? Synergy.modules[this.namespace] : null;
-
-        if (_module && _module.methods) {
-            if (_module.methods.init) {
-                _module.methods.init(ReactDOM.findDOMNode(this), this.config);
-            }
         }
     }
 

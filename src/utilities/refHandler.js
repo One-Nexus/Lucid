@@ -8,9 +8,11 @@ export default function refHandler(node, props, styleParser, parentModule, ui, c
             isLastChild : node === node.parentNode.lastChild
         });
 
-        if (parentModule && window[props.name] && window[props.name].defaults) {
+        if (parentModule) {
             node.config = config;
         }
+
+        const NAMESPACE = props.name || config.name;
 
         if (styleParser) {
             if (props.styles) {
@@ -22,10 +24,8 @@ export default function refHandler(node, props, styleParser, parentModule, ui, c
                 }
             }
 
-            else if (props.name && window[props.name]) {
-                if (window[props.name] && window[props.name].layout) {
-                    styleParser(node, window[props.name].layout, config, ui);
-                }
+            else if (window[NAMESPACE] && window[NAMESPACE].layout) {
+                styleParser(node, window[NAMESPACE].layout, config, ui);
             }
 
             Object.keys(props).forEach(prop => {
@@ -33,7 +33,7 @@ export default function refHandler(node, props, styleParser, parentModule, ui, c
 
                 if (fistLetter === fistLetter.toUpperCase()) {
                     if (window[prop] && window[prop].layout && window[prop].config) {
-                        node.namespace = node.namespace || prop;
+                        node.namespace = node.namespace || window[prop].config.name || prop;
 
                         styleParser(node, window[prop].layout, window[prop].config, ui);
                     }
@@ -45,8 +45,8 @@ export default function refHandler(node, props, styleParser, parentModule, ui, c
             props.init(node);
         } 
 
-        else if (window[props.name] && window[props.name].init) {
-            window[props.name].init(node);
+        else if (window[NAMESPACE] && window[NAMESPACE].init) {
+            window[NAMESPACE].init(node);
         }
     }
 }
