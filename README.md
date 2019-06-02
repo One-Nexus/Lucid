@@ -114,3 +114,12 @@ import {
 * [`<Group>`](Group)
 * [`<Component>`](Component)
 * [`<SubComponent>`](SubComponent)
+
+---
+
+<a href="https://twitter.com/ESR360">
+    <img src="http://edmundreed.com/assets/images/twitter.gif?v=1" width="250px" />
+</a>
+<a href="https://github.com/ESR360">
+    <img src="http://edmundreed.com/assets/images/github.gif?v=1" width="250px" />
+</a>
