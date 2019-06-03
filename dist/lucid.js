@@ -82,7 +82,7 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 3);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -93,15 +93,6 @@ module.exports = require("react");
 
 /***/ }),
 /* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-module.exports = __webpack_require__(4);
-
-
-/***/ }),
-/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -245,19 +236,7 @@ module.exports = {
 
 
 /***/ }),
-/* 3 */
-/***/ (function(module, exports) {
-
-module.exports = require("react-dom");
-
-/***/ }),
-/* 4 */
-/***/ (function(module) {
-
-module.exports = ["a","abbr","address","area","article","aside","audio","b","base","bdi","bdo","blockquote","body","br","button","canvas","caption","cite","code","col","colgroup","data","datalist","dd","del","details","dfn","dialog","div","dl","dt","em","embed","fieldset","figcaption","figure","footer","form","h1","h2","h3","h4","h5","h6","head","header","hgroup","hr","html","i","iframe","img","input","ins","kbd","keygen","label","legend","li","link","main","map","mark","math","menu","menuitem","meta","meter","nav","noscript","object","ol","optgroup","option","output","p","param","picture","pre","progress","q","rb","rp","rt","rtc","ruby","s","samp","script","section","select","slot","small","source","span","strong","style","sub","summary","sup","svg","table","tbody","td","template","textarea","tfoot","th","thead","time","title","tr","track","u","ul","var","video","wbr"];
-
-/***/ }),
-/* 5 */
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -414,7 +393,7 @@ var deepExtend = module.exports = function (/*obj_1, [obj_2], [obj_N]*/) {
 
 
 /***/ }),
-/* 6 */
+/* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -424,15 +403,8 @@ __webpack_require__.r(__webpack_exports__);
 var external_react_ = __webpack_require__(0);
 var external_react_default = /*#__PURE__*/__webpack_require__.n(external_react_);
 
-// EXTERNAL MODULE: external "react-dom"
-var external_react_dom_ = __webpack_require__(3);
-
-// EXTERNAL MODULE: ./node_modules/html-tags/index.js
-var html_tags = __webpack_require__(1);
-var html_tags_default = /*#__PURE__*/__webpack_require__.n(html_tags);
-
 // EXTERNAL MODULE: ./node_modules/html-attributes/lib/html-attributes.js
-var html_attributes = __webpack_require__(2);
+var html_attributes = __webpack_require__(1);
 var html_attributes_default = /*#__PURE__*/__webpack_require__.n(html_attributes);
 
 // CONCATENATED MODULE: ./src/utilities/getHtmlProps.js
@@ -663,8 +635,6 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 
 
-
-
  // spoof env process to assist bundle size
 
 if (typeof process === 'undefined') window.process = {
@@ -720,7 +690,7 @@ function (_React$Component) {
     };
 
     _this.id = (props.before || props.after) && !props.id ? "synergy-module-".concat(increment) : props.id;
-    _this.tag = props.tag || (html_tags_default.a.includes(_this.namespace) ? _this.namespace : 'div');
+    _this.tag = props.tag || 'div';
     _this.classNames = generateClasses({
       props: props,
       namespace: _this.namespace,
@@ -814,7 +784,7 @@ _defineProperty(module_Module, "config", function () {
 
     return (_Synergy2 = Synergy).config.apply(_Synergy2, [{}].concat(params));
   } else {
-    return __webpack_require__(5).apply(void 0, [{}].concat(params));
+    return __webpack_require__(2).apply(void 0, [{}].concat(params));
   }
 });
 
@@ -935,7 +905,6 @@ function component_setPrototypeOf(o, p) { component_setPrototypeOf = Object.setP
 
 
 
-
 var ComponentContext = external_react_default.a.createContext();
 /**
  * Render a Synergy component
@@ -987,7 +956,7 @@ function (_React$Component) {
       var passedModifiers = renderModifiers(props.modifiers, modifierGlue);
       var modifiers = propModifiers + passedModifiers + contextModifiers;
       var eventHandlers = this.getEventHandlers([props, context.config[props.name] ? context.config[props.name] : {}]);
-      var Tag = props.href && 'a' || props.component || props.tag || (html_tags_default.a.includes(props.name) ? props.name : 'div');
+      var Tag = props.href && 'a' || props.component || props.tag || 'div';
 
       var ref = function ref(node) {
         return refHandler(node, props, context.styleParser, false, context.ui);

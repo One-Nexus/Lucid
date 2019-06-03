@@ -1,5 +1,4 @@
 import React from 'react';
-import HTMLTags from 'html-tags';
 
 import getHtmlProps from './utilities/getHtmlProps';
 import getModifiersFromProps from './utilities/getModifiersFromProps';
@@ -42,7 +41,7 @@ export default class Component extends React.Component {
         const passedModifiers = renderModifiers(props.modifiers, modifierGlue);
         const modifiers = propModifiers + passedModifiers + contextModifiers;
         const eventHandlers = this.getEventHandlers([ props, context.config[props.name] ? context.config[props.name] : {} ]);
-        const Tag = (props.href && 'a') || props.component || props.tag || (HTMLTags.includes(props.name) ? props.name : 'div');
+        const Tag = (props.href && 'a') || props.component || props.tag || 'div';
         const ref = node => refHandler(node, props, context.styleParser, false, context.ui);
 
         const contextValues = {

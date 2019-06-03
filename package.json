@@ -26,7 +26,6 @@
   "dependencies": {
     "deep-extend": "^0.5.1",
     "html-attributes": "^1.1.0",
-    "html-tags": "^2.0.0",
     "react": "^16.7.0",
     "react-dom": "^16.7.0"
   },

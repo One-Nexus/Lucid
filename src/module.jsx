@@ -1,6 +1,4 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import HTMLTags from 'html-tags';
 
 import getHtmlProps from './utilities/getHtmlProps';
 import getModifiersFromProps from './utilities/getModifiersFromProps';
@@ -55,7 +53,7 @@ export default class Module extends React.Component {
         this.namespace = config.name || props.name;
         this.ref = node => refHandler(node, props, styleParser, true, ui, config);
         this.id = (props.before || props.after) && !props.id ? `synergy-module-${increment}` : props.id;
-        this.tag = props.tag || (HTMLTags.includes(this.namespace) ? this.namespace : 'div');
+        this.tag = props.tag || 'div';
 
         this.classNames = generateClasses({
             props, 
