@@ -570,41 +570,50 @@ function refHandler(node, props, styleParser, parentModule, ui, config) {
       isFirstChild: node === node.parentNode.firstChild,
       isLastChild: node === node.parentNode.lastChild
     });
+    var NAMESPACE = props.name || config.name;
 
     if (parentModule) {
       node.config = config;
-    }
 
-    var NAMESPACE = props.name || config.name;
-
-    if (styleParser) {
-      if (props.styles) {
-        if (props.styles.constructor === Array) {
-          styleParser.apply(void 0, [node].concat(_toConsumableArray(props.styles)));
-        } else {
-          styleParser(node, props.styles, config, ui);
+      if (styleParser) {
+        if (props.styles) {
+          if (props.styles.constructor === Array) {
+            styleParser.apply(void 0, [node].concat(_toConsumableArray(props.styles)));
+          } else {
+            styleParser(node, props.styles, config, ui);
+          }
+        } else if (window[NAMESPACE] && window[NAMESPACE].layout) {
+          styleParser(node, window[NAMESPACE].layout, config, ui);
         }
-      } else if (window[NAMESPACE] && window[NAMESPACE].layout) {
-        styleParser(node, window[NAMESPACE].layout, config, ui);
+
+        Object.keys(props).forEach(function (prop) {
+          var fistLetter = prop[0];
+
+          if (fistLetter === fistLetter.toUpperCase()) {
+            if (window[prop] && window[prop].layout && window[prop].config) {
+              node.namespace = node.namespace || window[prop].config.name || prop;
+              styleParser(node, window[prop].layout, window[prop].config, ui);
+            }
+          }
+        });
       }
 
-      Object.keys(props).forEach(function (prop) {
-        var fistLetter = prop[0];
-
-        if (fistLetter === fistLetter.toUpperCase()) {
-          if (window[prop] && window[prop].layout && window[prop].config) {
-            node.namespace = node.namespace || window[prop].config.name || prop;
-            styleParser(node, window[prop].layout, window[prop].config, ui);
-          }
-        }
-      });
+      if (props.init) {
+        props.init(node);
+      } else if (window[NAMESPACE] && window[NAMESPACE].init) {
+        window[NAMESPACE].init(node);
+      }
     }
 
-    if (props.init) {
-      props.init(node);
-    } else if (window[NAMESPACE] && window[NAMESPACE].init) {
-      window[NAMESPACE].init(node);
-    }
+    var observer = new MutationObserver(function () {
+      return node.repaint && node.repaint();
+    });
+    observer.observe(node, {
+      attributes: true,
+      attributeFilter: ['class'],
+      childList: false,
+      characterData: false
+    });
   }
 }
 // CONCATENATED MODULE: ./src/module.jsx
@@ -665,56 +674,15 @@ function (_React$Component) {
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(Module).call(this, props));
     increment++;
-    var Synergy = window.Synergy || {};
-    var ui = props.ui || window.ui;
-    var modifierGlue = props.modifierGlue || Synergy.modifierGlue || '-';
-    var componentGlue = props.componentGlue || Synergy.componentGlue || '_';
-    var propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CSSClassProps), modifierGlue);
-    var passedModifiers = renderModifiers(props.modifiers, modifierGlue);
-    var modifiers = propModifiers + passedModifiers;
-    var classes = props.className ? props.className : '';
-    var styleParser = props.styleParser || Synergy.styleParser;
-    var config = props.config || {};
+    _this.ui = props.ui || window.ui;
+    _this.REF = external_react_default.a.createRef();
+    _this.styleParser = props.styleParser || Synergy.styleParser;
+    _this.config = props.config || {};
 
     if (window[props.name] && window[props.name].config) {
-      config = Module.config(window[props.name].config, config);
+      _this.config = Module.config(window[props.name].config, _this.config);
     }
 
-    var multipleClasses = false;
-    if (typeof Synergy.multipleClasses !== 'undefined') multipleClasses = Synergy.multipleClasses;
-    if (typeof props.multipleClasses !== 'undefined') multipleClasses = props.multipleClasses;
-    _this.namespace = config.name || props.name;
-
-    _this.ref = function (node) {
-      return refHandler(node, props, styleParser, true, ui, config);
-    };
-
-    _this.id = (props.before || props.after) && !props.id ? "synergy-module-".concat(increment) : props.id;
-    _this.tag = props.tag || 'div';
-    _this.classNames = generateClasses({
-      props: props,
-      namespace: _this.namespace,
-      modifiers: modifiers,
-      classes: classes,
-      modifierGlue: modifierGlue,
-      componentGlue: componentGlue,
-      multipleClasses: multipleClasses
-    });
-    if (Synergy.CSSClassProps) Synergy.CSSClassProps.forEach(function (prop) {
-      if (Object.keys(props).includes(prop)) {
-        _this.classNames = _this.classNames + ' ' + prop;
-      }
-    });
-    _this.contextValue = {
-      ui: ui,
-      styleParser: styleParser,
-      modifierGlue: modifierGlue,
-      componentGlue: componentGlue,
-      multipleClasses: multipleClasses,
-      config: config,
-      module: _this.namespace,
-      props: _this.props
-    };
     return _this;
   }
 
@@ -747,21 +715,62 @@ function (_React$Component) {
       return dataAttributes;
     }
   }, {
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      refHandler(this.REF.current, this.props, this.styleParser, true, this.ui, this.config);
+    }
+  }, {
     key: "render",
     value: function render() {
-      var _this2 = this;
-
+      var Synergy = window.Synergy || {};
+      var props = this.props;
+      var modifierGlue = props.modifierGlue || Synergy.modifierGlue || '-';
+      var componentGlue = props.componentGlue || Synergy.componentGlue || '_';
+      var propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CSSClassProps), modifierGlue);
+      var passedModifiers = renderModifiers(props.modifiers, modifierGlue);
+      var modifiers = propModifiers + passedModifiers;
+      var classes = props.className ? props.className : '';
+      var multipleClasses = false;
+      if (typeof Synergy.multipleClasses !== 'undefined') multipleClasses = Synergy.multipleClasses;
+      if (typeof props.multipleClasses !== 'undefined') multipleClasses = props.multipleClasses;
+      var namespace = this.config.name || props.name;
+      var id = (props.before || props.after) && !props.id ? "synergy-module-".concat(increment) : props.id;
+      var Tag = props.tag || 'div';
+      var classNames = generateClasses({
+        props: props,
+        namespace: namespace,
+        modifiers: modifiers,
+        classes: classes,
+        modifierGlue: modifierGlue,
+        componentGlue: componentGlue,
+        multipleClasses: multipleClasses
+      });
+      if (Synergy.CSSClassProps) Synergy.CSSClassProps.forEach(function (prop) {
+        if (Object.keys(props).includes(prop)) {
+          classNames = classNames + ' ' + prop;
+        }
+      });
+      var contextValue = {
+        ui: this.ui,
+        styleParser: this.styleParser,
+        modifierGlue: modifierGlue,
+        componentGlue: componentGlue,
+        multipleClasses: multipleClasses,
+        config: this.config,
+        module: namespace,
+        props: props
+      };
       return external_react_default.a.createElement(ModuleContext.Provider, {
-        value: this.contextValue
-      }, this.props.before && this.props.before(function () {
-        return document.getElementById(_this2.id);
-      }), external_react_default.a.createElement(this.tag, _extends({
-        id: this.id,
-        className: this.classNames,
-        "data-module": this.namespace,
-        ref: this.ref
-      }, getHtmlProps(this.props), this.getDataAttributes(this.props), this.getEventHandlers(this.props), this.props.componentProps), this.props.children), this.props.after && this.props.after(function () {
-        return document.getElementById(_this2.id);
+        value: contextValue
+      }, props.before && props.before(function () {
+        return document.getElementById(id);
+      }), external_react_default.a.createElement(Tag, _extends({
+        id: id,
+        className: classNames,
+        "data-module": namespace,
+        ref: this.REF
+      }, getHtmlProps(props), this.getDataAttributes(props), this.getEventHandlers(props), props.componentProps), props.children), props.after && props.after(function () {
+        return document.getElementById(id);
       }));
     }
   }]);
@@ -812,24 +821,24 @@ function (_Module) {
   _inherits(Wrapper, _Module);
 
   function Wrapper(props) {
-    var _this3;
+    var _this2;
 
     _classCallCheck(this, Wrapper);
 
-    _this3 = _possibleConstructorReturn(this, _getPrototypeOf(Wrapper).call(this, props));
-    _this3.module = props.module;
-    _this3.namespace = props.name || 'wrapper';
+    _this2 = _possibleConstructorReturn(this, _getPrototypeOf(Wrapper).call(this, props));
+    _this2.module = props.module;
+    _this2.namespace = props.name || 'wrapper';
 
-    if (!_this3.module) {
+    if (!_this2.module) {
       if (props.children.length) {
-        _this3.module = props.children[0].type.name.toLowerCase();
+        _this2.module = props.children[0].type.name.toLowerCase();
       } else {
-        _this3.module = props.children.type.name.toLowerCase();
+        _this2.module = props.children.type.name.toLowerCase();
       }
     }
 
-    _this3.dynamicProps = _defineProperty({}, _this3.module, true);
-    return _this3;
+    _this2.dynamicProps = _defineProperty({}, _this2.module, true);
+    return _this2;
   }
 
   _createClass(Wrapper, [{
@@ -915,22 +924,26 @@ var component_Component =
 function (_React$Component) {
   component_inherits(Component, _React$Component);
 
-  function Component() {
+  function Component(props) {
+    var _this;
+
     component_classCallCheck(this, Component);
 
-    return component_possibleConstructorReturn(this, component_getPrototypeOf(Component).apply(this, arguments));
+    _this = component_possibleConstructorReturn(this, component_getPrototypeOf(Component).call(this, props));
+    _this.REF = external_react_default.a.createRef();
+    return _this;
   }
 
   component_createClass(Component, [{
     key: "getEventHandlers",
     value: function getEventHandlers(properties) {
-      var _this = this;
+      var _this2 = this;
 
       var handlers = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
       if (properties.constructor === Array) {
         properties.forEach(function (group) {
-          return _this.getEventHandlers(group, handlers);
+          return _this2.getEventHandlers(group, handlers);
         });
       } else for (var key in properties) {
         var value = properties[key];
@@ -945,6 +958,11 @@ function (_React$Component) {
       return handlers;
     }
   }, {
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      refHandler(this.REF.current, this.props);
+    }
+  }, {
     key: "renderTag",
     value: function renderTag(props, context, subComponent) {
       var modifierGlue = context.modifierGlue,
@@ -957,11 +975,6 @@ function (_React$Component) {
       var modifiers = propModifiers + passedModifiers + contextModifiers;
       var eventHandlers = this.getEventHandlers([props, context.config[props.name] ? context.config[props.name] : {}]);
       var Tag = props.href && 'a' || props.component || props.tag || 'div';
-
-      var ref = function ref(node) {
-        return refHandler(node, props, context.styleParser, false, context.ui);
-      };
-
       var contextValues = {
         component: context.component
       };
@@ -988,7 +1001,7 @@ function (_React$Component) {
       return external_react_default.a.createElement(ComponentContext.Provider, {
         value: contextValues
       }, external_react_default.a.createElement(Tag, component_extends({}, getHtmlProps(props), eventHandlers, {
-        ref: ref,
+        ref: this.REF,
         className: classes,
         "data-component": props.name.constructor === Array ? props.name[0] : props.name
       }, this.props.componentProps), props.children));
@@ -996,16 +1009,16 @@ function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      var _this2 = this;
+      var _this3 = this;
 
       return external_react_default.a.createElement(ModuleContext.Consumer, null, function (context) {
-        if (_this2.props.subComponent) {
+        if (_this3.props.subComponent) {
           return external_react_default.a.createElement(ComponentContext.Consumer, null, function (componentContext) {
-            return _this2.renderTag(_this2.props, _objectSpread({}, context, componentContext), true);
+            return _this3.renderTag(_this3.props, _objectSpread({}, context, componentContext), true);
           });
         }
 
-        return _this2.renderTag(_this2.props, context);
+        return _this3.renderTag(_this3.props, context);
       });
     }
   }]);

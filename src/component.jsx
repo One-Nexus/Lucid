@@ -14,6 +14,12 @@ const ComponentContext = React.createContext();
  * Render a Synergy component
  */
 export default class Component extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.REF = React.createRef();
+    }
+
     getEventHandlers(properties, handlers = {}) {
         if (properties.constructor === Array) {
             properties.forEach(group => this.getEventHandlers(group, handlers));
@@ -32,6 +38,10 @@ export default class Component extends React.Component {
         return handlers;
     }
 
+    componentDidMount() {
+        refHandler(this.REF.current, this.props);
+    }
+
     renderTag(props, context, subComponent) {
         const { modifierGlue, componentGlue }  = context;
         const module = props.module || context.module;
@@ -42,7 +52,6 @@ export default class Component extends React.Component {
         const modifiers = propModifiers + passedModifiers + contextModifiers;
         const eventHandlers = this.getEventHandlers([ props, context.config[props.name] ? context.config[props.name] : {} ]);
         const Tag = (props.href && 'a') || props.component || props.tag || 'div';
-        const ref = node => refHandler(node, props, context.styleParser, false, context.ui);
 
         const contextValues = {
             component: context.component
@@ -79,7 +88,7 @@ export default class Component extends React.Component {
                     {...getHtmlProps(props)}
                     {...eventHandlers}
 
-                    ref={ref}
+                    ref={this.REF}
                     className={classes}
                     data-component={props.name.constructor === Array ? props.name[0] : props.name}
 

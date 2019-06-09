@@ -28,58 +28,13 @@ export default class Module extends React.Component {
 
         increment++;
 
-        var Synergy = window.Synergy || {};
-
-        const ui = props.ui || window.ui;
-        const modifierGlue = props.modifierGlue || Synergy.modifierGlue || '-';
-        const componentGlue = props.componentGlue || Synergy.componentGlue || '_';
-        const propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CSSClassProps), modifierGlue);
-        const passedModifiers = renderModifiers(props.modifiers, modifierGlue);
-        const modifiers = propModifiers + passedModifiers;
-        const classes = props.className ? props.className : '';
-        const styleParser = props.styleParser || Synergy.styleParser;
-
-        let config = props.config || {};
+        this.ui = props.ui || window.ui;
+        this.REF = React.createRef();
+        this.styleParser = props.styleParser || Synergy.styleParser;
+        this.config = props.config || {};
 
         if (window[props.name] && window[props.name].config) {
-            config = Module.config(window[props.name].config, config);
-        }
-
-        let multipleClasses = false;
-
-        if (typeof Synergy.multipleClasses !== 'undefined') multipleClasses = Synergy.multipleClasses;
-        if (typeof props.multipleClasses !== 'undefined') multipleClasses = props.multipleClasses;
-
-        this.namespace = config.name || props.name;
-        this.ref = node => refHandler(node, props, styleParser, true, ui, config);
-        this.id = (props.before || props.after) && !props.id ? `synergy-module-${increment}` : props.id;
-        this.tag = props.tag || 'div';
-
-        this.classNames = generateClasses({
-            props, 
-            namespace: this.namespace,
-            modifiers,
-            classes,
-            modifierGlue,
-            componentGlue,
-            multipleClasses
-        });
-
-        if (Synergy.CSSClassProps) Synergy.CSSClassProps.forEach(prop => {
-            if (Object.keys(props).includes(prop)) {
-                this.classNames = this.classNames + ' ' + prop
-            }
-        });
-
-        this.contextValue = {
-            ui,
-            styleParser,
-            modifierGlue,
-            componentGlue,
-            multipleClasses,
-            config,
-            module: this.namespace,
-            props: this.props,
+            this.config = Module.config(window[props.name].config, this.config);
         }
     }
 
@@ -107,6 +62,10 @@ export default class Module extends React.Component {
         }
 
         return dataAttributes;
+    }
+
+    componentDidMount() {
+        refHandler(this.REF.current, this.props, this.styleParser, true, this.ui, this.config);
     }
 
     static config = (...params) => {
@@ -140,25 +99,72 @@ export default class Module extends React.Component {
     }
 
     render() {
+        var Synergy = window.Synergy || {};
+
+        const props = this.props;
+
+        const modifierGlue = props.modifierGlue || Synergy.modifierGlue || '-';
+        const componentGlue = props.componentGlue || Synergy.componentGlue || '_';
+        const propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CSSClassProps), modifierGlue);
+        const passedModifiers = renderModifiers(props.modifiers, modifierGlue);
+        const modifiers = propModifiers + passedModifiers;
+        const classes = props.className ? props.className : '';
+
+        let multipleClasses = false;
+
+        if (typeof Synergy.multipleClasses !== 'undefined') multipleClasses = Synergy.multipleClasses;
+        if (typeof props.multipleClasses !== 'undefined') multipleClasses = props.multipleClasses;
+
+        const namespace = this.config.name || props.name;
+        const id = (props.before || props.after) && !props.id ? `synergy-module-${increment}` : props.id;
+        const Tag = props.tag || 'div';
+
+        let classNames = generateClasses({
+            props, 
+            namespace: namespace,
+            modifiers,
+            classes,
+            modifierGlue,
+            componentGlue,
+            multipleClasses
+        });
+
+        if (Synergy.CSSClassProps) Synergy.CSSClassProps.forEach(prop => {
+            if (Object.keys(props).includes(prop)) {
+                classNames = classNames + ' ' + prop
+            }
+        });
+
+        const contextValue = {
+            ui: this.ui,
+            styleParser: this.styleParser,
+            modifierGlue,
+            componentGlue,
+            multipleClasses,
+            config: this.config,
+            module: namespace,
+            props
+        }
+    
         return (
-            <ModuleContext.Provider value={this.contextValue}>
-                { this.props.before && this.props.before(() => document.getElementById(this.id)) }
+            <ModuleContext.Provider value={contextValue}>
+                { props.before && props.before(() => document.getElementById(id)) }
 
-                <this.tag
-                    id={this.id}
-                    className={this.classNames}
-                    data-module={this.namespace}
-                    ref={this.ref}
+                <Tag
+                    id={id}
+                    className={classNames}
+                    data-module={namespace}
+                    ref={this.REF}
 
-                    {...getHtmlProps(this.props)}
-                    {...this.getDataAttributes(this.props)}
-                    {...this.getEventHandlers(this.props)}
-                    {...this.props.componentProps}
+                    {...getHtmlProps(props)}
+                    {...this.getDataAttributes(props)}
+                    {...this.getEventHandlers(props)}
+                    {...props.componentProps}
                 >
-                    {this.props.children}
-                </this.tag>
+                    {props.children}
+                </Tag>
 
-                { this.props.after && this.props.after(() => document.getElementById(this.id)) }
+                { props.after && props.after(() => document.getElementById(id)) }
             </ModuleContext.Provider>
         );
     }
