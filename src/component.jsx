@@ -42,6 +42,12 @@ export default class Component extends React.Component {
         refHandler(this.REF.current, this.props);
     }
 
+    componentDidUpdate() {
+        if (this.REF.current.repaint) {
+            this.REF.current.repaint();
+        }
+    }
+
     renderTag(props, context, subComponent) {
         const { modifierGlue, componentGlue }  = context;
         const module = props.module || context.module;

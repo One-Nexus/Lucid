@@ -47,13 +47,15 @@ export default function refHandler(node, props, styleParser, parentModule, ui, c
             }
         }
 
-        const observer = new MutationObserver(() => node.repaint && node.repaint());
+        // @NOTE: below currently replaced in favour of `componentDidMount`
+        //
+        // const observer = new MutationObserver(() => node.repaint && node.repaint());
 
-        observer.observe(node, {
-            attributes: true, 
-            attributeFilter: ['class'],
-            childList: false, 
-            characterData: false
-        });
+        // observer.observe(node, {
+        //     attributes: true, 
+        //     attributeFilter: ['class'],
+        //     childList: false, 
+        //     characterData: false
+        // });
     }
 }

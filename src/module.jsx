@@ -68,6 +68,12 @@ export default class Module extends React.Component {
         refHandler(this.REF.current, this.props, this.styleParser, true, this.ui, this.config);
     }
 
+    componentDidUpdate() {
+        if (this.REF.current.repaint) {
+            this.REF.current.repaint();
+        }
+    }
+
     static config = (...params) => {
         // `process` and `require` are exploited to help reduce bundle size
         if (process.env.SYNERGY) {
