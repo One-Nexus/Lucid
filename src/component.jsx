@@ -100,7 +100,7 @@ export default class Component extends React.Component {
 
                     {...this.props.componentProps}
                 >
-                    {props.children}
+                    {props.content || props.children}
                 </Tag>
             </ComponentContext.Provider>
         )

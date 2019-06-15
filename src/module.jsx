@@ -167,7 +167,7 @@ export default class Module extends React.Component {
                     {...this.getEventHandlers(props)}
                     {...props.componentProps}
                 >
-                    {props.children}
+                    {props.content || props.children}
                 </Tag>
 
                 { props.after && props.after(() => document.getElementById(id)) }

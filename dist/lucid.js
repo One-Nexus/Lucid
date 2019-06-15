@@ -603,17 +603,16 @@ function refHandler(node, props, styleParser, parentModule, ui, config) {
       } else if (window[NAMESPACE] && window[NAMESPACE].init) {
         window[NAMESPACE].init(node);
       }
-    }
+    } // @NOTE: below currently replaced in favour of `componentDidMount`
+    //
+    // const observer = new MutationObserver(() => node.repaint && node.repaint());
+    // observer.observe(node, {
+    //     attributes: true, 
+    //     attributeFilter: ['class'],
+    //     childList: false, 
+    //     characterData: false
+    // });
 
-    var observer = new MutationObserver(function () {
-      return node.repaint && node.repaint();
-    });
-    observer.observe(node, {
-      attributes: true,
-      attributeFilter: ['class'],
-      childList: false,
-      characterData: false
-    });
   }
 }
 // CONCATENATED MODULE: ./src/module.jsx
@@ -720,6 +719,13 @@ function (_React$Component) {
       refHandler(this.REF.current, this.props, this.styleParser, true, this.ui, this.config);
     }
   }, {
+    key: "componentDidUpdate",
+    value: function componentDidUpdate() {
+      if (this.REF.current.repaint) {
+        this.REF.current.repaint();
+      }
+    }
+  }, {
     key: "render",
     value: function render() {
       var Synergy = window.Synergy || {};
@@ -769,7 +775,7 @@ function (_React$Component) {
         className: classNames,
         "data-module": namespace,
         ref: this.REF
-      }, getHtmlProps(props), this.getDataAttributes(props), this.getEventHandlers(props), props.componentProps), props.children), props.after && props.after(function () {
+      }, getHtmlProps(props), this.getDataAttributes(props), this.getEventHandlers(props), props.componentProps), props.content || props.children), props.after && props.after(function () {
         return document.getElementById(id);
       }));
     }
@@ -963,6 +969,13 @@ function (_React$Component) {
       refHandler(this.REF.current, this.props);
     }
   }, {
+    key: "componentDidUpdate",
+    value: function componentDidUpdate() {
+      if (this.REF.current.repaint) {
+        this.REF.current.repaint();
+      }
+    }
+  }, {
     key: "renderTag",
     value: function renderTag(props, context, subComponent) {
       var modifierGlue = context.modifierGlue,
@@ -1004,7 +1017,7 @@ function (_React$Component) {
         ref: this.REF,
         className: classes,
         "data-component": props.name.constructor === Array ? props.name[0] : props.name
-      }, this.props.componentProps), props.children));
+      }, this.props.componentProps), props.content || props.children));
     }
   }, {
     key: "render",
