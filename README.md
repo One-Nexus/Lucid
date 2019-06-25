@@ -78,7 +78,7 @@ export default App;
 
 ### Adding Interactions
 
-The above example uses React hoooks for interactive functionality. For a more comprehensive look into adding functioanality, see the [Interactions](Interactions) page.
+The above example uses React hoooks for interactive functionality. For a more comprehensive look into adding functioanality, see the [Interactions](https://github.com/One-Nexus/Lucid/wiki/Interactions) page.
 
 ## Installation/Setup
 
@@ -112,11 +112,11 @@ import {
 
 ## API
 
-* [`<Module>`](Module)
-* [`<Wrapper>`](Wrapper)
-* [`<Group>`](Group)
-* [`<Component>`](Component)
-* [`<SubComponent>`](SubComponent)
+* [`<Module>`](https://github.com/One-Nexus/Lucid/wiki/Module)
+* [`<Wrapper>`](https://github.com/One-Nexus/Lucid/wiki/Wrapper)
+* [`<Group>`](https://github.com/One-Nexus/Lucid/wiki/Group)
+* [`<Component>`](https://github.com/One-Nexus/Lucid/wiki/Component)
+* [`<SubComponent>`](https://github.com/One-Nexus/Lucid/wiki/SubComponent)
 
 ---
 
