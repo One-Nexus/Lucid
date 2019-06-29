@@ -120,21 +120,6 @@ export default class Component extends React.Component {
                 }}
             </ModuleContext.Consumer>
         );
-        // return (
-        //     <ModuleContext.Consumer>
-        //         {(context) => {
-        //             return (
-        //                 <ComponentContext.Consumer>
-        //                     {(componentContext) => {
-        //                         return this.renderTag(
-        //                             this.props, { ...context, ...componentContext }, !!this.props.subComponent
-        //                         );
-        //                     }}
-        //                 </ComponentContext.Consumer>
-        //             );
-        //         }}
-        //     </ModuleContext.Consumer>
-        // )
     }
 }
 
