@@ -4,7 +4,8 @@ import getHtmlProps from './utilities/getHtmlProps';
 import getModifiersFromProps from './utilities/getModifiersFromProps';
 import generateClasses from './utilities/generateClasses';
 import renderModifiers from './utilities/renderModifiers';
-import refHandler from './utilities/refHandler';
+import handleMount from './utilities/handleMount';
+import handleUpdate from './utilities/handleUpdate';
 
 import { ModuleContext } from './module.jsx';
 
@@ -18,6 +19,7 @@ export default class Component extends React.Component {
         super(props);
 
         this.REF = React.createRef();
+        this.styleParser = props.styleParser || Synergy.styleParser;
     }
 
     getEventHandlers(properties, handlers = {}) {
@@ -39,7 +41,7 @@ export default class Component extends React.Component {
     }
 
     componentDidMount() {
-        refHandler(this.REF.current, this.props);
+        handleMount(this.REF.current, this.props, this.context, this.styleParser);
     }
 
     componentDidUpdate() {
@@ -60,8 +62,8 @@ export default class Component extends React.Component {
         const Tag = (props.href && 'a') || props.component || props.tag || 'div';
 
         const contextValues = {
-            component: context.component
-        };
+            ...context, props: { ...this.props, ...context.props }
+        }
 
         let namespace;
 
@@ -87,6 +89,8 @@ export default class Component extends React.Component {
             componentGlue,
             multipleClasses: context.multipleClasses
         });
+
+        handleUpdate(this.REF.current, props, contextValues.props);
     
         return (
             <ComponentContext.Provider value={contextValues}>
@@ -110,22 +114,22 @@ export default class Component extends React.Component {
         return (
             <ModuleContext.Consumer>
                 {(context) => {
-                    if (this.props.subComponent) {
-                        return (
-                            <ComponentContext.Consumer>
-                                {(componentContext) => {
-                                    return this.renderTag(this.props, { ...context, ...componentContext }, true)
-                                }}
-                            </ComponentContext.Consumer>
-                        )
-                    }
-
-                    return this.renderTag(this.props, context)
+                    return (
+                        <ComponentContext.Consumer>
+                            {(componentContext) => {
+                                return this.renderTag(
+                                    this.props, { ...context, ...componentContext }, !!this.props.subComponent
+                                );
+                            }}
+                        </ComponentContext.Consumer>
+                    );
                 }}
             </ModuleContext.Consumer>
         )
     }
 }
+
+Component.contextType = ComponentContext;
 
 export const SubComponent = props => (
     <Component subComponent={true} {...props}>{props.children}</Component>

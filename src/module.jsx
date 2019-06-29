@@ -4,7 +4,8 @@ import getHtmlProps from './utilities/getHtmlProps';
 import getModifiersFromProps from './utilities/getModifiersFromProps';
 import generateClasses from './utilities/generateClasses';
 import renderModifiers from './utilities/renderModifiers';
-import refHandler from './utilities/refHandler';
+import handleMount from './utilities/handleMount';
+import handleUpdate from './utilities/handleUpdate';
 
 // spoof env process to assist bundle size
 if (typeof process === 'undefined') window.process = { env: {} };
@@ -65,7 +66,7 @@ export default class Module extends React.Component {
     }
 
     componentDidMount() {
-        refHandler(this.REF.current, this.props, this.styleParser, true, this.ui, this.config);
+        handleMount(this.REF.current, this.props, this.context, this.styleParser, true, this.ui, this.config);
     }
 
     componentDidUpdate() {
@@ -151,6 +152,8 @@ export default class Module extends React.Component {
             module: namespace,
             props
         }
+
+        handleUpdate(this.REF.current, props, contextValue);
     
         return (
             <ModuleContext.Provider value={contextValue}>
@@ -175,6 +178,8 @@ export default class Module extends React.Component {
         );
     }
 }
+
+Module.contextType = ModuleContext;
 
 export class Wrapper extends Module {
     constructor(props) {
