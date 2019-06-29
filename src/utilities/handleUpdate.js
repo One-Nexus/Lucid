@@ -9,6 +9,6 @@ export default function handleUpdate(node, props, context = {}) {
         isFirstChild: node === node.parentNode.firstChild,
         isLastChild : node === node.parentNode.lastChild,
         state: props,
-        context: context
+        context: context.props
     });
 }

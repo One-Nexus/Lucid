@@ -45,6 +45,8 @@ export default class Component extends React.Component {
     }
 
     componentDidUpdate() {
+        handleUpdate(this.REF.current, this.props, this.context);
+
         if (this.REF.current.repaint) {
             this.REF.current.repaint();
         }
@@ -89,8 +91,6 @@ export default class Component extends React.Component {
             componentGlue,
             multipleClasses: context.multipleClasses
         });
-
-        handleUpdate(this.REF.current, props, contextValues.props);
     
         return (
             <ComponentContext.Provider value={contextValues}>
@@ -110,26 +110,33 @@ export default class Component extends React.Component {
         )
     }
 
+    static contextType = ComponentContext;
+
     render() {
         return (
             <ModuleContext.Consumer>
                 {(context) => {
-                    return (
-                        <ComponentContext.Consumer>
-                            {(componentContext) => {
-                                return this.renderTag(
-                                    this.props, { ...context, ...componentContext }, !!this.props.subComponent
-                                );
-                            }}
-                        </ComponentContext.Consumer>
-                    );
+                    return this.renderTag(this.props, { ...context, ...this.context }, !!this.props.subComponent);
                 }}
             </ModuleContext.Consumer>
-        )
+        );
+        // return (
+        //     <ModuleContext.Consumer>
+        //         {(context) => {
+        //             return (
+        //                 <ComponentContext.Consumer>
+        //                     {(componentContext) => {
+        //                         return this.renderTag(
+        //                             this.props, { ...context, ...componentContext }, !!this.props.subComponent
+        //                         );
+        //                     }}
+        //                 </ComponentContext.Consumer>
+        //             );
+        //         }}
+        //     </ModuleContext.Consumer>
+        // )
     }
 }
-
-Component.contextType = ComponentContext;
 
 export const SubComponent = props => (
     <Component subComponent={true} {...props}>{props.children}</Component>

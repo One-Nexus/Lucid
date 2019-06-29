@@ -7,7 +7,7 @@ export default function handleMount(node, props, context = {}, styleParser, pare
             isFirstChild: node === node.parentNode.firstChild,
             isLastChild : node === node.parentNode.lastChild,
             state: props,
-            context: context,
+            context: context.props,
             config: config
         });
 

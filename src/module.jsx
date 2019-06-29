@@ -70,10 +70,14 @@ export default class Module extends React.Component {
     }
 
     componentDidUpdate() {
+        handleUpdate(this.REF.current, this.props, this.context);
+
         if (this.REF.current.repaint) {
             this.REF.current.repaint();
         }
     }
+
+    static contextType = ModuleContext;
 
     static config = (...params) => {
         // `process` and `require` are exploited to help reduce bundle size
@@ -86,7 +90,7 @@ export default class Module extends React.Component {
         else {
             return require('deep-extend')({}, ...params);
         }
-    };
+    }
 
     static child = props => {
         const childProps = Object.assign({}, props);
@@ -142,7 +146,7 @@ export default class Module extends React.Component {
             }
         });
 
-        const contextValue = {
+        const contextValues = {
             ui: this.ui,
             styleParser: this.styleParser,
             modifierGlue,
@@ -152,11 +156,9 @@ export default class Module extends React.Component {
             module: namespace,
             props
         }
-
-        handleUpdate(this.REF.current, props, contextValue);
     
         return (
-            <ModuleContext.Provider value={contextValue}>
+            <ModuleContext.Provider value={contextValues}>
                 { props.before && props.before(() => document.getElementById(id)) }
 
                 <Tag
@@ -178,8 +180,6 @@ export default class Module extends React.Component {
         );
     }
 }
-
-Module.contextType = ModuleContext;
 
 export class Wrapper extends Module {
     constructor(props) {
