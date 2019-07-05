@@ -1,217 +1,215 @@
 import React from 'react';
-
-import getHtmlProps from './utilities/getHtmlProps';
 import getModifiersFromProps from './utilities/getModifiersFromProps';
-import generateClasses from './utilities/generateClasses';
-import renderModifiers from './utilities/renderModifiers';
-import handleMount from './utilities/handleMount';
-import handleUpdate from './utilities/handleUpdate';
+import Polymorph, { paint } from './react-polymorph';
 
-// spoof env process to assist bundle size
-if (typeof process === 'undefined') window.process = { env: {} };
+/** spoof env process to assist bundle size */
+if (typeof process === 'undefined') window.process = { env: {} }
 
 /** Used for generating unique module ID's */
 let increment = 1;
 
 /** Create a context object */
-const ModuleContext = React.createContext();
+const ModuleContext = React.createContext({});
+export { ModuleContext }
 
-export { ModuleContext };
-
-/**
- * Render a Synergy module
- *
- * @extends React.Component
- */
+/** Render a Synergy module */
 export default class Module extends React.Component {
-    constructor(props) {
-        super(props);
+  constructor(props) {
+    super(props);
 
-        increment++;
+    this.REF = React.createRef();
 
-        this.ui = props.ui || window.ui;
-        this.REF = React.createRef();
-        this.styleParser = props.styleParser || Synergy.styleParser;
-        this.config = props.config || {};
+    this.state = {
+      isHovered: false,
+      isFirstChild: true,
+      isLastChild: false
+    }
+  }
 
-        if (window[props.name] && window[props.name].config) {
-            this.config = Module.config(window[props.name].config, this.config);
+  handleMouseEnter() {
+    this.setState({
+      isHovered: true
+    });
+  }
+
+  handleMouseLeave() {
+    this.setState({
+      isHovered: false
+    });
+  }
+
+  getEventHandlers(properties) {
+    let eventHandlers = {};
+
+    for (let prop in properties) {
+      if (Object.keys(window).includes(prop.toLowerCase())) {
+        if (prop !== 'name') {
+          eventHandlers[prop] = properties[prop];
         }
+      }
     }
 
-    getEventHandlers(properties) {
-        let eventHandlers = {};
+    return eventHandlers;
+  }
 
-        for (let prop in properties) {
-            if (Object.keys(window).includes(prop.toLowerCase())) {
-                if (prop !== 'name') {
-                    eventHandlers[prop] = properties[prop];
-                }
-            }
-        }
+  getDataAttributes(properties) {
+    let dataAttributes = {};
 
-        return eventHandlers;
+    for (let prop in properties) {
+      if (prop.indexOf('data-') === 0) {
+        dataAttributes[prop] = properties[prop];
+      }
     }
 
-    getDataAttributes(properties) {
-        let dataAttributes = {};
+    return dataAttributes;
+  }
 
-        for (let prop in properties) {
-            if (prop.indexOf('data-') === 0) {
-                dataAttributes[prop] = properties[prop];
-            }
-        }
+  foo() {
+    return Polymorph(this.STYLES, {
+      theme: this.THEME,
+      config: this.CONFIG,
+      state: { ...this.state, ...this.props },
+      context: this.context
+    });
+  }
 
-        return dataAttributes;
+  componentDidMount() {
+    if (this.STYLES) {
+      paint(this.REF.current, this.STYLES, {
+        theme: this.THEME,
+        config: this.CONFIG,
+        state: { ...this.state, ...this.props },
+        context: this.context
+      });
+    }
+  }
+
+  componentDidUpdate() {
+    if (this.STYLES) {
+      paint(this.REF.current, this.STYLES, {
+        theme: this.THEME,
+        config: this.CONFIG,
+        state: { ...this.state, ...this.props },
+        context: this.context
+      });
+    }
+  }
+
+  static contextType = ModuleContext;
+
+  static config = (...params) => {
+    if (process.env.SYNERGY) {
+      return Synergy.config({}, ...params);
+    } 
+    else if (typeof Synergy !== 'undefined' && typeof Synergy.config === 'function') {
+      return Synergy.config({}, ...params);
+    } 
+    else {
+      return require('deep-extend')({}, ...params);
+    }
+  }
+
+  render() {
+    increment++;
+  
+    var Synergy = window.Synergy || {};
+
+    const { props } = this;
+
+    /** */
+    this.THEME = props.theme || window.theme;
+    this.CONFIG = props.config || {};
+    this.STYLES = props.styles;
+  
+    /** */
+    const MODIFIERGLUE = props.modifierGlue || Synergy.modifierGlue || '--';
+    const COMPONENTGLUE = props.componentGlue || Synergy.componentGlue || '__';
+    const ID = props.id || `module-${increment}`;
+    const NAMESPACE = this.CONFIG.name || props.name || ID;
+    const TAG = (props.href && 'a') || props.component || props.tag || 'div';
+
+    const REST = {
+      ...this.getDataAttributes(props),
+      ...this.getEventHandlers(props),
+
+      onMouseEnter: this.handleMouseEnter.bind(this),
+      onMouseLeave: this.handleMouseLeave.bind(this)
     }
 
-    componentDidMount() {
-        handleMount(this.REF.current, this.props, this.context, this.styleParser, true, this.ui, this.config);
+    /** */
+    let [CLASSES, MODIFIERS] = [props.className ? props.className + ' ' : '', []];
+
+    MODIFIERS.push(props.modifiers);
+    MODIFIERS.push(...getModifiersFromProps(props));
+    MODIFIERS = MODIFIERS.filter(Boolean);
+
+    const SELECTOR = NAMESPACE + (MODIFIERS.length && (MODIFIERGLUE + MODIFIERS.join(MODIFIERGLUE)));
+
+    CLASSES += SELECTOR;
+
+    /** */
+    const contextValues = {
+      THEME: this.THEME,
+      CONFIG: this.CONFIG,
+      STYLEPARSER: Polymorph,
+      PARENT: this.REF,
+  
+      MODIFIERGLUE, 
+      COMPONENTGLUE,
+
+      ...this.context,
+      ...this.state,
+      ...props,
+
+      STYLES: { ...this.context.STYLES, ...this.foo() },
+      NAMESPACE
     }
 
-    componentDidUpdate() {
-        handleUpdate(this.REF.current, this.props, this.context);
+    /** */
+    return (
+      <ModuleContext.Provider value={contextValues}>
+        { props.before && props.before(() => document.getElementById(id)) }
 
-        if (this.REF.current.repaint) {
-            this.REF.current.repaint();
-        }
-    }
+        <TAG id={ID} className={CLASSES} data-module={NAMESPACE} ref={this.REF} {...REST}>
+          {props.content || props.children}
+        </TAG>
 
-    static contextType = ModuleContext;
-
-    static config = (...params) => {
-        // `process` and `require` are exploited to help reduce bundle size
-        if (process.env.SYNERGY) {
-            return Synergy.config({}, ...params);
-        } 
-        else if (typeof Synergy !== 'undefined' && typeof Synergy.config === 'function') {
-            return Synergy.config({}, ...params);
-        } 
-        else {
-            return require('deep-extend')({}, ...params);
-        }
-    }
-
-    static child = props => {
-        const childProps = Object.assign({}, props);
-    
-        delete childProps.children;
-
-        let config = props.config || {};
-
-        if (window[props.name]) {
-            config = Module.config(window[props.name].config, config);
-        }
-
-        return React.Children.map(props.children, child => React.cloneElement(child, { 
-            context: childProps,
-            config: config
-        }));
-    }
-
-    render() {
-        var Synergy = window.Synergy || {};
-
-        const props = this.props;
-
-        const modifierGlue = props.modifierGlue || Synergy.modifierGlue || '-';
-        const componentGlue = props.componentGlue || Synergy.componentGlue || '_';
-        const propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CSSClassProps), modifierGlue);
-        const passedModifiers = renderModifiers(props.modifiers, modifierGlue);
-        const modifiers = propModifiers + passedModifiers;
-        const classes = props.className ? props.className : '';
-
-        let multipleClasses = false;
-
-        if (typeof Synergy.multipleClasses !== 'undefined') multipleClasses = Synergy.multipleClasses;
-        if (typeof props.multipleClasses !== 'undefined') multipleClasses = props.multipleClasses;
-
-        const namespace = this.config.name || props.name;
-        const id = (props.before || props.after) && !props.id ? `synergy-module-${increment}` : props.id;
-        const Tag = props.tag || 'div';
-
-        let classNames = generateClasses({
-            props, 
-            namespace: namespace,
-            modifiers,
-            classes,
-            modifierGlue,
-            componentGlue,
-            multipleClasses
-        });
-
-        if (Synergy.CSSClassProps) Synergy.CSSClassProps.forEach(prop => {
-            if (Object.keys(props).includes(prop)) {
-                classNames = classNames + ' ' + prop
-            }
-        });
-
-        const contextValues = {
-            ui: this.ui,
-            styleParser: this.styleParser,
-            modifierGlue,
-            componentGlue,
-            multipleClasses,
-            config: this.config,
-            module: namespace,
-            props
-        }
-    
-        return (
-            <ModuleContext.Provider value={contextValues}>
-                { props.before && props.before(() => document.getElementById(id)) }
-
-                <Tag
-                    id={id}
-                    className={classNames}
-                    data-module={namespace}
-                    ref={this.REF}
-
-                    {...getHtmlProps(props)}
-                    {...this.getDataAttributes(props)}
-                    {...this.getEventHandlers(props)}
-                    {...props.componentProps}
-                >
-                    {props.content || props.children}
-                </Tag>
-
-                { props.after && props.after(() => document.getElementById(id)) }
-            </ModuleContext.Provider>
-        );
-    }
+        { props.after && props.after(() => document.getElementById(id)) }
+      </ModuleContext.Provider>
+    );
+  }
 }
 
 export class Wrapper extends Module {
-    constructor(props) {
-        super(props);
+  render() {
+    let MODULE = this.props.module;
 
-        this.module = props.module;
-        this.namespace = props.name || 'wrapper';
+    const NAMESPACE = this.props.name || 'wrapper';
 
-        if (!this.module) {
-            if (props.children.length) {
-                this.module = props.children[0].type.name.toLowerCase();
-            } else {
-                this.module = props.children.type.name.toLowerCase();
-            }
-        }
-
-        this.dynamicProps = {
-            [this.module]: true
-        }
+    if (!MODULE) {
+      if (this.props.children.length) {
+        MODULE = this.props.children[0].type.name.toLowerCase();
+      } else {
+        MODULE = this.props.children.type.name.toLowerCase();
+      }
     }
 
-    render() {
-        return (
-            <Module name={this.namespace} {...this.dynamicProps} {...this.props}>{this.props.children}</Module>
-        )
+    const DYNAMICPROPS = {
+      [MODULE]: true
     }
+
+    return (
+      <Module name={NAMESPACE} {...DYNAMICPROPS} {...this.props}>
+        {this.props.children}
+      </Module>
+    );
+  }
 }
 
 export class Group extends Module {
-    render() {
-        return (
-            <Wrapper name='group' {...this.props}>{this.props.children}</Wrapper>
-        )
-    }
+  render() {
+    return (
+      <Wrapper name='group' {...this.props}>{this.props.children}</Wrapper>
+    );
+  }
 }

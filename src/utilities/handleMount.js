@@ -1,6 +1,4 @@
-/**
- * Handle the ref callback on the rendered React component
- */
+/** Handle the ref callback on the rendered React component */
 export default function handleMount(node, props, context = {}, styleParser, parentModule, ui, config) {
     if (node && node instanceof HTMLElement) {
         Object.assign(node, {
@@ -49,16 +47,5 @@ export default function handleMount(node, props, context = {}, styleParser, pare
                 window[NAMESPACE].init(node);
             }
         }
-
-        // @NOTE: below currently replaced in favour of `componentDidMount`
-        //
-        // const observer = new MutationObserver(() => node.repaint && node.repaint());
-
-        // observer.observe(node, {
-        //     attributes: true, 
-        //     attributeFilter: ['class'],
-        //     childList: false, 
-        //     characterData: false
-        // });
     }
 }

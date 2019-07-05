@@ -26,8 +26,9 @@
   "dependencies": {
     "deep-extend": "^0.5.1",
     "html-attributes": "^1.1.0",
-    "react": "^16.7.0",
-    "react-dom": "^16.7.0"
+    "react": "^16.8.0",
+    "react-dom": "^16.8.0",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "@babel/core": "^7.2.2",
