@@ -20,9 +20,7 @@ export default class Module extends React.Component {
     this.REF = React.createRef();
 
     this.state = {
-      isHovered: false,
-      isFirstChild: true,
-      isLastChild: false
+      isHovered: false
     }
   }
 
@@ -64,34 +62,38 @@ export default class Module extends React.Component {
     return dataAttributes;
   }
 
-  foo() {
-    return Polymorph(this.STYLES, {
+  stylesConfig() {
+    const node = this.REF.current;
+  
+    return {
       theme: this.THEME,
       config: this.CONFIG,
-      state: { ...this.state, ...this.props },
+      state: {
+        isFirstChild: node && node === node.parentNode.firstChild,
+        isLastChild : node && node === node.parentNode.lastChild,
+        previousSibling: node && node.previousSibling,
+        nextSibling: node && node.nextSibling,
+
+        ...this.state,
+        ...this.props
+      },
       context: this.context
-    });
+    }
+  }
+
+  contextStyles() {
+    return Polymorph(this.STYLES, this.stylesConfig());
   }
 
   componentDidMount() {
     if (this.STYLES) {
-      paint(this.REF.current, this.STYLES, {
-        theme: this.THEME,
-        config: this.CONFIG,
-        state: { ...this.state, ...this.props },
-        context: this.context
-      });
+      paint(this.REF.current, this.STYLES, this.stylesConfig());
     }
   }
 
   componentDidUpdate() {
     if (this.STYLES) {
-      paint(this.REF.current, this.STYLES, {
-        theme: this.THEME,
-        config: this.CONFIG,
-        state: { ...this.state, ...this.props },
-        context: this.context
-      });
+      paint(this.REF.current, this.STYLES, this.stylesConfig());
     }
   }
 
@@ -117,7 +119,7 @@ export default class Module extends React.Component {
     const { props } = this;
 
     /** */
-    this.THEME = props.theme || window.theme;
+    this.THEME = props.theme || window.theme || {};
     this.CONFIG = props.config || {};
     this.STYLES = props.styles;
   
@@ -161,7 +163,7 @@ export default class Module extends React.Component {
       ...this.state,
       ...props,
 
-      STYLES: { ...this.context.STYLES, ...this.foo() },
+      STYLES: { ...this.context.STYLES, ...this.contextStyles() },
       NAMESPACE
     }
 

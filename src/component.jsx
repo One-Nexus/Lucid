@@ -1,66 +1,43 @@
 import React from 'react';
-import { ModuleContext } from './module.jsx';
+import Module, { ModuleContext } from './module.jsx';
 import Polymorph, { paint } from './react-polymorph';
 
 /**
  * Render a Synergy component
  */
-export default class Component extends React.Component {
-  constructor(props) {
-    super(props);
+export default class Component extends Module {
+  stylesConfig() {
+    const node = this.REF.current;
+  
+    return {
+      theme: this.context.THEME,
+      config: this.context.CONFIG,
+      state: {
+        isFirstChild: node && node === node.parentNode.firstChild,
+        isLastChild : node && node === node.parentNode.lastChild,
+        previousSibling: node && node.previousSibling,
+        nextSibling: node && node.nextSibling,
 
-    this.REF = React.createRef();
-
-    this.state = {
-      isHovered: false,
-      isFirstChild: true,
-      isLastChild: false
+        ...this.state, 
+        ...this.props 
+      },
+      context: this.context
     }
   }
 
-  handleMouseEnter() {
-    this.setState({
-      isHovered: true
-    });
+  contextStyles() {
+    return Polymorph(this.context.STYLES[this.props.name], this.stylesConfig());
   }
-
-  handleMouseLeave() {
-    this.setState({
-      isHovered: false
-    });
-  }
-  
-  foo() {
-    return Polymorph(this.context.STYLES[this.props.name], {
-      theme: this.THEME,
-      config: this.CONFIG,
-      state: { ...this.state, ...this.props },
-      context: this.context
-    });
-  }
-
-  getEventHandlers(properties) {}
 
   componentDidMount() {
     if (this.context.STYLES) {
-      paint(this.REF.current, this.context.STYLES[this.props.name], {
-        theme: this.context.THEME,
-        config: this.context.CONFIG,
-        state: { ...this.state, ...this.props },
-        context: this.context
-      });
+      paint(this.REF.current, this.context.STYLES[this.props.name], this.stylesConfig());
     }
   }
 
   componentDidUpdate() {
-    console.log(this.REF.current)
     if (this.context.STYLES) {
-      paint(this.REF.current, this.context.STYLES[this.props.name], {
-        theme: this.context.THEME,
-        config: this.context.CONFIG,
-        state: { ...this.state, ...this.props },
-        context: this.context
-      });
+      paint(this.REF.current, this.context.STYLES[this.props.name], this.stylesConfig());
     }
   }
 
@@ -82,7 +59,7 @@ export default class Component extends React.Component {
       ...this.context, 
       ...props,
 
-      STYLES: { ...this.context.STYLES, ...this.foo() }
+      STYLES: { ...this.context.STYLES, ...this.contextStyles() }
     }
 
     return (
