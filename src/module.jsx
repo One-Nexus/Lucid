@@ -62,12 +62,12 @@ export default class Module extends React.Component {
     return dataAttributes;
   }
 
-  stylesConfig() {
+  stylesConfig(theme = this.THEME, config = this.CONFIG) {
     const node = this.REF.current;
   
     return {
-      theme: this.THEME,
-      config: this.CONFIG,
+      theme,
+      config,
       state: {
         isFirstChild: node && node === node.parentNode.firstChild,
         isLastChild : node && node === node.parentNode.lastChild,
@@ -94,20 +94,6 @@ export default class Module extends React.Component {
   componentDidUpdate() {
     if (this.STYLES) {
       paint(this.REF.current, this.STYLES, this.stylesConfig());
-    }
-  }
-
-  static contextType = ModuleContext;
-
-  static config = (...params) => {
-    if (process.env.SYNERGY) {
-      return Synergy.config({}, ...params);
-    } 
-    else if (typeof Synergy !== 'undefined' && typeof Synergy.config === 'function') {
-      return Synergy.config({}, ...params);
-    } 
-    else {
-      return require('deep-extend')({}, ...params);
     }
   }
 
@@ -179,6 +165,20 @@ export default class Module extends React.Component {
         { props.after && props.after(() => document.getElementById(id)) }
       </ModuleContext.Provider>
     );
+  }
+
+  static contextType = ModuleContext;
+
+  static config = (...params) => {
+    if (process.env.SYNERGY) {
+      return Synergy.config({}, ...params);
+    } 
+    else if (typeof Synergy !== 'undefined' && typeof Synergy.config === 'function') {
+      return Synergy.config({}, ...params);
+    } 
+    else {
+      return require('deep-extend')({}, ...params);
+    }
   }
 }
 

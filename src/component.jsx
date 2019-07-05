@@ -6,25 +6,6 @@ import Polymorph, { paint } from './react-polymorph';
  * Render a Synergy component
  */
 export default class Component extends Module {
-  stylesConfig() {
-    const node = this.REF.current;
-  
-    return {
-      theme: this.context.THEME,
-      config: this.context.CONFIG,
-      state: {
-        isFirstChild: node && node === node.parentNode.firstChild,
-        isLastChild : node && node === node.parentNode.lastChild,
-        previousSibling: node && node.previousSibling,
-        nextSibling: node && node.nextSibling,
-
-        ...this.state, 
-        ...this.props 
-      },
-      context: this.context
-    }
-  }
-
   contextStyles() {
     return Polymorph(this.context.STYLES[this.props.name], this.stylesConfig());
   }
@@ -40,8 +21,6 @@ export default class Component extends Module {
       paint(this.REF.current, this.context.STYLES[this.props.name], this.stylesConfig());
     }
   }
-
-  static contextType = ModuleContext;
 
   render() {
     const { props } = this;
@@ -70,6 +49,8 @@ export default class Component extends Module {
       </ModuleContext.Provider>
     );
   }
+
+  static contextType = ModuleContext;
 }
 
 export const SubComponent = props => (
