@@ -3,7 +3,7 @@
 [![npm version](https://badge.fury.io/js/%40onenexus%2Flucid.svg)](https://www.npmjs.com/package/@onenexus/lucid)
 [![npm downloads](https://img.shields.io/npm/dm/@onenexus/lucid.svg)](https://www.npmjs.com/package/@onenexus/lucid)
 
-> No nonsense JavaScript styling for React DOM projects based off state and context
+> No nonsense JavaScript styling for React DOM projects
 
 <img height="66px" src="http://www.onenexus.io/lucid/images/lucid-logo.png" /><br>
 
@@ -13,6 +13,8 @@
 
 ## Overview
 
+Checkout this example to see how Lucid can be used to create a simple UI accordion:
+
 ```jsx
 import React, { useState } from 'react';
 import { Module, Component } from '@onenexus/lucid';
@@ -21,17 +23,22 @@ const styles = () => ({
   heading: ({ context, state }) => ({
     backgroundColor: 'red',
     
-    ...(context.isOpen && {
+    ...(context.panel.isOpen && {
       backgroundColor: 'blue'
     }),
     
-    ...(state.isHovered && {
-      backgroundColor: 'blue'
+    ':hover': {
+      backgroundColor: 'purple'
     }),
+
+    // ...or alternatively:
+    ...(state.isHovered && {
+      backgroundColor: 'purple'
+    })
   }),
 
   content: ({ context }) => ({
-    display: context.isOpen ? 'block' : 'none'
+    display: context.panel.isOpen ? 'block' : 'none'
   })
 });
 
@@ -62,11 +69,21 @@ export default Accordion;
 * Most friendly CSS-in-JS API on the market
 * Built to prioritise DX
 * It's just JavaScript; no nonsense CSS selectors as object keys etc.
-* Improve the readability of your code
-* Low barrier to entry - if you know React OR Sass, you can easily pick this up
+* No CSS classes or `className` props required
+* Improve the readability of your source code
+* Improve the readability of your production code (no garbled unreadable code, because why not?)
+* Low barrier to entry - if you know React you can easily pick this up
 * Based off state and context - not only the most fiendly API but the most flexible
 * Inherent flexible nature supports themes, configuration etc without dedicated APIs (though they are provided for DX purposes)
 * Automagically identify cosmetic style properties from configuration/state/props
+
+### How it Works
+
+* Utilises React's context API under the hood
+* Singular styles object (or function that returns an object) passed to `<Module>`
+* Styles are mapped to components by matching keys with `<Component>` `name` props
+* Parent props are available as `context`, self props are available as `state`
+* Simulate *cascading* by [taking advantage of ES6 syntax](https://medium.com/james-hill/object-literal-conditional-properties-4d9312b7741e)
 
 ## Installation/Setup
 
