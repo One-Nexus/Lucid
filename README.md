@@ -3,7 +3,7 @@
 [![npm version](https://badge.fury.io/js/%40onenexus%2Flucid.svg)](https://www.npmjs.com/package/@onenexus/lucid)
 [![npm downloads](https://img.shields.io/npm/dm/@onenexus/lucid.svg)](https://www.npmjs.com/package/@onenexus/lucid)
 
-> A set of higher-order React components for rendering Synergy modules/BEM DOM elements
+> No nonsense JavaScript styling for React DOM projects based off state and context
 
 <img height="66px" src="http://www.onenexus.io/lucid/images/lucid-logo.png" /><br>
 
@@ -13,72 +13,60 @@
 
 ## Overview
 
-* Use for [presentational components](https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0)
-* Use for rendering [Synergy Modules](https://github.com/One-Nexus/Synergy/wiki/About-Synergy)
-* Use for rendering [BEM DOM elements](https://github.com/One-Nexus/Lucid/wiki/Working-With-BEM)
-* Adds new [properties and methods](https://github.com/One-Nexus/Lucid/wiki/Interactions#new-element-prototype-propertiesmethods) to Prototype of rendered DOM element
-* Naturally enforces a better UI architecture
-
-###### Example
-
-> This example uses [React hooks](https://reactjs.org/docs/hooks-overview.html#state-hook) for functionality
-
 ```jsx
-import React, { useState }  from 'react';
+import React, { useState } from 'react';
 import { Module, Component } from '@onenexus/lucid';
 
-const Accordion = ({ name = 'accordion', panels, modifiers }) => {
-  const [activePanel, setActivePanel] = useState(0);
+const styles = () => ({
+  heading: ({ context, state }) => ({
+    backgroundColor: 'red',
+    
+    ...(context.isOpen && {
+      backgroundColor: 'blue'
+    }),
+    
+    ...(state.isHovered && {
+      backgroundColor: 'blue'
+    }),
+  }),
 
-  return (
-    <Module name={name} modifiers={modifiers}>
-      {panels.map(({ title, content }, index) => {
-        const isActive = (activePanel === index);
+  content: ({ context }) => ({
+    display: context.isOpen ? 'block' : 'none'
+  })
+});
 
-        return (
-          <Component name='panel' modifiers={[isActive ? 'active' : '']}>
-            <Component name='title' onClick={() => setActivePanel(index)}>
-              {title}
-            </Component>
+const Accordion = ({ panels }) => (
+  <Module styles={styles}>
+    {panels.map(({ heading, content }) => {
+      const [isOpen, toggle] = useState(false);
 
-            <Component name='content'>
-              {content}
-            </Component>
+      return (
+        <Component name='panel' isOpen={isOpen}>
+          <Component name='heading' onClick={() => toggle(!isOpen)}>
+            {heading}
           </Component>
-        )
-      })}
-    </Module>
-  )
-};
-
-const App = () => (
-  <Accordion modifiers={['foo', 'bar']} panels={[
-    { title: 'foo', content: 'bar' },
-    { title: 'fizz', content: 'buzz' }
-  ]} />
+          <Component name='content'>
+            {content}
+          </Component>
+        </Component>
+      );
+    })}
+  </Module>
 );
 
-export default App;
+export default Accordion;
 ```
 
-###### App Render output
+### Features
 
-```html
-<div class="accordion-foo-bar">
-  <div class="accordion_panel-active">
-    <div class="accordion_title">foo</div>
-    <div class="accordion_content">bar</div>
-  </div>
-  <div class="accordion_panel">
-    <div class="accordion_title">fizz</div>
-    <div class="accordion_content">buzz</div>
-  </div>
-</div>
-```
-
-### Adding Interactions
-
-The above example uses React hoooks for interactive functionality. For a more comprehensive look into adding functioanality, see the [Interactions](https://github.com/One-Nexus/Lucid/wiki/Interactions) page.
+* Most friendly CSS-in-JS API on the market
+* Built to prioritise DX
+* It's just JavaScript; no nonsense CSS selectors as object keys etc.
+* Improve the readability of your code
+* Low barrier to entry - if you know React OR Sass, you can easily pick this up
+* Based off state and context - not only the most fiendly API but the most flexible
+* Inherent flexible nature supports themes, configuration etc without dedicated APIs (though they are provided for DX purposes)
+* Automagically identify cosmetic style properties from configuration/state/props
 
 ## Installation/Setup
 
@@ -98,31 +86,27 @@ import { Module, Component } from '@onenexus/lucid';
 
 ```js
 import { 
-  Module, 
-  Group, 
-  Wrapper, 
+  Module,
   Component,
-  SubComponent
+  SubComponent,
+  Group,
+  Wrapper
 } from '@onenexus/lucid';
 ```
-
-> Tip: make `Module` and `Component` globally available so all your React components can easily utilise them
-
-> Using BEM? Checkout the [Working With BEM page](https://github.com/One-Nexus/Lucid/wiki/Working-With-BEM)
 
 ## API
 
 * [`<Module>`](https://github.com/One-Nexus/Lucid/wiki/Module)
-* [`<Wrapper>`](https://github.com/One-Nexus/Lucid/wiki/Wrapper)
-* [`<Group>`](https://github.com/One-Nexus/Lucid/wiki/Group)
 * [`<Component>`](https://github.com/One-Nexus/Lucid/wiki/Component)
 * [`<SubComponent>`](https://github.com/One-Nexus/Lucid/wiki/SubComponent)
+* [`<Wrapper>`](https://github.com/One-Nexus/Lucid/wiki/Wrapper)
+* [`<Group>`](https://github.com/One-Nexus/Lucid/wiki/Group)
 
 ---
 
 <a href="https://twitter.com/ESR360">
-    <img src="http://edmundreed.com/assets/images/twitter.gif?v=1" width="250px" />
+  <img src="http://edmundreed.com/assets/images/twitter.gif?v=1" width="250px" />
 </a>
 <a href="https://github.com/ESR360">
-    <img src="http://edmundreed.com/assets/images/github.gif?v=1" width="250px" />
+  <img src="http://edmundreed.com/assets/images/github.gif?v=1" width="250px" />
 </a>

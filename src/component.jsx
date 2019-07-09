@@ -1,6 +1,5 @@
 import React from 'react';
 import Module, { ModuleContext } from './module.jsx';
-import Polymorph, { paint } from './react-polymorph';
 
 /**
  * Render a Synergy component
@@ -8,13 +7,13 @@ import Polymorph, { paint } from './react-polymorph';
 export default class Component extends Module {
   componentDidMount() {
     if (this.context.STYLES) {
-      paint(this.REF.current, this.context.STYLES[this.props.name], this.stylesConfig());
+      this.paint(this.REF.current, this.context.STYLES[this.props.name], this.stylesConfig());
     }
   }
 
   componentDidUpdate() {
     if (this.context.STYLES) {
-      paint(this.REF.current, this.context.STYLES[this.props.name], this.stylesConfig());
+      this.paint(this.REF.current, this.context.STYLES[this.props.name], this.stylesConfig());
     }
   }
 
@@ -32,6 +31,8 @@ export default class Component extends Module {
 
     const contextValues = { 
       ...this.context,
+      ...this.state,
+      ...props,
 
       [props.name]: {
         ...this.state,
@@ -40,7 +41,7 @@ export default class Component extends Module {
 
       STYLES: { 
         ...this.context.STYLES, 
-        ...Polymorph(this.context.STYLES[this.props.name], this.stylesConfig())
+        ...this.getStyles(this.context.STYLES[props.name], this.stylesConfig())
       }
     }
 

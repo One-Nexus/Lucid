@@ -1,6 +1,5 @@
 import React from 'react';
 import getModifiersFromProps from './utilities/getModifiersFromProps';
-import Polymorph, { paint } from './react-polymorph';
 
 /** spoof env process to assist bundle size */
 if (typeof process === 'undefined') window.process = { env: {} }
@@ -24,13 +23,17 @@ export default class Module extends React.Component {
     }
   }
 
-  handleMouseEnter() {
+  handleMouseEnter(event) {
+    this.props.onMouseEnter && this.props.onMouseEnter(event);
+
     this.setState({
       isHovered: true
     });
   }
 
-  handleMouseLeave() {
+  handleMouseLeave(event) {
+    this.props.onMouseLeave && this.props.onMouseLeave(event);
+
     this.setState({
       isHovered: false
     });
@@ -62,6 +65,14 @@ export default class Module extends React.Component {
     return dataAttributes;
   }
 
+  getStyles(styles = {}, options) {
+    if (typeof styles === 'function') {
+      styles = styles(options);
+    }
+  
+    return styles;
+  }
+
   stylesConfig(theme = this.THEME, config = this.CONFIG) {
     const node = this.REF.current;
   
@@ -81,15 +92,31 @@ export default class Module extends React.Component {
     }
   }
 
+  paint(node, styles = {}, options) {
+    if (typeof styles === 'function') {
+      styles = styles(options);
+    }
+  
+    Object.entries(styles).forEach(([key, value]) => {
+      try {
+        node.style[key] = value;
+      } catch(error) {
+        return error;
+      }
+    });
+  }
+
+  /** Lifecycle Methods */
+
   componentDidMount() {
     if (this.STYLES) {
-      paint(this.REF.current, this.STYLES, this.stylesConfig());
+      this.paint(this.REF.current, this.STYLES, this.stylesConfig());
     }
   }
 
   componentDidUpdate() {
     if (this.STYLES) {
-      paint(this.REF.current, this.STYLES, this.stylesConfig());
+      this.paint(this.REF.current, this.STYLES, this.stylesConfig());
     }
   }
 
@@ -135,13 +162,14 @@ export default class Module extends React.Component {
     const contextValues = {
       THEME: this.THEME,
       CONFIG: this.CONFIG,
-      STYLEPARSER: Polymorph,
       PARENT: this.REF,
   
       MODIFIERGLUE, 
       COMPONENTGLUE,
 
       ...this.context,
+      ...this.state,
+      ...props,
 
       [NAMESPACE]: {
         ...this.state,
@@ -150,7 +178,7 @@ export default class Module extends React.Component {
 
       STYLES: { 
         ...this.context.STYLES, 
-        ...Polymorph(this.STYLES, this.stylesConfig())
+        ...this.getStyles(this.STYLES, this.stylesConfig())
       },
 
       NAMESPACE
@@ -169,6 +197,8 @@ export default class Module extends React.Component {
       </ModuleContext.Provider>
     );
   }
+
+  /** Static Methods/Properties */
 
   static contextType = ModuleContext;
 
