@@ -70,7 +70,7 @@ export default class Module extends React.Component {
       config,
       state: {
         isFirstChild: node && node === node.parentNode.firstChild,
-        isLastChild : node && node === node.parentNode.lastChild,
+        isLastChild: node && node === node.parentNode.lastChild,
         previousSibling: node && node.previousSibling,
         nextSibling: node && node.nextSibling,
 
@@ -79,10 +79,6 @@ export default class Module extends React.Component {
       },
       context: this.context
     }
-  }
-
-  contextStyles() {
-    return Polymorph(this.STYLES, this.stylesConfig());
   }
 
   componentDidMount() {
@@ -146,23 +142,30 @@ export default class Module extends React.Component {
       COMPONENTGLUE,
 
       ...this.context,
-      ...this.state,
-      ...props,
 
-      STYLES: { ...this.context.STYLES, ...this.contextStyles() },
+      [NAMESPACE]: {
+        ...this.state,
+        ...props
+      },
+
+      STYLES: { 
+        ...this.context.STYLES, 
+        ...Polymorph(this.STYLES, this.stylesConfig())
+      },
+
       NAMESPACE
     }
 
     /** */
     return (
       <ModuleContext.Provider value={contextValues}>
-        { props.before && props.before(() => document.getElementById(id)) }
+        { props.before && props.before(() => document.getElementById(ID)) }
 
         <TAG id={ID} className={CLASSES} data-module={NAMESPACE} ref={this.REF} {...REST}>
           {props.content || props.children}
         </TAG>
 
-        { props.after && props.after(() => document.getElementById(id)) }
+        { props.after && props.after(() => document.getElementById(ID)) }
       </ModuleContext.Provider>
     );
   }

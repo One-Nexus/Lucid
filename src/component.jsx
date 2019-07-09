@@ -6,10 +6,6 @@ import Polymorph, { paint } from './react-polymorph';
  * Render a Synergy component
  */
 export default class Component extends Module {
-  contextStyles() {
-    return Polymorph(this.context.STYLES[this.props.name], this.stylesConfig());
-  }
-
   componentDidMount() {
     if (this.context.STYLES) {
       paint(this.REF.current, this.context.STYLES[this.props.name], this.stylesConfig());
@@ -35,10 +31,17 @@ export default class Component extends Module {
     }
 
     const contextValues = { 
-      ...this.context, 
-      ...props,
+      ...this.context,
 
-      STYLES: { ...this.context.STYLES, ...this.contextStyles() }
+      [props.name]: {
+        ...this.state,
+        ...props
+      },
+
+      STYLES: { 
+        ...this.context.STYLES, 
+        ...Polymorph(this.context.STYLES[this.props.name], this.stylesConfig())
+      }
     }
 
     return (
