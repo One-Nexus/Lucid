@@ -13,7 +13,7 @@
 
 ## Overview
 
-Checkout this example to see how Lucid can be used to create a simple UI accordion:
+Lucid is a CSS-in-JS solution for React DOM projects. It is a collection of React components that should be used to construct your JSX. Lucid uses *state* and *context* to determine which styles to apply to a given component; it maps keys from your styles object to components with a matching `name` prop, avoiding the need for class names. Checkout this example to see how Lucid can be used to create a simple UI accordion:
 
 ```jsx
 import React, { useState } from 'react';
@@ -66,24 +66,24 @@ export default Accordion;
 
 ### Features
 
-* Most friendly CSS-in-JS API on the market
-* Built to prioritise DX
+* Most friendly CSS-in-JS API on the market ([fchange my mind](#TODO))
+* Built to prioritise Developer Experience (DX)
 * It's just JavaScript; no nonsense CSS selectors as object keys etc.
 * No CSS classes or `className` props required
 * Improve the readability of your source code
-* Improve the readability of your production code (no garbled unreadable code, because why not?)
+* Improve the readability of your production code (Lucid outputs human readable code to the DOM, because why not?)
 * Low barrier to entry - if you know React you can easily pick this up
 * Based off state and context - not only the most fiendly API but the most flexible
 * Inherent flexible nature supports themes, configuration etc without dedicated APIs (though they are provided for DX purposes)
-* Automagically identify cosmetic style properties from configuration/state/props
+* Automagically identify [cosmetic style properties](#TODO) from [configuration/state/props](#TODO)
 
 ### How it Works
 
 * Utilises React's context API under the hood
 * Singular styles object (or function that returns an object) passed to `<Module>`
 * Styles are mapped to components by matching keys with `<Component>` `name` props
-* Parent props are available as `context`, self props are available as `state`
-* Simulate *cascading* by [taking advantage of ES6 syntax](https://medium.com/james-hill/object-literal-conditional-properties-4d9312b7741e)
+* Parent props/state is [available as `context`](#TODO), self props/state is [available as `state`](#TODO)
+* Simulate CSS *cascading* by [taking advantage of ES6 syntax](#TODO)
 
 ## Installation/Setup
 
