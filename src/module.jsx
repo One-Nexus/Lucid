@@ -1,5 +1,6 @@
 import React from 'react';
 import getModifiersFromProps from './utilities/getModifiersFromProps';
+import mergeThemes from './utilities/mergeThemes';
 import { ThemeContext } from './provider';
 
 /** spoof env process to assist bundle size */
@@ -162,7 +163,7 @@ export default class Module extends React.Component {
     return (
       <ThemeContext.Consumer>
         {theme => {
-          this.THEME = Module.config(window.theme || {}, theme, props.theme);
+          this.THEME = mergeThemes(window.theme, theme, props.theme);
 
           const contextValues = {
             PARENT: this.REF,
@@ -212,13 +213,13 @@ export default class Module extends React.Component {
 
   static config = (...params) => {
     if (process.env.SYNERGY) {
-      return Synergy.config({}, ...params);
+      return Synergy.config(...params);
     } 
     else if (typeof Synergy !== 'undefined' && typeof Synergy.config === 'function') {
-      return Synergy.config({}, ...params);
+      return Synergy.config(...params);
     } 
     else {
-      return require('deep-extend')({}, ...params);
+      return require('deep-extend')(...params);
     }
   }
 }
