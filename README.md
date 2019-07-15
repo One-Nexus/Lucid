@@ -81,13 +81,11 @@ export default Accordion;
 
 * Utilises React's context API under the hood
 * Singular styles object (or function that returns an object) passed to `<Module>`
-* Styles are mapped to components by matching keys with `<Component>` `name` props
+* Styles are mapped to child components by matching keys with `<Component>` `name` props
 * Parent props/state is [available as `context`](#TODO), self props/state is [available as `state`](#TODO)
 * Simulate CSS *cascading* by [taking advantage of ES6 syntax](#TODO)
 
 ## Installation/Setup
-
-> Using BEM? Checkout the [Working With BEM](https://github.com/One-Nexus/Lucid/wiki/Working-With-BEM) page
 
 ```
 npm install --save @onenexus/lucid

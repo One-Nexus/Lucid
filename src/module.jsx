@@ -1,5 +1,6 @@
 import React from 'react';
 import getModifiersFromProps from './utilities/getModifiersFromProps';
+import { ThemeContext } from './provider';
 
 /** spoof env process to assist bundle size */
 if (typeof process === 'undefined') window.process = { env: {} }
@@ -128,7 +129,6 @@ export default class Module extends React.Component {
     const { props } = this;
 
     /** */
-    this.THEME = props.theme || window.theme || {};
     this.CONFIG = props.config || {};
     this.STYLES = props.styles;
   
@@ -159,42 +159,50 @@ export default class Module extends React.Component {
     CLASSES += SELECTOR;
 
     /** */
-    const contextValues = {
-      THEME: this.THEME,
-      CONFIG: this.CONFIG,
-      PARENT: this.REF,
-  
-      MODIFIERGLUE, 
-      COMPONENTGLUE,
-
-      ...this.context,
-      ...this.state,
-      ...props,
-
-      [NAMESPACE]: {
-        ...this.state,
-        ...props
-      },
-
-      STYLES: { 
-        ...this.context.STYLES, 
-        ...this.getStyles(this.STYLES, this.stylesConfig())
-      },
-
-      NAMESPACE
-    }
-
-    /** */
     return (
-      <ModuleContext.Provider value={contextValues}>
-        { props.before && props.before(() => document.getElementById(ID)) }
+      <ThemeContext.Consumer>
+        {theme => {
+          this.THEME = Module.config(window.theme || {}, theme, props.theme);
 
-        <TAG id={ID} className={CLASSES} data-module={NAMESPACE} ref={this.REF} {...REST}>
-          {props.content || props.children}
-        </TAG>
+          const contextValues = {
+            PARENT: this.REF,
 
-        { props.after && props.after(() => document.getElementById(ID)) }
-      </ModuleContext.Provider>
+            ...this.context,
+            ...this.state,
+            ...props,
+
+            THEME: this.THEME,
+            CONFIG: this.CONFIG,
+
+            MODIFIERGLUE, 
+            COMPONENTGLUE,
+
+            [NAMESPACE]: {
+              ...this.state,
+              ...props
+            },
+
+            STYLES: { 
+              ...this.context.STYLES, 
+              ...this.getStyles(this.STYLES, this.stylesConfig())
+            },
+
+            NAMESPACE
+          }
+
+          return (
+            <ModuleContext.Provider value={contextValues}>
+              { props.before && props.before(() => document.getElementById(ID)) }
+
+              <TAG id={ID} className={CLASSES} data-module={NAMESPACE} ref={this.REF} {...REST}>
+                {props.content || props.children}
+              </TAG>
+
+              { props.after && props.after(() => document.getElementById(ID)) }
+            </ModuleContext.Provider>
+          );
+        }}
+      </ThemeContext.Consumer>
     );
   }
 
