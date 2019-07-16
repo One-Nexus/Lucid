@@ -30,8 +30,7 @@ export default class Component extends Module {
     }
 
     const styles = this.getStyles(this.context.STYLES[props.name], this.stylesConfig());
-    const before = styles[':before'];
-    const after = styles[':after'];
+    const [before, after] = [styles[':before'], styles[':after']];
 
     const contextValues = { 
       ...this.context,

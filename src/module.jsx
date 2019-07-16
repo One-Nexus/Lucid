@@ -71,6 +71,10 @@ export default class Module extends React.Component {
     if (typeof styles === 'function') {
       styles = styles(options);
     }
+
+    if (styles instanceof Array) {
+      styles = Module.config({}, ...styles);
+    }
   
     return styles;
   }
@@ -94,12 +98,12 @@ export default class Module extends React.Component {
   }
 
   paint(node, styles = {}, options) {
-    if (styles instanceof Array) {
-      return styles.forEach(style => this.paint(node, style, options));
-    }
-
     if (typeof styles === 'function') {
       styles = styles(options);
+    }
+
+    if (styles instanceof Array) {
+      return styles.forEach(style => this.paint(node, style, options));
     }
   
     Object.entries(styles).forEach(([key, value]) => {
@@ -150,17 +154,6 @@ export default class Module extends React.Component {
 
     const { props } = this;
 
-    /** */
-    this.CONFIG = props.config || {};
-    this.STYLES = props.styles;
-  
-    /** */
-    const MODIFIERGLUE = props.modifierGlue || Synergy.modifierGlue || '--';
-    const COMPONENTGLUE = props.componentGlue || Synergy.componentGlue || '__';
-    const ID = props.id || `module-${increment}`;
-    const NAMESPACE = this.CONFIG.name || props.name || props.tag || ID;
-    const TAG = (props.href && 'a') || props.component || props.tag || 'div';
-
     const REST = {
       ...this.getDataAttributes(props),
       ...this.getEventHandlers(props),
@@ -170,25 +163,34 @@ export default class Module extends React.Component {
     }
 
     /** */
-    let [CLASSES, MODIFIERS] = [props.className ? props.className + ' ' : '', []];
-
-    MODIFIERS.push(props.modifiers);
-    MODIFIERS.push(...getModifiersFromProps(props));
-    MODIFIERS = MODIFIERS.filter(Boolean);
-
-    const SELECTOR = NAMESPACE + (MODIFIERS.length && (MODIFIERGLUE + MODIFIERS.join(MODIFIERGLUE)));
-
-    CLASSES += SELECTOR;
-
-    /** */
     return (
       <ThemeContext.Consumer>
         {theme => {
+          /** */
           this.THEME = mergeThemes(window.theme, theme, props.theme);
+          this.CONFIG = Module.config(props.config || {}, this.THEME.modules && this.THEME.modules[props.name]);
+          this.STYLES = props.styles;
+
+          /** */
+          const MODIFIERGLUE = props.modifierGlue || Synergy.modifierGlue || '--';
+          const COMPONENTGLUE = props.componentGlue || Synergy.componentGlue || '__';
+          const ID = props.id || `module-${increment}`;
+          const NAMESPACE = this.CONFIG.name || props.name || props.tag || ID;
+          const TAG = (props.href && 'a') || props.component || props.tag || 'div';
+
+          /** */
+          let [CLASSES, MODIFIERS] = [props.className ? props.className + ' ' : '', []];
+
+          MODIFIERS.push(props.modifiers);
+          MODIFIERS.push(...getModifiersFromProps(props));
+          MODIFIERS = MODIFIERS.filter(Boolean);
+
+          const SELECTOR = NAMESPACE + (MODIFIERS.length && (MODIFIERGLUE + MODIFIERS.join(MODIFIERGLUE)));
+
+          CLASSES += SELECTOR;
 
           const styles = this.getStyles(this.STYLES, this.stylesConfig());
-          const before = styles[':before'];
-          const after = styles[':after'];
+          const [before, after] = [styles[':before'], styles[':after']];
 
           const contextValues = {
             PARENT: this,
