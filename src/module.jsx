@@ -46,6 +46,10 @@ export default class Module extends React.Component {
 
     for (let prop in properties) {
       if (Object.keys(window).includes(prop.toLowerCase())) {
+        if (prop === 'theme') {
+          continue;
+        }
+
         if (prop !== 'name') {
           eventHandlers[prop] = properties[prop];
         }
