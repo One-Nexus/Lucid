@@ -5,7 +5,7 @@
 
 > No nonsense JavaScript styling for React DOM projects
 
-<img height="66px" src="http://www.onenexus.io/lucid/images/lucid-logo.png" /><br>
+<img height="66px" src="http://www.onenexus.io/lucid/images/lucid-logo.png?v=1" /><br>
 
 * [Overview](#overview)
 * [Installation/Setup](#installationsetup)
