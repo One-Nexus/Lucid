@@ -13,7 +13,11 @@
 
 ## Overview
 
-Lucid is a CSS-in-JS solution for React DOM projects. It is a collection of React components that should be used to construct your JSX. Lucid uses *state* and *context* to determine which styles to apply to a given component; it maps keys from your styles object to components with a matching `name` prop, avoiding the need for class names. Checkout this example to see how Lucid can be used to create a simple UI accordion:
+> Lucid is a __CSS-in-JS__ solution which utilises *state* and *context*
+
+Lucid is a collection of React components that should be used to construct your JSX. Lucid uses *state* and *context* to determine which styles to apply to a given component; it maps keys from your styles object to components with a matching `name` prop, avoiding the need for class names. 
+
+Checkout this example to see how Lucid can be used to create a simple UI accordion:
 
 ```jsx
 import React, { useState } from 'react';
@@ -49,12 +53,8 @@ const Accordion = ({ panels }) => (
 
       return (
         <Component name='panel' isOpen={isOpen}>
-          <Component name='heading' onClick={() => toggle(!isOpen)}>
-            {heading}
-          </Component>
-          <Component name='content'>
-            {content}
-          </Component>
+          <Component name='heading' content={content} onClick={() => toggle(!isOpen)} />
+          <Component name='content' content={heading} />
         </Component>
       );
     })}
@@ -71,10 +71,10 @@ export default Accordion;
 * It's just JavaScript; no nonsense CSS selectors as object keys etc.
 * No CSS classes or `className` props required
 * Improve the readability of your source code
-* Improve the readability of your production code (Lucid outputs human readable code to the DOM, because why not?)
+* Improve the readability of your production code (because why not?)
 * Low barrier to entry - if you know React you can easily pick this up
 * Based off state and context - not only the most fiendly API but the most flexible
-* Inherent flexible nature supports themes, configuration etc without dedicated APIs (though they are provided for DX purposes)
+* Inherent flexible nature supports themes, configuration etc without dedicated APIs ([though they are provided](#TODO))
 * Automagically identify [cosmetic style properties](#TODO) from [configuration/state/props](#TODO)
 
 ### How it Works

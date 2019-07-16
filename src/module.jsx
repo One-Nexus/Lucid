@@ -158,14 +158,6 @@ export default class Module extends React.Component {
 
     const { props } = this;
 
-    const REST = {
-      ...this.getDataAttributes(props),
-      ...this.getEventHandlers(props),
-
-      onMouseEnter: this.handleMouseEnter.bind(this),
-      onMouseLeave: this.handleMouseLeave.bind(this)
-    }
-
     /** */
     return (
       <ThemeContext.Consumer>
@@ -176,26 +168,44 @@ export default class Module extends React.Component {
           this.STYLES = props.styles;
 
           /** */
-          const MODIFIERGLUE = props.modifierGlue || Synergy.modifierGlue || '--';
-          const COMPONENTGLUE = props.componentGlue || Synergy.componentGlue || '__';
+          const MODIFIERGLUE = this.CONFIG.modifierGlue || Synergy.modifierGlue || '--';
+          const COMPONENTGLUE = this.CONFIG.componentGlue || Synergy.componentGlue || '__';
           const ID = props.id || `module-${increment}`;
           const NAMESPACE = this.CONFIG.name || props.name || props.tag || ID;
           const TAG = (props.href && 'a') || props.component || props.tag || 'div';
 
           /** */
-          let [CLASSES, MODIFIERS] = [props.className ? props.className + ' ' : '', []];
+          let [CLASSES, SELECTOR, MODIFIERS] = [props.className ? props.className + ' ' : '', NAMESPACE, []];
 
           MODIFIERS.push(props.modifiers);
           MODIFIERS.push(...getModifiersFromProps(props));
           MODIFIERS = MODIFIERS.filter(Boolean);
 
-          const SELECTOR = NAMESPACE + (MODIFIERS.length && (MODIFIERGLUE + MODIFIERS.join(MODIFIERGLUE)));
+          if (this.CONFIG.singleClass) {
+            SELECTOR += MODIFIERS.length ? MODIFIERGLUE + MODIFIERS.join(MODIFIERGLUE) : '';
+          } else {
+            MODIFIERS.forEach(MODIFIER => CLASSES += SELECTOR + MODIFIERGLUE + MODIFIER + ' ');
+          }
 
           CLASSES += SELECTOR;
 
+          /** */
           const styles = this.getStyles(this.STYLES, this.stylesConfig());
           const [before, after] = [styles[':before'], styles[':after']];
 
+          const ATTRIBUTES = {
+            ...this.getDataAttributes(props),
+            ...this.getEventHandlers(props),
+            ...props.attributes,
+      
+            onMouseEnter: this.handleMouseEnter.bind(this),
+            onMouseLeave: this.handleMouseLeave.bind(this),
+
+            className: this.CONFIG.generateClasses ? CLASSES : null,
+            'data-module': this.CONFIG.disableDataAttributes ? null : NAMESPACE
+          }
+
+          /** */
           const contextValues = {
             PARENT: this,
 
@@ -224,7 +234,7 @@ export default class Module extends React.Component {
 
           return (
             <ModuleContext.Provider value={contextValues}>
-              <TAG id={ID} className={CLASSES} data-module={NAMESPACE} ref={this.REF} {...REST}>
+              <TAG id={ID} ref={this.REF} {...ATTRIBUTES}>
                 {before && <div className='before' style={before}>{before.content}</div>}
 
                 {props.content || props.children}
