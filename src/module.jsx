@@ -84,22 +84,43 @@ export default class Module extends React.Component {
       state: {
         isFirstChild: node && node === node.parentNode.firstChild,
         isLastChild: node && node === node.parentNode.lastChild,
-        previousSibling: node && node.previousSibling,
-        nextSibling: node && node.nextSibling,
 
         ...this.state,
         ...this.props
       },
+      element: node,
       context: this.context
     }
   }
 
   paint(node, styles = {}, options) {
+    if (styles instanceof Array) {
+      return styles.forEach(style => this.paint(node, style, options));
+    }
+
     if (typeof styles === 'function') {
       styles = styles(options);
     }
   
     Object.entries(styles).forEach(([key, value]) => {
+      if (value instanceof Array) {
+        [node, styles] = value;
+
+        return this.paint(node(), styles, options);
+      }
+
+      if (typeof value === 'function') {
+        try {
+          value = value(node.style[key]);
+        } catch(error) {
+          return error;
+        }
+      }
+
+      if (key === ':hover' && options.state.isHovered) {
+        return this.paint(node, value, options);
+      }
+
       try {
         node.style[key] = value;
       } catch(error) {
@@ -137,7 +158,7 @@ export default class Module extends React.Component {
     const MODIFIERGLUE = props.modifierGlue || Synergy.modifierGlue || '--';
     const COMPONENTGLUE = props.componentGlue || Synergy.componentGlue || '__';
     const ID = props.id || `module-${increment}`;
-    const NAMESPACE = this.CONFIG.name || props.name || ID;
+    const NAMESPACE = this.CONFIG.name || props.name || props.tag || ID;
     const TAG = (props.href && 'a') || props.component || props.tag || 'div';
 
     const REST = {
@@ -165,8 +186,12 @@ export default class Module extends React.Component {
         {theme => {
           this.THEME = mergeThemes(window.theme, theme, props.theme);
 
+          const styles = this.getStyles(this.STYLES, this.stylesConfig());
+          const before = styles[':before'];
+          const after = styles[':after'];
+
           const contextValues = {
-            PARENT: this.REF,
+            PARENT: this,
 
             ...this.context,
             ...this.state,
@@ -185,7 +210,7 @@ export default class Module extends React.Component {
 
             STYLES: { 
               ...this.context.STYLES, 
-              ...this.getStyles(this.STYLES, this.stylesConfig())
+              ...styles
             },
 
             NAMESPACE
@@ -193,13 +218,13 @@ export default class Module extends React.Component {
 
           return (
             <ModuleContext.Provider value={contextValues}>
-              { props.before && props.before(() => document.getElementById(ID)) }
-
               <TAG id={ID} className={CLASSES} data-module={NAMESPACE} ref={this.REF} {...REST}>
-                {props.content || props.children}
-              </TAG>
+                {before && <div className='before' style={before}>{before.content}</div>}
 
-              { props.after && props.after(() => document.getElementById(ID)) }
+                {props.content || props.children}
+
+                {after && <div className='after' style={after}>{after.content}</div>}
+              </TAG>
             </ModuleContext.Provider>
           );
         }}

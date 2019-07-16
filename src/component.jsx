@@ -29,6 +29,10 @@ export default class Component extends Module {
       onMouseLeave: this.handleMouseLeave.bind(this)
     }
 
+    const styles = this.getStyles(this.context.STYLES[props.name], this.stylesConfig());
+    const before = styles[':before'];
+    const after = styles[':after'];
+
     const contextValues = { 
       ...this.context,
       ...this.state,
@@ -41,14 +45,18 @@ export default class Component extends Module {
 
       STYLES: { 
         ...this.context.STYLES, 
-        ...this.getStyles(this.context.STYLES[props.name], this.stylesConfig())
+        ...styles
       }
     }
 
     return (
       <ModuleContext.Provider value={contextValues}>
         <Tag className={classNames} data-component={props.name} ref={this.REF} {...rest}>
+          {before && <div className='before' style={before}>{before.content}</div>}
+
           {props.content || props.children}
+
+          {after && <div className='after' style={after}>{after.content}</div>}
         </Tag>
       </ModuleContext.Provider>
     );
