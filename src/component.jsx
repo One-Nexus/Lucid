@@ -45,6 +45,9 @@ export default class Component extends Module {
     CLASSES += SELECTOR;
 
     /** */
+    const styles = this.getStyles(this.context.STYLES[this.NAMESPACE], this.stylesConfig());
+    const [before, after] = [styles[':before'], styles[':after']];
+
     const ATTRIBUTES = {
       ...this.getDataAttributes(props),
       ...this.getEventHandlers(props),
@@ -57,9 +60,6 @@ export default class Component extends Module {
       'data-component': this.context.CONFIG.disableDataAttributes ? null : this.NAMESPACE,
       'data-sub-component': this.context.CONFIG.disableDataAttributes ? null : props.subComponent
     }
-
-    const styles = this.getStyles(this.context.STYLES[this.NAMESPACE], this.stylesConfig());
-    const [before, after] = [styles[':before'], styles[':after']];
 
     /** */
     const contextValues = { 

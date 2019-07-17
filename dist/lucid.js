@@ -82,7 +82,7 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -93,150 +93,6 @@ module.exports = require("react");
 
 /***/ }),
 /* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/*!
- * html-attributes
- * https://github.com/alexmingoia/html-attributes
- */
-
-
-
-/**
- * @module html-attributes
- */
-
-module.exports = {
-  "abbr": "abbr",
-  "accept": "accept",
-  "acceptCharset": "accept-charset",
-  "accessKey": "accesskey",
-  "action": "action",
-  "allowFullScreen": "allowfullscreen",
-  "allowTransparency": "allowtransparency",
-  "alt": "alt",
-  "async": "async",
-  "autoComplete": "autocomplete",
-  "autoFocus": "autofocus",
-  "autoPlay": "autoplay",
-  "cellPadding": "cellpadding",
-  "cellSpacing": "cellspacing",
-  "challenge": "challenge",
-  "charset": "charset",
-  "checked": "checked",
-  "cite": "cite",
-  "class": "class",
-  "className": "class",
-  "cols": "cols",
-  "colSpan": "colspan",
-  "command": "command",
-  "content": "content",
-  "contentEditable": "contenteditable",
-  "contextMenu": "contextmenu",
-  "controls": "controls",
-  "coords": "coords",
-  "crossOrigin": "crossorigin",
-  "data": "data",
-  "dateTime": "datetime",
-  "default": "default",
-  "defer": "defer",
-  "dir": "dir",
-  "disabled": "disabled",
-  "download": "download",
-  "draggable": "draggable",
-  "dropzone": "dropzone",
-  "encType": "enctype",
-  "for": "for",
-  "form": "form",
-  "formAction": "formaction",
-  "formEncType": "formenctype",
-  "formMethod": "formmethod",
-  "formNoValidate": "formnovalidate",
-  "formTarget": "formtarget",
-  "frameBorder": "frameBorder",
-  "headers": "headers",
-  "height": "height",
-  "hidden": "hidden",
-  "high": "high",
-  "href": "href",
-  "hrefLang": "hreflang",
-  "htmlFor": "for",
-  "httpEquiv": "http-equiv",
-  "icon": "icon",
-  "id": "id",
-  "inputMode": "inputmode",
-  "isMap": "ismap",
-  "itemId": "itemid",
-  "itemProp": "itemprop",
-  "itemRef": "itemref",
-  "itemScope": "itemscope",
-  "itemType": "itemtype",
-  "kind": "kind",
-  "label": "label",
-  "lang": "lang",
-  "list": "list",
-  "loop": "loop",
-  "manifest": "manifest",
-  "max": "max",
-  "maxLength": "maxlength",
-  "media": "media",
-  "mediaGroup": "mediagroup",
-  "method": "method",
-  "min": "min",
-  "minLength": "minlength",
-  "multiple": "multiple",
-  "muted": "muted",
-  "name": "name",
-  "noValidate": "novalidate",
-  "open": "open",
-  "optimum": "optimum",
-  "pattern": "pattern",
-  "ping": "ping",
-  "placeholder": "placeholder",
-  "poster": "poster",
-  "preload": "preload",
-  "radioGroup": "radiogroup",
-  "readOnly": "readonly",
-  "rel": "rel",
-  "required": "required",
-  "role": "role",
-  "rows": "rows",
-  "rowSpan": "rowspan",
-  "sandbox": "sandbox",
-  "scope": "scope",
-  "scoped": "scoped",
-  "scrolling": "scrolling",
-  "seamless": "seamless",
-  "selected": "selected",
-  "shape": "shape",
-  "size": "size",
-  "sizes": "sizes",
-  "sortable": "sortable",
-  "span": "span",
-  "spellCheck": "spellcheck",
-  "src": "src",
-  "srcDoc": "srcdoc",
-  "srcSet": "srcset",
-  "start": "start",
-  "step": "step",
-  "style": "style",
-  "tabIndex": "tabindex",
-  "target": "target",
-  "title": "title",
-  "translate": "translate",
-  "type": "type",
-  "typeMustMatch": "typemustmatch",
-  "useMap": "usemap",
-  "value": "value",
-  "width": "width",
-  "wmode": "wmode",
-  "wrap": "wrap"
-};
-
-
-/***/ }),
-/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -393,7 +249,7 @@ var deepExtend = module.exports = function (/*obj_1, [obj_2], [obj_N]*/) {
 
 
 /***/ }),
-/* 3 */
+/* 2 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -403,39 +259,6 @@ __webpack_require__.r(__webpack_exports__);
 var external_react_ = __webpack_require__(0);
 var external_react_default = /*#__PURE__*/__webpack_require__.n(external_react_);
 
-// EXTERNAL MODULE: ./node_modules/html-attributes/lib/html-attributes.js
-var html_attributes = __webpack_require__(1);
-var html_attributes_default = /*#__PURE__*/__webpack_require__.n(html_attributes);
-
-// CONCATENATED MODULE: ./src/utilities/getHtmlProps.js
-
-/**
- * Get element HTML attributes from props
- * @param {*} props 
- */
-
-function getHtmlProps(props) {
-  var HtmlProps = {};
-
-  for (var prop in props) {
-    if (prop === 'name') {
-      continue;
-    } else if (prop === 'modifiers') {
-      continue;
-    } else if (prop === 'tag') {
-      continue;
-    } else if (prop === 'elementname') {
-      HtmlProps.name = props[prop];
-    } else if (prop.indexOf('html') === 0) {
-      HtmlProps[prop] = props[prop];
-    } else if (Object.values(html_attributes_default.a).includes(prop)) {
-      HtmlProps[prop] = props[prop];
-    }
-  }
-
-  ;
-  return HtmlProps;
-}
 // CONCATENATED MODULE: ./src/utilities/getModifiersFromProps.js
 /**
  * @param {*} props 
@@ -460,7 +283,7 @@ function getModifiersFromProps(props) {
     }
 
     if (typeof value === 'boolean' && value) {
-      if (blacklist && blacklist.indexOf(key) < 0) {
+      if (blacklist.indexOf(key) < 0) {
         modifiers.push(key);
       }
     }
@@ -468,157 +291,70 @@ function getModifiersFromProps(props) {
 
   return modifiers;
 }
-// CONCATENATED MODULE: ./src/utilities/generateClasses.js
-/**
- * Generate CSS classes for a module
- */
-function generateClasses(_ref) {
-  var props = _ref.props,
-      namespace = _ref.namespace,
-      modifiers = _ref.modifiers,
-      classes = _ref.classes,
-      modifierGlue = _ref.modifierGlue,
-      componentGlue = _ref.componentGlue,
-      multipleClasses = _ref.multipleClasses;
-  var classNames = []; // Get modules from props
-
-  Object.entries(props).forEach(function (prop) {
-    var key = prop[0];
-    var value = prop[1];
-    var firstLetter = key[0];
-
-    if (firstLetter === firstLetter.toUpperCase()) {
-      var module = key.toLowerCase();
-
-      if (multipleClasses) {
-        classNames.push(module);
-
-        if (value.constructor === Array) {
-          value.forEach(function (modifier) {
-            classNames.push(module + modifierGlue + modifier);
-          });
-        } else if (typeof value === 'string') {
-          classNames.push(module + modifierGlue + value);
-        }
-      } else {
-        var propModifiers = '';
-
-        if (value.constructor === Array) {
-          propModifiers = modifierGlue + value.join(modifierGlue);
-        } else if (typeof value === 'string') {
-          propModifiers = modifierGlue + value;
-        }
-
-        classNames.push(module + propModifiers);
-      }
-    }
-  }); // if (namespace.indexOf(componentGlue > 0)) {
-  //     if (props.name instanceof Array) {
-  //         // @TODO
-  //     }
-  // }
-
-  if (multipleClasses) {
-    // @TODO refactor the whole thing because we are splitting
-    // what was originally unsplit to begin with
-    modifiers.split(modifierGlue).forEach(function (modifier) {
-      var className;
-
-      if (modifier) {
-        className = namespace + modifierGlue + modifier;
-      } else {
-        className = namespace;
-      }
-
-      classNames.push(className);
-    });
-  } else {
-    classNames.push(namespace + modifiers);
-  }
-
-  classes = classNames.join(' ') + (classes ? ' ' + classes : '');
-  return classes;
-}
-// CONCATENATED MODULE: ./src/utilities/renderModifiers.js
+// CONCATENATED MODULE: ./src/utilities/mergeThemes.js
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/**
- * @param {*} modifiers 
- */
-function renderModifiers(modifiers, modifierGlue) {
-  if (modifiers && _typeof(modifiers) === 'object' && modifiers.length) {
-    return (modifierGlue + modifiers).replace(/,/g, modifierGlue);
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+
+function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+function mergeThemes() {
+  var THEME = {};
+
+  for (var _len = arguments.length, themes = new Array(_len), _key = 0; _key < _len; _key++) {
+    themes[_key] = arguments[_key];
   }
 
-  return '';
+  [].concat(themes).forEach(function (theme) {
+    if (typeof theme === 'function') {
+      THEME = deepMergeObjects(THEME, theme(THEME));
+    } else {
+      THEME = deepMergeObjects(THEME, theme);
+    }
+  });
+  return evalVal(THEME);
 }
-// CONCATENATED MODULE: ./src/utilities/refHandler.js
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+/** */
 
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+function evalVal(theme) {
+  var THEME = theme;
+  Object.entries(THEME).forEach(function (_ref) {
+    var _ref2 = _slicedToArray(_ref, 2),
+        key = _ref2[0],
+        value = _ref2[1];
 
-function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+    if (_typeof(value) === 'object') {
+      THEME[key] = evalVal(value);
+    }
 
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+    if (typeof value === 'function') {
+      THEME[key] = value(THEME);
+    }
+  });
+  return THEME;
+}
+/** */
 
-/**
- * Handle the ref callback on the rendered React component
- */
-function refHandler(node, props, styleParser, parentModule, ui, config) {
-  if (node && node instanceof HTMLElement) {
-    Object.assign(node, {
-      isFirstChild: node === node.parentNode.firstChild,
-      isLastChild: node === node.parentNode.lastChild
-    });
-    var NAMESPACE = props.name || config.name;
 
-    if (parentModule) {
-      node.config = config;
+function deepMergeObjects() {
+  if (process.env.SYNERGY) {
+    var _Synergy;
 
-      if (styleParser) {
-        if (props.styles) {
-          if (props.styles.constructor === Array) {
-            styleParser.apply(void 0, [node].concat(_toConsumableArray(props.styles)));
-          } else {
-            styleParser(node, props.styles, config, ui);
-          }
-        } else if (window[NAMESPACE] && window[NAMESPACE].layout) {
-          styleParser(node, window[NAMESPACE].layout, config, ui);
-        }
+    return (_Synergy = Synergy).config.apply(_Synergy, arguments);
+  } else if (typeof Synergy !== 'undefined' && typeof Synergy.config === 'function') {
+    var _Synergy2;
 
-        Object.keys(props).forEach(function (prop) {
-          var fistLetter = prop[0];
-
-          if (fistLetter === fistLetter.toUpperCase()) {
-            if (window[prop] && window[prop].layout && window[prop].config) {
-              node.namespace = node.namespace || window[prop].config.name || prop;
-              styleParser(node, window[prop].layout, window[prop].config, ui);
-            }
-          }
-        });
-      }
-
-      if (props.init) {
-        props.init(node);
-      } else if (window[NAMESPACE] && window[NAMESPACE].init) {
-        window[NAMESPACE].init(node);
-      }
-    } // @NOTE: below currently replaced in favour of `componentDidMount`
-    //
-    // const observer = new MutationObserver(() => node.repaint && node.repaint());
-    // observer.observe(node, {
-    //     attributes: true, 
-    //     attributeFilter: ['class'],
-    //     childList: false, 
-    //     characterData: false
-    // });
-
+    return (_Synergy2 = Synergy).config.apply(_Synergy2, arguments);
+  } else {
+    return __webpack_require__(1).apply(void 0, arguments);
   }
 }
-// CONCATENATED MODULE: ./src/module.jsx
-function module_typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { module_typeof = function _typeof(obj) { return typeof obj; }; } else { module_typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return module_typeof(obj); }
-
-function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+// CONCATENATED MODULE: ./src/provider.jsx
+function provider_typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { provider_typeof = function _typeof(obj) { return typeof obj; }; } else { provider_typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return provider_typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -626,7 +362,7 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-function _possibleConstructorReturn(self, call) { if (call && (module_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+function _possibleConstructorReturn(self, call) { if (call && (provider_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
@@ -639,59 +375,140 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
+var ThemeContext = external_react_default.a.createContext({});
+
+
+var provider_Provider =
+/*#__PURE__*/
+function (_React$Component) {
+  _inherits(Provider, _React$Component);
+
+  function Provider() {
+    _classCallCheck(this, Provider);
+
+    return _possibleConstructorReturn(this, _getPrototypeOf(Provider).apply(this, arguments));
+  }
+
+  _createClass(Provider, [{
+    key: "render",
+    value: function render() {
+      var theme = this.props.theme;
+      return external_react_default.a.createElement(ThemeContext.Provider, {
+        value: theme
+      }, this.props.children);
+    }
+  }]);
+
+  return Provider;
+}(external_react_default.a.Component);
+
+_defineProperty(provider_Provider, "contextType", ThemeContext);
+
+
+// CONCATENATED MODULE: ./src/module.jsx
+function module_typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { module_typeof = function _typeof(obj) { return typeof obj; }; } else { module_typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return module_typeof(obj); }
+
+function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+
+function module_slicedToArray(arr, i) { return module_arrayWithHoles(arr) || module_iterableToArrayLimit(arr, i) || module_nonIterableRest(); }
+
+function module_nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+
+function module_iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function module_arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { module_defineProperty(target, key, source[key]); }); } return target; }
+
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
+function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+
+function module_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function module_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function module_createClass(Constructor, protoProps, staticProps) { if (protoProps) module_defineProperties(Constructor.prototype, protoProps); if (staticProps) module_defineProperties(Constructor, staticProps); return Constructor; }
+
+function module_possibleConstructorReturn(self, call) { if (call && (module_typeof(call) === "object" || typeof call === "function")) { return call; } return module_assertThisInitialized(self); }
+
+function module_assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function module_getPrototypeOf(o) { module_getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return module_getPrototypeOf(o); }
+
+function module_inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) module_setPrototypeOf(subClass, superClass); }
+
+function module_setPrototypeOf(o, p) { module_setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return module_setPrototypeOf(o, p); }
+
+function module_defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
 
 
- // spoof env process to assist bundle size
+
+/** spoof env process to assist bundle size */
 
 if (typeof process === 'undefined') window.process = {
   env: {}
-};
-/** Used for generating unique module ID's */
+  /** Used for generating unique module ID's */
 
+};
 var increment = 1;
 /** Create a context object */
 
-var ModuleContext = external_react_default.a.createContext();
+var ModuleContext = external_react_default.a.createContext({});
 
-/**
- * Render a Synergy module
- *
- * @extends React.Component
- */
+/** Render a Synergy module */
 
 var module_Module =
 /*#__PURE__*/
 function (_React$Component) {
-  _inherits(Module, _React$Component);
+  module_inherits(Module, _React$Component);
 
   function Module(props) {
     var _this;
 
-    _classCallCheck(this, Module);
+    module_classCallCheck(this, Module);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(Module).call(this, props));
-    increment++;
-    _this.ui = props.ui || window.ui;
+    _this = module_possibleConstructorReturn(this, module_getPrototypeOf(Module).call(this, props));
     _this.REF = external_react_default.a.createRef();
-    _this.styleParser = props.styleParser || Synergy.styleParser;
-    _this.config = props.config || {};
-
-    if (window[props.name] && window[props.name].config) {
-      _this.config = Module.config(window[props.name].config, _this.config);
-    }
-
+    _this.state = {
+      isHovered: false
+    };
     return _this;
   }
 
-  _createClass(Module, [{
+  module_createClass(Module, [{
+    key: "handleMouseEnter",
+    value: function handleMouseEnter(event) {
+      this.props.onMouseEnter && this.props.onMouseEnter(event);
+      this.setState({
+        isHovered: true
+      });
+    }
+  }, {
+    key: "handleMouseLeave",
+    value: function handleMouseLeave(event) {
+      this.props.onMouseLeave && this.props.onMouseLeave(event);
+      this.setState({
+        isHovered: false
+      });
+    }
+  }, {
     key: "getEventHandlers",
     value: function getEventHandlers(properties) {
       var eventHandlers = {};
 
       for (var prop in properties) {
         if (Object.keys(window).includes(prop.toLowerCase())) {
+          if (prop === 'theme') {
+            continue;
+          }
+
           if (prop !== 'name') {
             eventHandlers[prop] = properties[prop];
           }
@@ -714,145 +531,244 @@ function (_React$Component) {
       return dataAttributes;
     }
   }, {
+    key: "getStyles",
+    value: function getStyles() {
+      var styles = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var options = arguments.length > 1 ? arguments[1] : undefined;
+
+      if (typeof styles === 'function') {
+        styles = styles(options);
+      }
+
+      if (styles instanceof Array) {
+        styles = Module.config.apply(Module, [{}].concat(_toConsumableArray(styles)));
+      }
+
+      return styles;
+    }
+  }, {
+    key: "stylesConfig",
+    value: function stylesConfig() {
+      var theme = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.THEME;
+      var config = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : this.CONFIG;
+      var node = this.REF.current;
+      return {
+        theme: theme,
+        config: config,
+        state: _objectSpread({
+          isFirstChild: node && node === node.parentNode.firstChild,
+          isLastChild: node && node === node.parentNode.lastChild
+        }, this.state, this.props),
+        element: node,
+        context: this.context
+      };
+    }
+  }, {
+    key: "paint",
+    value: function paint(node) {
+      var _this2 = this;
+
+      var styles = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var options = arguments.length > 2 ? arguments[2] : undefined;
+
+      if (typeof styles === 'function') {
+        styles = styles(options);
+      }
+
+      if (styles instanceof Array) {
+        return styles.forEach(function (style) {
+          return _this2.paint(node, style, options);
+        });
+      }
+
+      Object.entries(styles).forEach(function (_ref) {
+        var _ref2 = module_slicedToArray(_ref, 2),
+            key = _ref2[0],
+            value = _ref2[1];
+
+        if (value instanceof Array) {
+          var _value = value;
+
+          var _value2 = module_slicedToArray(_value, 2);
+
+          node = _value2[0];
+          styles = _value2[1];
+          return _this2.paint(node(), styles, options);
+        }
+
+        if (typeof value === 'function') {
+          try {
+            value = value(node.style[key]);
+          } catch (error) {
+            return error;
+          }
+        }
+
+        if (key === ':hover' && options.state.isHovered) {
+          return _this2.paint(node, value, options);
+        }
+
+        try {
+          node.style[key] = value;
+        } catch (error) {
+          return error;
+        }
+      });
+    }
+    /** Lifecycle Methods */
+
+  }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      refHandler(this.REF.current, this.props, this.styleParser, true, this.ui, this.config);
+      if (this.STYLES) {
+        this.paint(this.REF.current, this.STYLES, this.stylesConfig());
+      }
     }
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate() {
-      if (this.REF.current.repaint) {
-        this.REF.current.repaint();
+      if (this.STYLES) {
+        this.paint(this.REF.current, this.STYLES, this.stylesConfig());
       }
     }
   }, {
     key: "render",
     value: function render() {
+      var _this3 = this;
+
+      increment++;
       var Synergy = window.Synergy || {};
       var props = this.props;
-      var modifierGlue = props.modifierGlue || Synergy.modifierGlue || '-';
-      var componentGlue = props.componentGlue || Synergy.componentGlue || '_';
-      var propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CSSClassProps), modifierGlue);
-      var passedModifiers = renderModifiers(props.modifiers, modifierGlue);
-      var modifiers = propModifiers + passedModifiers;
-      var classes = props.className ? props.className : '';
-      var multipleClasses = false;
-      if (typeof Synergy.multipleClasses !== 'undefined') multipleClasses = Synergy.multipleClasses;
-      if (typeof props.multipleClasses !== 'undefined') multipleClasses = props.multipleClasses;
-      var namespace = this.config.name || props.name;
-      var id = (props.before || props.after) && !props.id ? "synergy-module-".concat(increment) : props.id;
-      var Tag = props.tag || 'div';
-      var classNames = generateClasses({
-        props: props,
-        namespace: namespace,
-        modifiers: modifiers,
-        classes: classes,
-        modifierGlue: modifierGlue,
-        componentGlue: componentGlue,
-        multipleClasses: multipleClasses
-      });
-      if (Synergy.CSSClassProps) Synergy.CSSClassProps.forEach(function (prop) {
-        if (Object.keys(props).includes(prop)) {
-          classNames = classNames + ' ' + prop;
+      /** */
+
+      return external_react_default.a.createElement(ThemeContext.Consumer, null, function (theme) {
+        var _MODIFIERS, _objectSpread2;
+
+        /** */
+        _this3.THEME = mergeThemes(window.theme, theme, props.theme);
+        _this3.CONFIG = Module.config(props.config || {}, _this3.THEME.modules && _this3.THEME.modules[props.name]);
+        _this3.STYLES = props.styles;
+        /** */
+
+        var MODIFIERGLUE = _this3.CONFIG.modifierGlue || Synergy.modifierGlue || '--';
+        var COMPONENTGLUE = _this3.CONFIG.componentGlue || Synergy.componentGlue || '__';
+        var ID = props.id || "module-".concat(increment);
+        var NAMESPACE = _this3.CONFIG.name || props.name || props.tag || ID;
+        var TAG = props.href && 'a' || props.component || props.tag || 'div';
+        /** */
+
+        var CLASSES = props.className ? props.className + ' ' : '',
+            SELECTOR = NAMESPACE,
+            MODIFIERS = [];
+        MODIFIERS.push(props.modifiers);
+
+        (_MODIFIERS = MODIFIERS).push.apply(_MODIFIERS, _toConsumableArray(getModifiersFromProps(props)));
+
+        MODIFIERS = MODIFIERS.filter(Boolean);
+
+        if (_this3.CONFIG.singleClass) {
+          SELECTOR += MODIFIERS.length ? MODIFIERGLUE + MODIFIERS.join(MODIFIERGLUE) : '';
+        } else {
+          MODIFIERS.forEach(function (MODIFIER) {
+            return CLASSES += SELECTOR + MODIFIERGLUE + MODIFIER + ' ';
+          });
         }
+
+        CLASSES += SELECTOR;
+        /** */
+
+        var styles = _this3.getStyles(_this3.STYLES, _this3.stylesConfig());
+
+        var _ref3 = [styles[':before'], styles[':after']],
+            before = _ref3[0],
+            after = _ref3[1];
+
+        var ATTRIBUTES = _objectSpread({}, _this3.getDataAttributes(props), _this3.getEventHandlers(props), props.attributes, {
+          onMouseEnter: _this3.handleMouseEnter.bind(_this3),
+          onMouseLeave: _this3.handleMouseLeave.bind(_this3),
+          className: _this3.CONFIG.generateClasses ? CLASSES : null,
+          'data-module': _this3.CONFIG.disableDataAttributes ? null : NAMESPACE
+          /** */
+
+        });
+
+        var contextValues = _objectSpread({
+          PARENT: _this3
+        }, _this3.context, _this3.state, props, (_objectSpread2 = {
+          THEME: _this3.THEME,
+          CONFIG: _this3.CONFIG,
+          MODIFIERGLUE: MODIFIERGLUE,
+          COMPONENTGLUE: COMPONENTGLUE
+        }, module_defineProperty(_objectSpread2, NAMESPACE, _objectSpread({}, _this3.state, props)), module_defineProperty(_objectSpread2, "STYLES", _objectSpread({}, _this3.context.STYLES, styles)), module_defineProperty(_objectSpread2, "NAMESPACE", NAMESPACE), _objectSpread2));
+
+        return external_react_default.a.createElement(ModuleContext.Provider, {
+          value: contextValues
+        }, external_react_default.a.createElement(TAG, _extends({
+          id: ID,
+          ref: _this3.REF
+        }, ATTRIBUTES), before && external_react_default.a.createElement("div", {
+          className: "before",
+          style: before
+        }, before.content), props.content || props.children, after && external_react_default.a.createElement("div", {
+          className: "after",
+          style: after
+        }, after.content)));
       });
-      var contextValue = {
-        ui: this.ui,
-        styleParser: this.styleParser,
-        modifierGlue: modifierGlue,
-        componentGlue: componentGlue,
-        multipleClasses: multipleClasses,
-        config: this.config,
-        module: namespace,
-        props: props
-      };
-      return external_react_default.a.createElement(ModuleContext.Provider, {
-        value: contextValue
-      }, props.before && props.before(function () {
-        return document.getElementById(id);
-      }), external_react_default.a.createElement(Tag, _extends({
-        id: id,
-        className: classNames,
-        "data-module": namespace,
-        ref: this.REF
-      }, getHtmlProps(props), this.getDataAttributes(props), this.getEventHandlers(props), props.componentProps), props.content || props.children), props.after && props.after(function () {
-        return document.getElementById(id);
-      }));
     }
+    /** Static Methods/Properties */
+
   }]);
 
   return Module;
 }(external_react_default.a.Component);
 
-_defineProperty(module_Module, "config", function () {
-  for (var _len = arguments.length, params = new Array(_len), _key = 0; _key < _len; _key++) {
-    params[_key] = arguments[_key];
-  }
+module_defineProperty(module_Module, "contextType", ModuleContext);
 
-  // `process` and `require` are exploited to help reduce bundle size
+module_defineProperty(module_Module, "config", function () {
   if (process.env.SYNERGY) {
     var _Synergy;
 
-    return (_Synergy = Synergy).config.apply(_Synergy, [{}].concat(params));
+    return (_Synergy = Synergy).config.apply(_Synergy, arguments);
   } else if (typeof Synergy !== 'undefined' && typeof Synergy.config === 'function') {
     var _Synergy2;
 
-    return (_Synergy2 = Synergy).config.apply(_Synergy2, [{}].concat(params));
+    return (_Synergy2 = Synergy).config.apply(_Synergy2, arguments);
   } else {
-    return __webpack_require__(2).apply(void 0, [{}].concat(params));
+    return __webpack_require__(1).apply(void 0, arguments);
   }
-});
-
-_defineProperty(module_Module, "child", function (props) {
-  var childProps = Object.assign({}, props);
-  delete childProps.children;
-  var config = props.config || {};
-
-  if (window[props.name]) {
-    config = module_Module.config(window[props.name].config, config);
-  }
-
-  return external_react_default.a.Children.map(props.children, function (child) {
-    return external_react_default.a.cloneElement(child, {
-      context: childProps,
-      config: config
-    });
-  });
 });
 
 
 var module_Wrapper =
 /*#__PURE__*/
 function (_Module) {
-  _inherits(Wrapper, _Module);
+  module_inherits(Wrapper, _Module);
 
-  function Wrapper(props) {
-    var _this2;
+  function Wrapper() {
+    module_classCallCheck(this, Wrapper);
 
-    _classCallCheck(this, Wrapper);
-
-    _this2 = _possibleConstructorReturn(this, _getPrototypeOf(Wrapper).call(this, props));
-    _this2.module = props.module;
-    _this2.namespace = props.name || 'wrapper';
-
-    if (!_this2.module) {
-      if (props.children.length) {
-        _this2.module = props.children[0].type.name.toLowerCase();
-      } else {
-        _this2.module = props.children.type.name.toLowerCase();
-      }
-    }
-
-    _this2.dynamicProps = _defineProperty({}, _this2.module, true);
-    return _this2;
+    return module_possibleConstructorReturn(this, module_getPrototypeOf(Wrapper).apply(this, arguments));
   }
 
-  _createClass(Wrapper, [{
+  module_createClass(Wrapper, [{
     key: "render",
     value: function render() {
+      var MODULE = this.props.module;
+      var NAMESPACE = this.props.name || 'wrapper';
+
+      if (!MODULE) {
+        if (this.props.children.length) {
+          MODULE = this.props.children[0].type.name.toLowerCase();
+        } else {
+          MODULE = this.props.children.type.name.toLowerCase();
+        }
+      }
+
+      var DYNAMICPROPS = module_defineProperty({}, MODULE, true);
+
       return external_react_default.a.createElement(module_Module, _extends({
-        name: this.namespace
-      }, this.dynamicProps, this.props), this.props.children);
+        name: NAMESPACE
+      }, DYNAMICPROPS, this.props), this.props.children);
     }
   }]);
 
@@ -861,15 +777,15 @@ function (_Module) {
 var module_Group =
 /*#__PURE__*/
 function (_Module2) {
-  _inherits(Group, _Module2);
+  module_inherits(Group, _Module2);
 
   function Group() {
-    _classCallCheck(this, Group);
+    module_classCallCheck(this, Group);
 
-    return _possibleConstructorReturn(this, _getPrototypeOf(Group).apply(this, arguments));
+    return module_possibleConstructorReturn(this, module_getPrototypeOf(Group).apply(this, arguments));
   }
 
-  _createClass(Group, [{
+  module_createClass(Group, [{
     key: "render",
     value: function render() {
       return external_react_default.a.createElement(module_Wrapper, _extends({
@@ -883,11 +799,9 @@ function (_Module2) {
 // CONCATENATED MODULE: ./src/component.jsx
 function component_typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { component_typeof = function _typeof(obj) { return typeof obj; }; } else { component_typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return component_typeof(obj); }
 
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { component_defineProperty(target, key, source[key]); }); } return target; }
-
-function component_defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 function component_extends() { component_extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return component_extends.apply(this, arguments); }
+
+function component_objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { component_defineProperty(target, key, source[key]); }); } return target; }
 
 function component_toConsumableArray(arr) { return component_arrayWithoutHoles(arr) || component_iterableToArray(arr) || component_nonIterableSpread(); }
 
@@ -913,131 +827,110 @@ function component_inherits(subClass, superClass) { if (typeof superClass !== "f
 
 function component_setPrototypeOf(o, p) { component_setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return component_setPrototypeOf(o, p); }
 
+function component_defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
 
 
-
-
-
-var ComponentContext = external_react_default.a.createContext();
 /**
  * Render a Synergy component
  */
 
 var component_Component =
 /*#__PURE__*/
-function (_React$Component) {
-  component_inherits(Component, _React$Component);
+function (_Module) {
+  component_inherits(Component, _Module);
 
-  function Component(props) {
-    var _this;
-
+  function Component() {
     component_classCallCheck(this, Component);
 
-    _this = component_possibleConstructorReturn(this, component_getPrototypeOf(Component).call(this, props));
-    _this.REF = external_react_default.a.createRef();
-    return _this;
+    return component_possibleConstructorReturn(this, component_getPrototypeOf(Component).apply(this, arguments));
   }
 
   component_createClass(Component, [{
-    key: "getEventHandlers",
-    value: function getEventHandlers(properties) {
-      var _this2 = this;
-
-      var handlers = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
-      if (properties.constructor === Array) {
-        properties.forEach(function (group) {
-          return _this2.getEventHandlers(group, handlers);
-        });
-      } else for (var key in properties) {
-        var value = properties[key];
-
-        if (Object.keys(window).includes(key.toLowerCase())) {
-          if (typeof value === 'function') {
-            handlers[key] = value;
-          }
-        }
-      }
-
-      return handlers;
-    }
-  }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      refHandler(this.REF.current, this.props);
+      if (this.context.STYLES) {
+        this.paint(this.REF.current, this.context.STYLES[this.NAMESPACE], this.stylesConfig());
+      }
     }
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate() {
-      if (this.REF.current.repaint) {
-        this.REF.current.repaint();
+      if (this.context.STYLES) {
+        this.paint(this.REF.current, this.context.STYLES[this.NAMESPACE], this.stylesConfig());
       }
-    }
-  }, {
-    key: "renderTag",
-    value: function renderTag(props, context, subComponent) {
-      var modifierGlue = context.modifierGlue,
-          componentGlue = context.componentGlue;
-      var module = props.module || context.module;
-      var propModifiers = renderModifiers(getModifiersFromProps(props, Synergy.CSSClassProps), modifierGlue);
-      var getContextModifiers = getModifiersFromProps(context.props && context.props[props.name], Synergy.CSSClassProps);
-      var contextModifiers = renderModifiers(getContextModifiers, modifierGlue);
-      var passedModifiers = renderModifiers(props.modifiers, modifierGlue);
-      var modifiers = propModifiers + passedModifiers + contextModifiers;
-      var eventHandlers = this.getEventHandlers([props, context.config[props.name] ? context.config[props.name] : {}]);
-      var Tag = props.href && 'a' || props.component || props.tag || 'div';
-      var contextValues = {
-        component: context.component
-      };
-      var namespace;
-
-      if (subComponent) {
-        contextValues.subComponent = [].concat(component_toConsumableArray(context.subComponent || []), [props.name]);
-        var subComponents = contextValues.subComponent.length ? contextValues.subComponent.join(componentGlue) : '';
-        namespace = "".concat(module + componentGlue + (context.component || props.name) + componentGlue + subComponents);
-      } else {
-        contextValues.component = props.name;
-        namespace = module + componentGlue + props.name;
-      }
-
-      var classes = generateClasses({
-        props: props,
-        namespace: namespace,
-        modifiers: modifiers,
-        classes: props.className ? props.className : '',
-        modifierGlue: modifierGlue,
-        componentGlue: componentGlue,
-        multipleClasses: context.multipleClasses
-      });
-      return external_react_default.a.createElement(ComponentContext.Provider, {
-        value: contextValues
-      }, external_react_default.a.createElement(Tag, component_extends({}, getHtmlProps(props), eventHandlers, {
-        ref: this.REF,
-        className: classes,
-        "data-component": props.name.constructor === Array ? props.name[0] : props.name
-      }, this.props.componentProps), props.content || props.children));
     }
   }, {
     key: "render",
     value: function render() {
-      var _this3 = this;
+      var _MODIFIERS, _objectSpread2;
 
-      return external_react_default.a.createElement(ModuleContext.Consumer, null, function (context) {
-        if (_this3.props.subComponent) {
-          return external_react_default.a.createElement(ComponentContext.Consumer, null, function (componentContext) {
-            return _this3.renderTag(_this3.props, _objectSpread({}, context, componentContext), true);
-          });
-        }
+      /** */
+      var props = this.props;
+      var _this$context = this.context,
+          MODIFIERGLUE = _this$context.MODIFIERGLUE,
+          COMPONENTGLUE = _this$context.COMPONENTGLUE;
+      this.NAMESPACE = props.name || props.tag;
+      var STRICT_NAMESPACE = (this.context.STRICT_NAMESPACE || this.context.NAMESPACE) + COMPONENTGLUE + this.NAMESPACE;
+      var TAG = props.href && 'a' || props.component || props.tag || 'div';
+      /** */
 
-        return _this3.renderTag(_this3.props, context);
+      var CLASSES = props.className ? props.className + ' ' : '',
+          MODIFIERS = [];
+      var SELECTOR = props.subComponent ? STRICT_NAMESPACE : this.context.NAMESPACE + COMPONENTGLUE + this.NAMESPACE;
+      MODIFIERS.push(props.modifiers);
+
+      (_MODIFIERS = MODIFIERS).push.apply(_MODIFIERS, component_toConsumableArray(getModifiersFromProps(props)));
+
+      MODIFIERS = MODIFIERS.filter(Boolean);
+
+      if (this.context.CONFIG.singleClass) {
+        SELECTOR += MODIFIERS.length ? MODIFIERGLUE + MODIFIERS.join(MODIFIERGLUE) : '';
+      } else {
+        MODIFIERS.forEach(function (MODIFIER) {
+          return CLASSES += SELECTOR + MODIFIERGLUE + MODIFIER + ' ';
+        });
+      }
+
+      CLASSES += SELECTOR;
+      /** */
+
+      var styles = this.getStyles(this.context.STYLES[this.NAMESPACE], this.stylesConfig());
+      var _ref = [styles[':before'], styles[':after']],
+          before = _ref[0],
+          after = _ref[1];
+
+      var ATTRIBUTES = component_objectSpread({}, this.getDataAttributes(props), this.getEventHandlers(props), props.attributes, {
+        onMouseEnter: this.handleMouseEnter.bind(this),
+        onMouseLeave: this.handleMouseLeave.bind(this),
+        className: this.context.CONFIG.generateClasses ? CLASSES : null,
+        'data-component': this.context.CONFIG.disableDataAttributes ? null : this.NAMESPACE,
+        'data-sub-component': this.context.CONFIG.disableDataAttributes ? null : props.subComponent
+        /** */
+
       });
+
+      var contextValues = component_objectSpread({}, this.context, this.state, props, (_objectSpread2 = {}, component_defineProperty(_objectSpread2, this.NAMESPACE, component_objectSpread({}, this.state, props)), component_defineProperty(_objectSpread2, "STYLES", component_objectSpread({}, this.context.STYLES, styles)), component_defineProperty(_objectSpread2, "STRICT_NAMESPACE", STRICT_NAMESPACE), _objectSpread2));
+
+      return external_react_default.a.createElement(ModuleContext.Provider, {
+        value: contextValues
+      }, external_react_default.a.createElement(TAG, component_extends({
+        ref: this.REF
+      }, ATTRIBUTES), before && external_react_default.a.createElement("div", {
+        className: "before",
+        style: before
+      }, before.content), props.content || props.children, after && external_react_default.a.createElement("div", {
+        className: "after",
+        style: after
+      }, after.content)));
     }
   }]);
 
   return Component;
-}(external_react_default.a.Component);
+}(module_Module);
+
+component_defineProperty(component_Component, "contextType", ModuleContext);
 
 
 var component_SubComponent = function SubComponent(props) {
