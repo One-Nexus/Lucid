@@ -6,16 +6,17 @@
   "author": "(Edmund Reed)[http://twitter.com/esr360] <esr360@live.com>",
   "homepage": "https://github.com/One-Nexus/Lucid",
   "keywords": [
-    "javascript",
     "modular",
     "modules",
     "components",
-    "front-end",
+    "BEM",
     "ui",
+    "javascript",
     "css",
-    "styling",
-    "web",
-    "react"
+    "jss",
+    "css-in-js",
+    "react",
+    "react-dom"
   ],
   "bugs": {
     "url": "https://github.com/One-Nexus/Lucid/issues"
@@ -27,10 +28,8 @@
   },
   "dependencies": {
     "deep-extend": "^0.5.1",
-    "html-attributes": "^1.1.0",
     "react": "^16.8.0",
-    "react-dom": "^16.8.0",
-    "uuid": "^3.3.2"
+    "react-dom": "^16.8.0"
   },
   "devDependencies": {
     "@babel/core": "^7.2.2",
@@ -39,7 +38,6 @@
     "@babel/preset-react": "^7.0.0",
     "@babel/register": "^7.0.0",
     "babel-loader": "^8.0.5",
-    "concat": "^1.0.3",
     "eslint": "^4.14.0",
     "jsdoc": "^3.5.5",
     "jsdom": "^13.1.0",

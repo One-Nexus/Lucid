@@ -33,7 +33,9 @@ export default class Component extends Module {
     let SELECTOR = props.subComponent ? STRICT_NAMESPACE : this.context.NAMESPACE + COMPONENTGLUE + this.NAMESPACE;
 
     MODIFIERS.push(props.modifiers);
-    MODIFIERS.push(...getModifiersFromProps(props));
+    // MODIFIERS.push(...getModifiersFromProps(props));
+    MODIFIERS = MODIFIERS.concat(getModifiersFromProps(props));
+    MODIFIERS = MODIFIERS.filter((item, pos) => MODIFIERS.indexOf(item) === pos);
     MODIFIERS = MODIFIERS.filter(Boolean);
 
     if (this.context.CONFIG.singleClass) {

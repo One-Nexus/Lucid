@@ -294,14 +294,6 @@ function getModifiersFromProps(props) {
 // CONCATENATED MODULE: ./src/utilities/mergeThemes.js
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
-
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
-
-function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
-
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-
 function mergeThemes() {
   var THEME = {};
 
@@ -322,10 +314,9 @@ function mergeThemes() {
 
 function evalVal(theme) {
   var THEME = theme;
-  Object.entries(THEME).forEach(function (_ref) {
-    var _ref2 = _slicedToArray(_ref, 2),
-        key = _ref2[0],
-        value = _ref2[1];
+  Object.entries(THEME).forEach(function (THEME) {
+    var key = THEME[0];
+    var value = THEME[1];
 
     if (_typeof(value) === 'object') {
       THEME[key] = evalVal(value);
@@ -410,23 +401,9 @@ function module_typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.
 
 function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 
-function module_slicedToArray(arr, i) { return module_arrayWithHoles(arr) || module_iterableToArrayLimit(arr, i) || module_nonIterableRest(); }
-
-function module_nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
-
-function module_iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
-
-function module_arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+function _readOnlyError(name) { throw new Error("\"" + name + "\" is read-only"); }
 
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { module_defineProperty(target, key, source[key]); }); } return target; }
-
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
-
-function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
 
 function module_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -541,7 +518,10 @@ function (_React$Component) {
       }
 
       if (styles instanceof Array) {
-        styles = Module.config.apply(Module, [{}].concat(_toConsumableArray(styles)));
+        // styles = Module.config({}, ...styles);
+        styles = Module.config({}, styles.reduce(function (acc, item) {
+          return Object.assign(acc, item);
+        }, {}));
       }
 
       return styles;
@@ -581,24 +561,19 @@ function (_React$Component) {
         });
       }
 
-      Object.entries(styles).forEach(function (_ref) {
-        var _ref2 = module_slicedToArray(_ref, 2),
-            key = _ref2[0],
-            value = _ref2[1];
+      Object.entries(styles).forEach(function (style) {
+        var key = style[0];
+        var value = style[1];
 
         if (value instanceof Array) {
-          var _value = value;
-
-          var _value2 = module_slicedToArray(_value, 2);
-
-          node = _value2[0];
-          styles = _value2[1];
+          node = value[0];
+          styles = value[1];
           return _this2.paint(node(), styles, options);
         }
 
         if (typeof value === 'function') {
           try {
-            value = value(node.style[key]);
+            value = (_readOnlyError("value"), value(node.style[key]));
           } catch (error) {
             return error;
           }
@@ -642,7 +617,7 @@ function (_React$Component) {
       /** */
 
       return external_react_default.a.createElement(ThemeContext.Consumer, null, function (theme) {
-        var _MODIFIERS, _objectSpread2;
+        var _objectSpread2;
 
         /** */
         _this3.THEME = mergeThemes(window.theme, theme, props.theme);
@@ -660,10 +635,12 @@ function (_React$Component) {
         var CLASSES = props.className ? props.className + ' ' : '',
             SELECTOR = NAMESPACE,
             MODIFIERS = [];
-        MODIFIERS.push(props.modifiers);
+        MODIFIERS.push(props.modifiers); // MODIFIERS.push(...getModifiersFromProps(props));
 
-        (_MODIFIERS = MODIFIERS).push.apply(_MODIFIERS, _toConsumableArray(getModifiersFromProps(props)));
-
+        MODIFIERS = MODIFIERS.concat(getModifiersFromProps(props));
+        MODIFIERS = MODIFIERS.filter(function (item, pos) {
+          return MODIFIERS.indexOf(item) === pos;
+        });
         MODIFIERS = MODIFIERS.filter(Boolean);
 
         if (_this3.CONFIG.singleClass) {
@@ -679,9 +656,9 @@ function (_React$Component) {
 
         var styles = _this3.getStyles(_this3.STYLES, _this3.stylesConfig());
 
-        var _ref3 = [styles[':before'], styles[':after']],
-            before = _ref3[0],
-            after = _ref3[1];
+        var _ref = [styles[':before'], styles[':after']],
+            before = _ref[0],
+            after = _ref[1];
 
         var ATTRIBUTES = _objectSpread({}, _this3.getDataAttributes(props), _this3.getEventHandlers(props), props.attributes, {
           onMouseEnter: _this3.handleMouseEnter.bind(_this3),
@@ -803,14 +780,6 @@ function component_extends() { component_extends = Object.assign || function (ta
 
 function component_objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { component_defineProperty(target, key, source[key]); }); } return target; }
 
-function component_toConsumableArray(arr) { return component_arrayWithoutHoles(arr) || component_iterableToArray(arr) || component_nonIterableSpread(); }
-
-function component_nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
-
-function component_iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
-
-function component_arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
-
 function component_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function component_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -864,7 +833,7 @@ function (_Module) {
   }, {
     key: "render",
     value: function render() {
-      var _MODIFIERS, _objectSpread2;
+      var _objectSpread2;
 
       /** */
       var props = this.props;
@@ -879,10 +848,12 @@ function (_Module) {
       var CLASSES = props.className ? props.className + ' ' : '',
           MODIFIERS = [];
       var SELECTOR = props.subComponent ? STRICT_NAMESPACE : this.context.NAMESPACE + COMPONENTGLUE + this.NAMESPACE;
-      MODIFIERS.push(props.modifiers);
+      MODIFIERS.push(props.modifiers); // MODIFIERS.push(...getModifiersFromProps(props));
 
-      (_MODIFIERS = MODIFIERS).push.apply(_MODIFIERS, component_toConsumableArray(getModifiersFromProps(props)));
-
+      MODIFIERS = MODIFIERS.concat(getModifiersFromProps(props));
+      MODIFIERS = MODIFIERS.filter(function (item, pos) {
+        return MODIFIERS.indexOf(item) === pos;
+      });
       MODIFIERS = MODIFIERS.filter(Boolean);
 
       if (this.context.CONFIG.singleClass) {
@@ -947,11 +918,6 @@ var component_SubComponent = function SubComponent(props) {
 /* concated harmony reexport SubComponent */__webpack_require__.d(__webpack_exports__, "SubComponent", function() { return component_SubComponent; });
 
 
-var BEM = {
-  Block: module_Module,
-  Element: component_Component,
-  SubElement: component_SubComponent
-};
 /* harmony default export */ var src = __webpack_exports__["default"] = ({
   Module: module_Module,
   Component: component_Component,

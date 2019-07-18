@@ -77,7 +77,8 @@ export default class Module extends React.Component {
     }
 
     if (styles instanceof Array) {
-      styles = Module.config({}, ...styles);
+      // styles = Module.config({}, ...styles);
+      styles = Module.config({}, styles.reduce((acc, item) => Object.assign(acc, item), {}));
     }
   
     return styles;
@@ -110,9 +111,13 @@ export default class Module extends React.Component {
       return styles.forEach(style => this.paint(node, style, options));
     }
   
-    Object.entries(styles).forEach(([key, value]) => {
+    Object.entries(styles).forEach(style => {
+      const key = style[0];
+      const value = style[1];
+
       if (value instanceof Array) {
-        [node, styles] = value;
+        node = value[0];
+        styles = value[1];
 
         return this.paint(node(), styles, options);
       }
@@ -178,7 +183,9 @@ export default class Module extends React.Component {
           let [CLASSES, SELECTOR, MODIFIERS] = [props.className ? props.className + ' ' : '', NAMESPACE, []];
 
           MODIFIERS.push(props.modifiers);
-          MODIFIERS.push(...getModifiersFromProps(props));
+          // MODIFIERS.push(...getModifiersFromProps(props));
+          MODIFIERS = MODIFIERS.concat(getModifiersFromProps(props));
+          MODIFIERS = MODIFIERS.filter((item, pos) => MODIFIERS.indexOf(item) === pos);
           MODIFIERS = MODIFIERS.filter(Boolean);
 
           if (this.CONFIG.singleClass) {
