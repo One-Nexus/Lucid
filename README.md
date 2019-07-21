@@ -33,7 +33,7 @@ const styles = () => ({
     
     ':hover': {
       backgroundColor: 'purple'
-    }),
+    },
 
     // ...or alternatively:
     ...(state.isHovered && {
@@ -67,6 +67,8 @@ const Accordion = ({ panels }) => (
 
 export default Accordion;
 ```
+
+> [View this example on CodeSandbox](https://codesandbox.io/s/fervent-pine-3lgoo)
 
 ### Features
 
