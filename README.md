@@ -77,7 +77,7 @@ export default Accordion;
 * It's just JavaScript; no nonsense CSS selectors as object keys etc.
 * No CSS classes or `className` props required
 * Improve the readability of your source code
-* Improve the readability of your production code (because why not?)
+* Improve the readability of your production code ([why is this important?](https://twitter.com/ESR360/status/1151879057409265666))
 * Low barrier to entry - if you know React you can easily pick this up
 * Based off state and context - not only the most fiendly API but the most flexible
 * Inherent flexible nature supports themes, configuration etc without dedicated APIs ([though they are provided](https://github.com/One-Nexus/Lucid/wiki/Creating-a-Styled-Module))
