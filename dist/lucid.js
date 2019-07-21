@@ -621,7 +621,10 @@ function (_React$Component) {
 
         /** */
         _this3.THEME = mergeThemes(window.theme, theme, props.theme);
-        _this3.CONFIG = Module.config(props.config || {}, _this3.THEME.modules && _this3.THEME.modules[props.name]);
+        _this3.CONFIG = Module.config({
+          generateClasses: true,
+          generateDataAttributes: true
+        }, props.config, _this3.THEME.modules && _this3.THEME.modules[props.name]);
         _this3.STYLES = props.styles;
         /** */
 

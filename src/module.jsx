@@ -169,7 +169,11 @@ export default class Module extends React.Component {
         {theme => {
           /** */
           this.THEME = mergeThemes(window.theme, theme, props.theme);
-          this.CONFIG = Module.config(props.config || {}, this.THEME.modules && this.THEME.modules[props.name]);
+          this.CONFIG = Module.config(
+            { generateClasses: true, generateDataAttributes: true }, 
+            props.config, 
+            this.THEME.modules && this.THEME.modules[props.name]
+          );
           this.STYLES = props.styles;
 
           /** */
