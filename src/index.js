@@ -1,11 +1,6 @@
 import Module, { Wrapper, Group } from './module';
 import Component, { SubComponent } from './component';
-
-export default {
-  Module,
-  Component,
-  SubComponent
-}
+import Provider from './provider';
 
 export {
   Module,
@@ -13,5 +8,5 @@ export {
   Group,
   Component,
   SubComponent,
-  BEM
+  Provider
 }

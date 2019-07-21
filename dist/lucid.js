@@ -910,19 +910,15 @@ var component_SubComponent = function SubComponent(props) {
   }, props), props.children);
 };
 // CONCATENATED MODULE: ./src/index.js
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BEM", function() { return BEM; });
 /* concated harmony reexport Module */__webpack_require__.d(__webpack_exports__, "Module", function() { return module_Module; });
 /* concated harmony reexport Wrapper */__webpack_require__.d(__webpack_exports__, "Wrapper", function() { return module_Wrapper; });
 /* concated harmony reexport Group */__webpack_require__.d(__webpack_exports__, "Group", function() { return module_Group; });
 /* concated harmony reexport Component */__webpack_require__.d(__webpack_exports__, "Component", function() { return component_Component; });
 /* concated harmony reexport SubComponent */__webpack_require__.d(__webpack_exports__, "SubComponent", function() { return component_SubComponent; });
+/* concated harmony reexport Provider */__webpack_require__.d(__webpack_exports__, "Provider", function() { return provider_Provider; });
 
 
-/* harmony default export */ var src = __webpack_exports__["default"] = ({
-  Module: module_Module,
-  Component: component_Component,
-  SubComponent: component_SubComponent
-});
+
 
 
 /***/ })
