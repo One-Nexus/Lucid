@@ -625,8 +625,11 @@ function (_React$Component) {
         _this3.STYLES = props.styles;
         /** */
 
-        var MODIFIERGLUE = _this3.CONFIG.modifierGlue || Synergy.modifierGlue || '--';
-        var COMPONENTGLUE = _this3.CONFIG.componentGlue || Synergy.componentGlue || '__';
+        var MODIFIERGLUE = props.modifierGlue || _this3.CONFIG.modifierGlue || Synergy.modifierGlue || '--';
+        var COMPONENTGLUE = props.componentGlue || _this3.CONFIG.componentGlue || Synergy.componentGlue || '__';
+        var SINGLECLASS = props.singleClass || _this3.CONFIG.singleClass || false;
+        var GENERATECLASSES = props.generateClasses || _this3.CONFIG.generateClasses;
+        var GENERATEDATAATTRIBUTES = props.generateDataAttributes || _this3.CONFIG.generateDataAttributes;
         var ID = props.id || "module-".concat(increment);
         var NAMESPACE = _this3.CONFIG.name || props.name || props.tag || ID;
         var TAG = props.href && 'a' || props.component || props.tag || 'div';
@@ -643,7 +646,7 @@ function (_React$Component) {
         });
         MODIFIERS = MODIFIERS.filter(Boolean);
 
-        if (_this3.CONFIG.singleClass) {
+        if (SINGLECLASS) {
           SELECTOR += MODIFIERS.length ? MODIFIERGLUE + MODIFIERS.join(MODIFIERGLUE) : '';
         } else {
           MODIFIERS.forEach(function (MODIFIER) {
@@ -663,8 +666,8 @@ function (_React$Component) {
         var ATTRIBUTES = _objectSpread({}, _this3.getDataAttributes(props), _this3.getEventHandlers(props), props.attributes, {
           onMouseEnter: _this3.handleMouseEnter.bind(_this3),
           onMouseLeave: _this3.handleMouseLeave.bind(_this3),
-          className: _this3.CONFIG.generateClasses ? CLASSES : null,
-          'data-module': _this3.CONFIG.disableDataAttributes ? null : NAMESPACE
+          className: GENERATECLASSES ? CLASSES : null,
+          'data-module': GENERATEDATAATTRIBUTES ? NAMESPACE : null
           /** */
 
         });
@@ -675,7 +678,10 @@ function (_React$Component) {
           THEME: _this3.THEME,
           CONFIG: _this3.CONFIG,
           MODIFIERGLUE: MODIFIERGLUE,
-          COMPONENTGLUE: COMPONENTGLUE
+          COMPONENTGLUE: COMPONENTGLUE,
+          SINGLECLASS: SINGLECLASS,
+          GENERATECLASSES: GENERATECLASSES,
+          GENERATEDATAATTRIBUTES: GENERATEDATAATTRIBUTES
         }, module_defineProperty(_objectSpread2, NAMESPACE, _objectSpread({}, _this3.state, props)), module_defineProperty(_objectSpread2, "STYLES", _objectSpread({}, _this3.context.STYLES, styles)), module_defineProperty(_objectSpread2, "NAMESPACE", NAMESPACE), _objectSpread2));
 
         return external_react_default.a.createElement(ModuleContext.Provider, {
@@ -856,7 +862,7 @@ function (_Module) {
       });
       MODIFIERS = MODIFIERS.filter(Boolean);
 
-      if (this.context.CONFIG.singleClass) {
+      if (this.context.SINGLECLASS) {
         SELECTOR += MODIFIERS.length ? MODIFIERGLUE + MODIFIERS.join(MODIFIERGLUE) : '';
       } else {
         MODIFIERS.forEach(function (MODIFIER) {
@@ -875,9 +881,9 @@ function (_Module) {
       var ATTRIBUTES = component_objectSpread({}, this.getDataAttributes(props), this.getEventHandlers(props), props.attributes, {
         onMouseEnter: this.handleMouseEnter.bind(this),
         onMouseLeave: this.handleMouseLeave.bind(this),
-        className: this.context.CONFIG.generateClasses ? CLASSES : null,
-        'data-component': this.context.CONFIG.disableDataAttributes ? null : this.NAMESPACE,
-        'data-sub-component': this.context.CONFIG.disableDataAttributes ? null : props.subComponent
+        className: this.context.GENERATECLASSES ? CLASSES : null,
+        'data-component': this.context.GENERATEDATAATTRIBUTES ? this.NAMESPACE : null,
+        'data-sub-component': this.context.GENERATEDATAATTRIBUTES ? props.subComponent : null
         /** */
 
       });

@@ -38,7 +38,7 @@ export default class Component extends Module {
     MODIFIERS = MODIFIERS.filter((item, pos) => MODIFIERS.indexOf(item) === pos);
     MODIFIERS = MODIFIERS.filter(Boolean);
 
-    if (this.context.CONFIG.singleClass) {
+    if (this.context.SINGLECLASS) {
       SELECTOR += MODIFIERS.length ? MODIFIERGLUE + MODIFIERS.join(MODIFIERGLUE) : '';
     } else {
       MODIFIERS.forEach(MODIFIER => CLASSES += SELECTOR + MODIFIERGLUE + MODIFIER + ' ');
@@ -58,9 +58,9 @@ export default class Component extends Module {
       onMouseEnter: this.handleMouseEnter.bind(this),
       onMouseLeave: this.handleMouseLeave.bind(this),
 
-      className: this.context.CONFIG.generateClasses ? CLASSES : null,
-      'data-component': this.context.CONFIG.disableDataAttributes ? null : this.NAMESPACE,
-      'data-sub-component': this.context.CONFIG.disableDataAttributes ? null : props.subComponent
+      className: this.context.GENERATECLASSES ? CLASSES : null,
+      'data-component': this.context.GENERATEDATAATTRIBUTES ? this.NAMESPACE : null,
+      'data-sub-component': this.context.GENERATEDATAATTRIBUTES ? props.subComponent : null
     }
 
     /** */

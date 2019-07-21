@@ -173,8 +173,11 @@ export default class Module extends React.Component {
           this.STYLES = props.styles;
 
           /** */
-          const MODIFIERGLUE = this.CONFIG.modifierGlue || Synergy.modifierGlue || '--';
-          const COMPONENTGLUE = this.CONFIG.componentGlue || Synergy.componentGlue || '__';
+          const MODIFIERGLUE = props.modifierGlue || this.CONFIG.modifierGlue || Synergy.modifierGlue || '--';
+          const COMPONENTGLUE = props.componentGlue || this.CONFIG.componentGlue || Synergy.componentGlue || '__';
+          const SINGLECLASS = props.singleClass || this.CONFIG.singleClass || false;
+          const GENERATECLASSES = props.generateClasses || this.CONFIG.generateClasses;
+          const GENERATEDATAATTRIBUTES = props.generateDataAttributes || this.CONFIG.generateDataAttributes;
           const ID = props.id || `module-${increment}`;
           const NAMESPACE = this.CONFIG.name || props.name || props.tag || ID;
           const TAG = (props.href && 'a') || props.component || props.tag || 'div';
@@ -188,7 +191,7 @@ export default class Module extends React.Component {
           MODIFIERS = MODIFIERS.filter((item, pos) => MODIFIERS.indexOf(item) === pos);
           MODIFIERS = MODIFIERS.filter(Boolean);
 
-          if (this.CONFIG.singleClass) {
+          if (SINGLECLASS) {
             SELECTOR += MODIFIERS.length ? MODIFIERGLUE + MODIFIERS.join(MODIFIERGLUE) : '';
           } else {
             MODIFIERS.forEach(MODIFIER => CLASSES += SELECTOR + MODIFIERGLUE + MODIFIER + ' ');
@@ -208,8 +211,8 @@ export default class Module extends React.Component {
             onMouseEnter: this.handleMouseEnter.bind(this),
             onMouseLeave: this.handleMouseLeave.bind(this),
 
-            className: this.CONFIG.generateClasses ? CLASSES : null,
-            'data-module': this.CONFIG.disableDataAttributes ? null : NAMESPACE
+            className: GENERATECLASSES ? CLASSES : null,
+            'data-module': GENERATEDATAATTRIBUTES ? NAMESPACE : null
           }
 
           /** */
@@ -225,6 +228,9 @@ export default class Module extends React.Component {
 
             MODIFIERGLUE, 
             COMPONENTGLUE,
+            SINGLECLASS,
+            GENERATECLASSES,
+            GENERATEDATAATTRIBUTES,
 
             [NAMESPACE]: {
               ...this.state,
