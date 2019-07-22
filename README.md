@@ -88,7 +88,7 @@ export default Accordion;
 * Utilises React's context API under the hood
 * Singular styles object (or function that returns an object) passed to `<Module>`
 * Styles are mapped to child components by matching keys with `<Component>` `name` props
-* Parent props/state is [available as `context`](https://github.com/One-Nexus/Lucid/wiki/Creating-a-Styled-Module#context), self props/state is [available as `state`](https://github.com/One-Nexus/Lucid/wiki/Creating-a-Styled-Module#state)
+* Parent props/state are [available as `context`](https://github.com/One-Nexus/Lucid/wiki/Creating-a-Styled-Module#context), self props/state are [available as `state`](https://github.com/One-Nexus/Lucid/wiki/Creating-a-Styled-Module#state)
 * Simulate CSS *cascading* by [taking advantage of ES6 syntax](https://github.com/One-Nexus/Lucid/wiki/Creating-a-Styled-Module#simulated-cascading)
 
 ## Installation/Setup
