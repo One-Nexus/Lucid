@@ -124,6 +124,7 @@ import {
 * [`<Wrapper>`](https://github.com/One-Nexus/Lucid/wiki/Wrapper)
 * [`<Group>`](https://github.com/One-Nexus/Lucid/wiki/Group)
 * [`<Provider>`](https://github.com/One-Nexus/Lucid/wiki/Provider)
+* [`styled`](https://github.com/One-Nexus/Lucid/wiki/styled)
 
 ---
 
