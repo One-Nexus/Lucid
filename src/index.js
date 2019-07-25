@@ -1,6 +1,7 @@
 import Module, { Wrapper, Group } from './module';
 import Component, { SubComponent } from './component';
 import Provider from './provider';
+import styled from './styled';
 
 export {
   Module,
@@ -8,5 +9,6 @@ export {
   Group,
   Component,
   SubComponent,
-  Provider
+  Provider,
+  styled
 }
