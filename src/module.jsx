@@ -23,6 +23,14 @@ export default class Module extends React.Component {
     this.state = {
       isHovered: false
     }
+
+    if (window.Synergy) {
+      const SYNERGY_MODULE = window[props.name] || {};
+      const { config, layout } = SYNERGY_MODULE;
+
+      this.CONFIG = config;
+      this.STYLES = layout;
+    }
   }
 
   handleMouseEnter(event) {
@@ -77,8 +85,28 @@ export default class Module extends React.Component {
     }
 
     if (styles instanceof Array) {
-      // styles = Module.config({}, ...styles);
-      styles = Module.config({}, styles.reduce((acc, item) => Object.assign(acc, item), {}));
+      const accumulator = {}
+
+      styles.forEach(style => {
+        Object.entries(style).forEach(entry => {
+          const key = entry[0];
+          const val = entry[1];
+  
+          let self = accumulator[key];
+  
+          if (self) {
+            if (self instanceof Array) {
+              accumulator[key] = self.concat(val);
+            } else {
+              accumulator[key] = [self, val];
+            }
+          } else {
+            accumulator[key] = val;
+          }
+        });
+      });
+  
+      styles = accumulator;
     }
   
     return styles;
@@ -119,7 +147,11 @@ export default class Module extends React.Component {
         node = value[0];
         styles = value[1];
 
-        return this.paint(node(), styles, options);
+        try {
+          return this.paint(node(), styles, options);
+        } catch(error) {
+          return error;
+        }
       }
 
       if (typeof value === 'function') {
@@ -131,6 +163,10 @@ export default class Module extends React.Component {
       }
 
       if (key === ':hover' && options.state.isHovered) {
+        return this.paint(node, value, options);
+      }
+
+      if (key.indexOf('is-') === 0 && options.state[key.replace('is-', '')]) {
         return this.paint(node, value, options);
       }
 
@@ -169,12 +205,14 @@ export default class Module extends React.Component {
         {theme => {
           /** */
           this.THEME = mergeThemes(window.theme, theme, props.theme);
+          // @TODO - props.config may be a function and will need evaluating (props.config(this.THEME))
           this.CONFIG = Module.config(
-            { generateClasses: true, generateDataAttributes: true }, 
-            props.config, 
+            { generateClasses: true, generateDataAttributes: true },
+            this.CONFIG, props.config, 
             this.THEME.modules && this.THEME.modules[props.name]
           );
-          this.STYLES = props.styles;
+          // this.STYLES = props.styles || this.STYLES;
+          this.STYLES = this.getStyles(props.styles || this.STYLES, this.stylesConfig());
 
           /** */
           const MODIFIERGLUE = props.modifierGlue || this.CONFIG.modifierGlue || Synergy.modifierGlue || '--';
@@ -185,6 +223,8 @@ export default class Module extends React.Component {
           const ID = props.id || `module-${increment}`;
           const NAMESPACE = this.CONFIG.name || props.name || props.tag || ID;
           const TAG = (props.href && 'a') || props.component || props.tag || 'div';
+
+          this.NAMESPACE = NAMESPACE;
 
           /** */
           let [CLASSES, SELECTOR, MODIFIERS] = [props.className ? props.className + ' ' : '', NAMESPACE, []];
@@ -204,8 +244,7 @@ export default class Module extends React.Component {
           CLASSES += SELECTOR;
 
           /** */
-          const styles = this.getStyles(this.STYLES, this.stylesConfig());
-          const [before, after] = [styles[':before'], styles[':after']];
+          const [before, after] = [this.STYLES[':before'], this.STYLES[':after']];
 
           const ATTRIBUTES = {
             ...this.getDataAttributes(props),
@@ -243,7 +282,7 @@ export default class Module extends React.Component {
 
             STYLES: { 
               ...this.context.STYLES, 
-              ...styles
+              ...this.STYLES
             },
 
             NAMESPACE

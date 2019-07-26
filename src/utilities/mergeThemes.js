@@ -24,7 +24,11 @@ function evalVal(theme) {
       THEME[key] = evalVal(value)
     }
     if (typeof value === 'function') {
-      THEME[key] = value(THEME);
+      try {
+        THEME[key] = value(THEME);
+      } catch(error) {
+        THEME[key] = value;
+      }
     }
   });
 

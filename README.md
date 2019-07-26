@@ -54,10 +54,10 @@ const Accordion = ({ panels }) => (
       return (
         <Component name='panel' isOpen={isOpen}>
           <Component name='heading' onClick={() => toggle(!isOpen)}>
-            {content}
+            {heading}
           </Component>
           <Component name='content'>
-            {heading}
+            {content}
           </Component>
         </Component>
       );
