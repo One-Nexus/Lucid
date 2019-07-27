@@ -6,16 +6,35 @@ import Module, { ModuleContext } from './module.jsx';
  * Render a Synergy component
  */
 export default class Component extends Module {
-  componentDidMount() {
-    if (this.context.STYLES) {
-      // console.log(this.REF.current, this.stylesConfig())
-      this.paint(this.REF.current, this.context.STYLES[this.NAMESPACE], this.stylesConfig());
+  constructor(props, context) {
+    super(props);
+
+    this.REF = React.createRef();
+    this.NAMESPACE = props.name || props.tag;
+    this.STYLES = context.STYLES[this.NAMESPACE]
+
+    this.state = {
+      isHovered: false,
+      isFirstChild: false,
+      isLastChild: false
     }
   }
 
-  componentDidUpdate() {
-    if (this.context.STYLES) {
-      this.paint(this.REF.current, this.context.STYLES[this.NAMESPACE], this.stylesConfig());
+  componentDidMount() {
+    if (this.STYLES) {
+      this.paint(this.REF.current, this.STYLES, this.stylesConfig());
+    }
+
+    this.setStyleStates();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.STYLES) {
+      this.paint(this.REF.current, this.STYLES, this.stylesConfig());
+    }
+    // @TODO confirm this does what is expected
+    if (prevProps.children.length !== this.props.children.length) {
+      this.setStyleStates();
     }
   }
 
@@ -24,10 +43,9 @@ export default class Component extends Module {
     const { props } = this;
     const { MODIFIERGLUE, COMPONENTGLUE } = this.context;
 
-    this.NAMESPACE = props.name || props.tag;
-
     const STRICT_NAMESPACE = (this.context.STRICT_NAMESPACE || this.context.NAMESPACE) + COMPONENTGLUE + this.NAMESPACE;
     const TAG = (props.href && 'a') || props.component || props.tag || 'div';
+    const STYLES = this.getStyles(this.STYLES, this.stylesConfig());
 
     /** */
     let [CLASSES, MODIFIERS] = [props.className ? props.className + ' ' : '', []];
@@ -48,8 +66,7 @@ export default class Component extends Module {
     CLASSES += SELECTOR;
 
     /** */
-    const styles = this.getStyles(this.context.STYLES[this.NAMESPACE], this.stylesConfig());
-    const [before, after] = [styles[':before'], styles[':after']];
+    const [before, after] = [STYLES[':before'], STYLES[':after']];
 
     const ATTRIBUTES = {
       ...this.getDataAttributes(props),
@@ -64,8 +81,6 @@ export default class Component extends Module {
       'data-sub-component': this.context.GENERATEDATAATTRIBUTES ? props.subComponent : null
     }
 
-    // console.log(this.state);
-
     /** */
     const contextValues = { 
       ...this.context,
@@ -79,7 +94,7 @@ export default class Component extends Module {
 
       STYLES: { 
         ...this.context.STYLES, 
-        ...styles
+        ...STYLES
       },
 
       STRICT_NAMESPACE

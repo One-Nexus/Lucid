@@ -15,21 +15,24 @@ export { ModuleContext }
 
 /** Render a Synergy module */
 export default class Module extends React.Component {
-  constructor(props) {
+  constructor(props, context) {
     super(props);
 
     this.REF = React.createRef();
-
-    this.state = {
-      isHovered: false
-    }
+    this.STYLES = props.styles;
 
     if (window.Synergy) {
       const SYNERGY_MODULE = window[props.name] || {};
       const { config, layout } = SYNERGY_MODULE;
 
-      this.CONFIG = config;
-      this.STYLES = layout;
+      if (config) this.CONFIG = config;
+      if (layout) this.STYLES = layout;
+    }
+
+    this.state = {
+      isHovered: false,
+      isFirstChild: false,
+      isLastChild: false
     }
   }
 
@@ -86,6 +89,8 @@ export default class Module extends React.Component {
 
     if (styles instanceof Array) {
       styles = styles.reduce((accumulator, item) => {
+        if (!item) return accumulator;
+
         Object.entries(item).forEach(entry => {
           const key = entry[0];
           const val = entry[1];
@@ -109,21 +114,14 @@ export default class Module extends React.Component {
   }
 
   stylesConfig(theme = this.THEME, config = this.CONFIG) {
-    const node = this.REF.current;
-
-    // console.log(this.context)
-  
     return {
       theme,
       config,
       state: {
-        isFirstChild: node && node === node.parentNode.firstChild,
-        isLastChild: node && node === node.parentNode.lastChild,
-
         ...this.state,
         ...this.props
       },
-      element: node,
+      element: this.REF.current,
       context: this.context
     }
   }
@@ -181,17 +179,33 @@ export default class Module extends React.Component {
     });
   }
 
+  setStyleStates() {
+    if (this.REF.current === this.REF.current.parentNode.firstChild) {
+      this.setState({ isFirstChild: true });
+    }
+    if (this.REF.current === this.REF.current.parentNode.lastChild) {
+      this.setState({ isLastChild: true });
+    }
+  }
+
   /** Lifecycle Methods */
 
   componentDidMount() {
     if (this.STYLES) {
       this.paint(this.REF.current, this.STYLES, this.stylesConfig());
     }
+
+    this.setStyleStates();
   }
 
-  componentDidUpdate() {
+  componentDidUpdate(prevProps) {
     if (this.STYLES) {
       this.paint(this.REF.current, this.STYLES, this.stylesConfig());
+    }
+
+    // @TODO confirm this does what is expected
+    if (prevProps.children.length !== this.props.children.length) {
+      this.setStyleStates();
     }
   }
 
@@ -211,10 +225,6 @@ export default class Module extends React.Component {
           this.THEME = mergeThemes(window.theme, theme, props.theme);
           // @TODO - props.config may be a function and will need evaluating (props.config(this.THEME))
           this.CONFIG = Module.config(defaults, this.CONFIG, props.config, this.THEME.modules && this.THEME.modules[props.name]);
-          // this.STYLES = props.styles || this.STYLES;
-          this.STYLES = this.getStyles(props.styles || this.STYLES, this.stylesConfig());
-
-          console.log(this.stylesConfig());
 
           /** */
           const MODIFIERGLUE = props.modifierGlue || this.CONFIG.modifierGlue || Synergy.modifierGlue || '--';
@@ -225,8 +235,7 @@ export default class Module extends React.Component {
           const ID = props.id || `module-${increment}`;
           const NAMESPACE = this.CONFIG.name || props.name || props.tag || ID;
           const TAG = (props.href && 'a') || props.component || props.tag || 'div';
-
-          this.NAMESPACE = NAMESPACE;
+          const STYLES = this.getStyles(this.STYLES, this.stylesConfig());
 
           /** */
           let [CLASSES, SELECTOR, MODIFIERS] = [props.className ? props.className + ' ' : '', NAMESPACE, []];
@@ -246,7 +255,7 @@ export default class Module extends React.Component {
           CLASSES += SELECTOR;
 
           /** */
-          const [before, after] = [this.STYLES[':before'], this.STYLES[':after']];
+          const [before, after] = [STYLES[':before'], STYLES[':after']];
 
           const ATTRIBUTES = {
             ...this.getDataAttributes(props),
@@ -271,6 +280,11 @@ export default class Module extends React.Component {
             THEME: this.THEME,
             CONFIG: this.CONFIG,
 
+            STYLES: {
+              ...this.context.STYLES,
+              ...STYLES
+            },
+
             MODIFIERGLUE, 
             COMPONENTGLUE,
             SINGLECLASS,
@@ -280,11 +294,6 @@ export default class Module extends React.Component {
             [NAMESPACE]: {
               ...this.state,
               ...props
-            },
-
-            STYLES: { 
-              ...this.context.STYLES, 
-              ...this.STYLES
             },
 
             NAMESPACE
