@@ -85,29 +85,29 @@ export default class Module extends React.Component {
     }
 
     if (styles instanceof Array) {
-      const accumulator = {}
-
-      styles.forEach(style => {
-        Object.entries(style).forEach(entry => {
+      styles = styles.reduce((acc, item) => {
+        Object.entries(item).forEach(entry => {
           const key = entry[0];
           const val = entry[1];
   
-          let self = accumulator[key];
+          let self = acc[key];
   
           if (self) {
             if (self instanceof Array) {
-              accumulator[key] = self.concat(val);
+              acc[key] = self.concat(val);
             } else {
-              accumulator[key] = [self, val];
+              acc[key] = [self, val];
             }
           } else {
-            accumulator[key] = val;
+            acc[key] = val;
           }
         });
-      });
   
-      styles = accumulator;
+        return acc;
+      }, {});
     }
+
+    // console.log(styles, options);
   
     return styles;
   }
@@ -143,14 +143,17 @@ export default class Module extends React.Component {
       const key = style[0];
       const value = style[1];
 
-      if (value instanceof Array) {
-        node = value[0];
-        styles = value[1];
+      if ((key === ':hover' || key === 'is-hovered') && options.state.isHovered) {
+        return this.paint(node, value, options);
+      }
 
-        try {
-          return this.paint(node(), styles, options);
-        } catch(error) {
-          return error;
+      if (key.indexOf('with-') === 0 && options.context[key.replace('with-', '')]) {
+        return this.paint(node, value, options.context[key.replace('with-', '')]);
+      }
+
+      if (key.indexOf('is-') === 0) {
+        if (options[key.replace('is-', '')] || options.state && options.state[key.replace('is-', '')]) {
+          return this.paint(node, value, options);
         }
       }
 
@@ -162,12 +165,15 @@ export default class Module extends React.Component {
         }
       }
 
-      if (key === ':hover' && options.state.isHovered) {
-        return this.paint(node, value, options);
-      }
+      if (value instanceof Array) {
+        node = value[0];
+        styles = value[1];
 
-      if (key.indexOf('is-') === 0 && options.state[key.replace('is-', '')]) {
-        return this.paint(node, value, options);
+        try {
+          return this.paint(node(), styles, options);
+        } catch(error) {
+          return error;
+        }
       }
 
       try {
