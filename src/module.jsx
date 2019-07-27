@@ -85,35 +85,33 @@ export default class Module extends React.Component {
     }
 
     if (styles instanceof Array) {
-      styles = styles.reduce((acc, item) => {
+      styles = styles.reduce((accumulator, item) => {
         Object.entries(item).forEach(entry => {
           const key = entry[0];
           const val = entry[1];
   
-          let self = acc[key];
-  
-          if (self) {
-            if (self instanceof Array) {
-              acc[key] = self.concat(val);
+          if (accumulator[key]) {
+            if (accumulator[key] instanceof Array) {
+              accumulator[key] = accumulator[key].concat(val);
             } else {
-              acc[key] = [self, val];
+              accumulator[key] = [accumulator[key], val];
             }
           } else {
-            acc[key] = val;
+            accumulator[key] = val;
           }
         });
   
-        return acc;
+        return accumulator;
       }, {});
     }
-
-    // console.log(styles, options);
   
     return styles;
   }
 
   stylesConfig(theme = this.THEME, config = this.CONFIG) {
     const node = this.REF.current;
+
+    // console.log(this.context)
   
     return {
       theme,
@@ -166,8 +164,7 @@ export default class Module extends React.Component {
       }
 
       if (value instanceof Array) {
-        node = value[0];
-        styles = value[1];
+        node = value[0], styles = value[1];
 
         try {
           return this.paint(node(), styles, options);
@@ -204,6 +201,7 @@ export default class Module extends React.Component {
     var Synergy = window.Synergy || {};
 
     const { props } = this;
+    const defaults = { generateClasses: true, generateDataAttributes: true }
 
     /** */
     return (
@@ -212,13 +210,11 @@ export default class Module extends React.Component {
           /** */
           this.THEME = mergeThemes(window.theme, theme, props.theme);
           // @TODO - props.config may be a function and will need evaluating (props.config(this.THEME))
-          this.CONFIG = Module.config(
-            { generateClasses: true, generateDataAttributes: true },
-            this.CONFIG, props.config, 
-            this.THEME.modules && this.THEME.modules[props.name]
-          );
+          this.CONFIG = Module.config(defaults, this.CONFIG, props.config, this.THEME.modules && this.THEME.modules[props.name]);
           // this.STYLES = props.styles || this.STYLES;
           this.STYLES = this.getStyles(props.styles || this.STYLES, this.stylesConfig());
+
+          console.log(this.stylesConfig());
 
           /** */
           const MODIFIERGLUE = props.modifierGlue || this.CONFIG.modifierGlue || Synergy.modifierGlue || '--';

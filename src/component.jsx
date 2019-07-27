@@ -8,6 +8,7 @@ import Module, { ModuleContext } from './module.jsx';
 export default class Component extends Module {
   componentDidMount() {
     if (this.context.STYLES) {
+      // console.log(this.REF.current, this.stylesConfig())
       this.paint(this.REF.current, this.context.STYLES[this.NAMESPACE], this.stylesConfig());
     }
   }
@@ -62,6 +63,8 @@ export default class Component extends Module {
       'data-component': this.context.GENERATEDATAATTRIBUTES ? this.NAMESPACE : null,
       'data-sub-component': this.context.GENERATEDATAATTRIBUTES ? props.subComponent : null
     }
+
+    // console.log(this.state);
 
     /** */
     const contextValues = { 
