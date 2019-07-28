@@ -117,7 +117,6 @@ export default class Module extends React.Component {
   }
 
   paint(node, styles = {}, options) {
-    // console.log(this.props.name, styles);
     if (typeof styles === 'function') {
       styles = styles(options);
     }
@@ -206,15 +205,17 @@ export default class Module extends React.Component {
   /** Lifecycle Methods */
 
   componentDidMount() {
-    this.paint(this.REF.current, this.DATA, this.stylesConfig());
-    this.setStyleStates();
+    if (this.REF.current) {
+      this.paint(this.REF.current, this.DATA, this.stylesConfig());
+      this.setStyleStates();
+    }
   }
 
   componentDidUpdate(prevProps) {
     this.paint(this.REF.current, this.DATA, this.stylesConfig());
 
     // @TODO confirm this does what is expected
-    if (prevProps.children.length !== this.props.children.length) {
+    if (prevProps.children && prevProps.children.length !== this.props.children.length) {
       this.setStyleStates();
     }
   }
