@@ -6,46 +6,22 @@ import Module, { ModuleContext } from './module.jsx';
  * Render a Synergy component
  */
 export default class Component extends Module {
-  constructor(props, context) {
+  constructor(props) {
     super(props);
 
     this.REF = React.createRef();
     this.NAMESPACE = props.name || props.tag;
-    this.STYLES = context.STYLES[this.NAMESPACE]
-
-    this.state = {
-      isHovered: false,
-      isFirstChild: false,
-      isLastChild: false
-    }
-  }
-
-  componentDidMount() {
-    if (this.STYLES) {
-      this.paint(this.REF.current, this.STYLES, this.stylesConfig());
-    }
-
-    this.setStyleStates();
-  }
-
-  componentDidUpdate(prevProps) {
-    if (this.STYLES) {
-      this.paint(this.REF.current, this.STYLES, this.stylesConfig());
-    }
-    // @TODO confirm this does what is expected
-    if (prevProps.children.length !== this.props.children.length) {
-      this.setStyleStates();
-    }
   }
 
   render() {
     /** */
+    this.DATA = this.context.STYLES[this.NAMESPACE];
+    this.STYLES = this.getStyles(this.DATA, this.stylesConfig(this.context.THEME, this.context.CONFIG));
+
     const { props } = this;
     const { MODIFIERGLUE, COMPONENTGLUE } = this.context;
-
     const STRICT_NAMESPACE = (this.context.STRICT_NAMESPACE || this.context.NAMESPACE) + COMPONENTGLUE + this.NAMESPACE;
     const TAG = (props.href && 'a') || props.component || props.tag || 'div';
-    const STYLES = this.getStyles(this.STYLES, this.stylesConfig());
 
     /** */
     let [CLASSES, MODIFIERS] = [props.className ? props.className + ' ' : '', []];
@@ -66,7 +42,7 @@ export default class Component extends Module {
     CLASSES += SELECTOR;
 
     /** */
-    const [before, after] = [STYLES[':before'], STYLES[':after']];
+    const { before, after } = this.state;
 
     const ATTRIBUTES = {
       ...this.getDataAttributes(props),
@@ -94,7 +70,7 @@ export default class Component extends Module {
 
       STYLES: { 
         ...this.context.STYLES, 
-        ...STYLES
+        ...this.STYLES
       },
 
       STRICT_NAMESPACE

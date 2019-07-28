@@ -19,38 +19,26 @@ export default class Module extends React.Component {
     super(props);
 
     this.REF = React.createRef();
-    this.STYLES = props.styles;
+    this.DATA = props.styles;
 
     if (window.Synergy) {
       const SYNERGY_MODULE = window[props.name] || {};
       const { config, layout } = SYNERGY_MODULE;
 
       if (config) this.CONFIG = config;
-      if (layout) this.STYLES = layout;
+      if (layout) this.DATA = layout;
     }
 
     this.state = {
       isHovered: false,
       isFirstChild: false,
-      isLastChild: false
+      isLastChild: false,
+      before: null,
+      after: null
     }
   }
 
-  handleMouseEnter(event) {
-    this.props.onMouseEnter && this.props.onMouseEnter(event);
-
-    this.setState({
-      isHovered: true
-    });
-  }
-
-  handleMouseLeave(event) {
-    this.props.onMouseLeave && this.props.onMouseLeave(event);
-
-    this.setState({
-      isHovered: false
-    });
-  }
+  /** Get Attributes */
 
   getEventHandlers(properties) {
     let eventHandlers = {};
@@ -82,36 +70,7 @@ export default class Module extends React.Component {
     return dataAttributes;
   }
 
-  getStyles(styles = {}, options) {
-    if (typeof styles === 'function') {
-      styles = styles(options);
-    }
-
-    if (styles instanceof Array) {
-      styles = styles.reduce((accumulator, item) => {
-        if (!item) return accumulator;
-
-        Object.entries(item).forEach(entry => {
-          const key = entry[0];
-          const val = entry[1];
-  
-          if (accumulator[key]) {
-            if (accumulator[key] instanceof Array) {
-              accumulator[key] = accumulator[key].concat(val);
-            } else {
-              accumulator[key] = [accumulator[key], val];
-            }
-          } else {
-            accumulator[key] = val;
-          }
-        });
-  
-        return accumulator;
-      }, {});
-    }
-  
-    return styles;
-  }
+  /** Styling */
 
   stylesConfig(theme = this.THEME, config = this.CONFIG) {
     return {
@@ -126,7 +85,39 @@ export default class Module extends React.Component {
     }
   }
 
+  getStyles(styles = {}, options) {
+    if (typeof styles === 'function') {
+      styles = styles(options);
+    }
+
+    if (styles instanceof Array) {
+      styles = styles.reduce((accumulator, item) => {
+        if (!item) return accumulator;
+
+        if (typeof item === 'function') {
+          item = item(options);
+        }
+
+        Object.entries(item).forEach(entry => {
+          const key = entry[0];
+          const val = entry[1];
+  
+          if (accumulator.hasOwnProperty(key)) {
+            accumulator[key] = accumulator[key] instanceof Array ? accumulator[key].concat(val) : [accumulator[key], val];
+          } else {
+            accumulator[key] = val;
+          }
+        });
+  
+        return accumulator;
+      }, {});
+    }
+  
+    return styles;
+  }
+
   paint(node, styles = {}, options) {
+    // console.log(this.props.name, styles);
     if (typeof styles === 'function') {
       styles = styles(options);
     }
@@ -186,22 +177,41 @@ export default class Module extends React.Component {
     if (this.REF.current === this.REF.current.parentNode.lastChild) {
       this.setState({ isLastChild: true });
     }
+    if (this.STYLES && this.STYLES[':before']) {
+      this.setState({ before: this.STYLES[':before'] });
+    }
+    if (this.STYLES && this.STYLES[':after']) {
+      this.setState({ before: this.STYLES[':after'] });
+    }
+  }
+
+  /** Event Handlers */
+
+  handleMouseEnter(event) {
+    this.props.onMouseEnter && this.props.onMouseEnter(event);
+
+    this.setState({
+      isHovered: true
+    });
+  }
+
+  handleMouseLeave(event) {
+    this.props.onMouseLeave && this.props.onMouseLeave(event);
+
+    this.setState({
+      isHovered: false
+    });
   }
 
   /** Lifecycle Methods */
 
   componentDidMount() {
-    if (this.STYLES) {
-      this.paint(this.REF.current, this.STYLES, this.stylesConfig());
-    }
-
+    this.paint(this.REF.current, this.DATA, this.stylesConfig());
     this.setStyleStates();
   }
 
   componentDidUpdate(prevProps) {
-    if (this.STYLES) {
-      this.paint(this.REF.current, this.STYLES, this.stylesConfig());
-    }
+    this.paint(this.REF.current, this.DATA, this.stylesConfig());
 
     // @TODO confirm this does what is expected
     if (prevProps.children.length !== this.props.children.length) {
@@ -225,6 +235,7 @@ export default class Module extends React.Component {
           this.THEME = mergeThemes(window.theme, theme, props.theme);
           // @TODO - props.config may be a function and will need evaluating (props.config(this.THEME))
           this.CONFIG = Module.config(defaults, this.CONFIG, props.config, this.THEME.modules && this.THEME.modules[props.name]);
+          this.STYLES = this.getStyles(this.DATA, this.stylesConfig());
 
           /** */
           const MODIFIERGLUE = props.modifierGlue || this.CONFIG.modifierGlue || Synergy.modifierGlue || '--';
@@ -235,7 +246,6 @@ export default class Module extends React.Component {
           const ID = props.id || `module-${increment}`;
           const NAMESPACE = this.CONFIG.name || props.name || props.tag || ID;
           const TAG = (props.href && 'a') || props.component || props.tag || 'div';
-          const STYLES = this.getStyles(this.STYLES, this.stylesConfig());
 
           /** */
           let [CLASSES, SELECTOR, MODIFIERS] = [props.className ? props.className + ' ' : '', NAMESPACE, []];
@@ -255,7 +265,7 @@ export default class Module extends React.Component {
           CLASSES += SELECTOR;
 
           /** */
-          const [before, after] = [STYLES[':before'], STYLES[':after']];
+          const { before, after } = this.state;
 
           const ATTRIBUTES = {
             ...this.getDataAttributes(props),
@@ -282,7 +292,7 @@ export default class Module extends React.Component {
 
             STYLES: {
               ...this.context.STYLES,
-              ...STYLES
+              ...this.STYLES
             },
 
             MODIFIERGLUE, 
