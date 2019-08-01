@@ -91,29 +91,32 @@ export default class Module extends React.Component {
     }
 
     if (styles instanceof Array) {
-      styles = styles.reduce((accumulator, item) => {
-        if (!item) return accumulator;
-
-        if (typeof item === 'function') {
-          item = item(options);
-        }
-
-        Object.entries(item).forEach(entry => {
-          const key = entry[0];
-          const val = entry[1];
-  
-          if (accumulator.hasOwnProperty(key)) {
-            accumulator[key] = accumulator[key] instanceof Array ? accumulator[key].concat(val) : [accumulator[key], val];
-          } else {
-            accumulator[key] = val;
-          }
-        });
-  
-        return accumulator;
-      }, {});
+      styles = this.flattenStyles(styles, options);
     }
   
     return styles;
+  }
+
+  flattenStyles(styles, options) {
+    return styles.reduce((accumulator, item) => {
+      if (!item) return accumulator;
+
+      if (typeof item === 'function') {
+        item = item(options);
+      }
+
+      Object.entries(item).forEach(entry => {
+        const key = entry[0]; const val = entry[1];
+
+        if (accumulator.hasOwnProperty(key)) {
+          accumulator[key] = accumulator[key] instanceof Array ? accumulator[key].concat(val) : [accumulator[key], val];
+        } else {
+          accumulator[key] = val;
+        }
+      });
+
+      return accumulator;
+    }, {});
   }
 
   paint(node, styles = {}, options) {
@@ -126,8 +129,7 @@ export default class Module extends React.Component {
     }
   
     Object.entries(styles).forEach(style => {
-      const key = style[0];
-      const value = style[1];
+      const key = style[0]; const value = style[1];
 
       if ((key === ':hover' || key === 'is-hovered') && options.state.isHovered) {
         return this.paint(node, value, options);
@@ -138,7 +140,7 @@ export default class Module extends React.Component {
       }
 
       if (key.indexOf('is-') === 0) {
-        if (options[key.replace('is-', '')] || options.state && options.state[key.replace('is-', '')]) {
+        if (options[key.replace('is-', '')] || options.state[key.replace('is-', '')]) {
           return this.paint(node, value, options);
         }
       }
@@ -252,7 +254,6 @@ export default class Module extends React.Component {
           let [CLASSES, SELECTOR, MODIFIERS] = [props.className ? props.className + ' ' : '', NAMESPACE, []];
 
           MODIFIERS.push(props.modifiers);
-          // MODIFIERS.push(...getModifiersFromProps(props));
           MODIFIERS = MODIFIERS.concat(getModifiersFromProps(props));
           MODIFIERS = MODIFIERS.filter((item, pos) => MODIFIERS.indexOf(item) === pos);
           MODIFIERS = MODIFIERS.filter(Boolean);
@@ -312,7 +313,7 @@ export default class Module extends React.Component {
 
           return (
             <ModuleContext.Provider value={contextValues}>
-              <TAG id={ID} ref={this.REF} {...ATTRIBUTES}>
+              <TAG id={props.id ? ID : null} ref={this.REF} {...ATTRIBUTES}>
                 {before && <div className='before' style={before}>{before.content}</div>}
 
                 {props.content || props.children}
