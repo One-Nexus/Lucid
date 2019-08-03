@@ -15,11 +15,12 @@ export { ModuleContext }
 
 /** Render a Synergy module */
 export default class Module extends React.Component {
-  constructor(props, context) {
+  constructor(props) {
     super(props);
 
     this.REF = React.createRef();
     this.DATA = props.styles;
+    this.CONFIG = props.config;
 
     if (window.Synergy) {
       const SYNERGY_MODULE = window[props.name] || {};
@@ -236,8 +237,10 @@ export default class Module extends React.Component {
         {theme => {
           /** */
           this.THEME = mergeThemes(window.theme, theme, props.theme);
-          // @TODO - props.config may be a function and will need evaluating (props.config(this.THEME))
-          this.CONFIG = Module.config(defaults, this.CONFIG, props.config, this.THEME.modules && this.THEME.modules[props.name]);
+          if (typeof this.CONFIG === 'function') {
+            this.CONFIG = this.CONFIG(this.THEME);
+          }
+          this.CONFIG = Module.config(defaults, this.CONFIG, this.THEME.modules && this.THEME.modules[props.name]);
           this.STYLES = this.getStyles(this.DATA, this.stylesConfig());
 
           /** */
@@ -314,11 +317,11 @@ export default class Module extends React.Component {
           return (
             <ModuleContext.Provider value={contextValues}>
               <TAG id={props.id ? ID : null} ref={this.REF} {...ATTRIBUTES}>
-                {before && <div className='before' style={before}>{before.content}</div>}
+                {before && <Component name=':before'>{before.content}</Component>}
 
                 {props.content || props.children}
 
-                {after && <div className='after' style={after}>{after.content}</div>}
+                {after && <Component name=':after'>{after.content}</Component>}
               </TAG>
             </ModuleContext.Provider>
           );

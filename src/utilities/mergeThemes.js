@@ -17,8 +17,7 @@ function evalVal(theme) {
   let THEME = theme;
 
   Object.entries(THEME).forEach((THEME) => {
-    const key = THEME[0];
-    const value = THEME[1];
+    const key = THEME[0]; const value = THEME[1];
 
     if (typeof value === 'object') {
       THEME[key] = evalVal(value)

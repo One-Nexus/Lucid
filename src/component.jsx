@@ -85,11 +85,11 @@ export default class Component extends Module {
     return (
       <ModuleContext.Provider value={contextValues}>
         <TAG ref={this.REF} {...ATTRIBUTES}>
-          {before && <div className='before' style={before}>{before.content}</div>}
+          {before && <Component name=':before'>{before.content}</Component>}
 
           {props.content || props.children}
 
-          {after && <div className='after' style={after}>{after.content}</div>}
+          {after && <Component name=':after'>{after.content}</Component>}
         </TAG>
       </ModuleContext.Provider>
     );
