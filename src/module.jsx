@@ -15,8 +15,10 @@ export { ModuleContext }
 
 /** Render a Synergy module */
 export default class Module extends React.Component {
-  constructor(props) {
+  constructor(props, context) {
     super(props);
+
+    increment++;
 
     this.REF = React.createRef();
     this.DATA = props.styles;
@@ -224,8 +226,6 @@ export default class Module extends React.Component {
   }
 
   render() {
-    increment++;
-  
     var Synergy = window.Synergy || {};
 
     const { props } = this;
