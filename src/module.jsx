@@ -1,4 +1,5 @@
 import React from 'react';
+import evalConfig from './utilities/evalConfig';
 import getModifiersFromProps from './utilities/getModifiersFromProps';
 import mergeThemes from './utilities/mergeThemes';
 import { ThemeContext } from './provider';
@@ -22,26 +23,26 @@ export default class Module extends React.Component {
 
     var Synergy = window.Synergy || {};
 
-    const defaults = { generateClasses: true, generateDataAttributes: true }
-
     this.REF = React.createRef();
     this.DATA = props.styles;
-    this.CONFIG = props.config;
+    this.THEME = mergeThemes(window.theme, context, props.theme);
+
+    const LUCIDDEFAULTS = { generateClasses: true, generateDataAttributes: true }
+    const THEMECONFIG = this.THEME.modules && evalConfig(this.THEME.modules[props.name]);
+
+    let DEFAULTS = props.config;
 
     if (window.Synergy) {
       const SYNERGY_MODULE = window[props.name] || {};
       const { config, layout } = SYNERGY_MODULE;
 
-      if (config) this.CONFIG = config;
+      if (config) DEFAULTS = config;
       if (layout) this.DATA = layout;
     }
 
-    this.THEME = mergeThemes(window.theme, context, props.theme);
-    if (typeof this.CONFIG === 'function') {
-      this.CONFIG = this.CONFIG(this.THEME);
-    }
-    this.CONFIG = Module.config(defaults, this.CONFIG, this.THEME.modules && this.THEME.modules[props.name]);
-  
+    DEFAULTS = (typeof DEFAULTS === 'function') ? DEFAULTS(this.THEME) : DEFAULTS;
+
+    this.CONFIG = Module.config(LUCIDDEFAULTS, DEFAULTS, THEMECONFIG);
     this.ID = props.id || `module-${increment}`;
     this.NAMESPACE = this.CONFIG.name || props.name || props.tag || this.ID;
     this.TAG = (props.href && 'a') || props.component || props.tag || 'div';

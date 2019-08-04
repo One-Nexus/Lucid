@@ -9,28 +9,6 @@ export default function mergeThemes(...themes) {
     }
   });
 
-  return evalVal(THEME);
-}
-
-/** */
-function evalVal(theme) {
-  let THEME = theme;
-
-  Object.entries(THEME).forEach((THEME) => {
-    const key = THEME[0]; const value = THEME[1];
-
-    if (typeof value === 'object') {
-      THEME[key] = evalVal(value)
-    }
-    if (typeof value === 'function') {
-      try {
-        THEME[key] = value(THEME);
-      } catch(error) {
-        THEME[key] = value;
-      }
-    }
-  });
-
   return THEME;
 }
 
