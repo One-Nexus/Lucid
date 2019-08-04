@@ -16,7 +16,10 @@ export default class Component extends Module {
   render() {
     /** */
     this.DATA = this.context.STYLES[this.NAMESPACE];
-    this.STYLES = this.getStyles(this.DATA, this.stylesConfig(this.context.THEME, this.context.CONFIG));
+    this.STYLES = this.getStyles(this.DATA, this.stylesConfig({ 
+      theme: this.context.THEME, 
+      config: this.context.CONFIG 
+    }));
 
     const { props } = this;
     const { MODIFIERGLUE, COMPONENTGLUE } = this.context;

@@ -20,6 +20,10 @@ export default class Module extends React.Component {
 
     increment++;
 
+    var Synergy = window.Synergy || {};
+
+    const defaults = { generateClasses: true, generateDataAttributes: true }
+
     this.REF = React.createRef();
     this.DATA = props.styles;
     this.CONFIG = props.config;
@@ -31,6 +35,21 @@ export default class Module extends React.Component {
       if (config) this.CONFIG = config;
       if (layout) this.DATA = layout;
     }
+
+    this.THEME = mergeThemes(window.theme, context, props.theme);
+    if (typeof this.CONFIG === 'function') {
+      this.CONFIG = this.CONFIG(this.THEME);
+    }
+    this.CONFIG = Module.config(defaults, this.CONFIG, this.THEME.modules && this.THEME.modules[props.name]);
+  
+    this.ID = props.id || `module-${increment}`;
+    this.NAMESPACE = this.CONFIG.name || props.name || props.tag || this.ID;
+    this.TAG = (props.href && 'a') || props.component || props.tag || 'div';
+    this.MODIFIERGLUE = props.modifierGlue || this.CONFIG.modifierGlue || Synergy.modifierGlue || '--';
+    this.COMPONENTGLUE = props.componentGlue || this.CONFIG.componentGlue || Synergy.componentGlue || '__';
+    this.SINGLECLASS = props.singleClass || this.CONFIG.singleClass || false;
+    this.GENERATECLASSES = props.generateClasses || this.CONFIG.generateClasses;
+    this.GENERATEDATAATTRIBUTES = props.generateDataAttributes || this.CONFIG.generateDataAttributes;
 
     this.state = {
       isHovered: false,
@@ -75,16 +94,16 @@ export default class Module extends React.Component {
 
   /** Styling */
 
-  stylesConfig(theme = this.THEME, config = this.CONFIG) {
+  stylesConfig({ theme = this.THEME, config = this.CONFIG, context = this.context } = {}) {
     return {
       theme,
       config,
+      context,
       state: {
         ...this.state,
         ...this.props
       },
-      element: this.REF.current,
-      context: this.context
+      element: this.REF.current
     }
   }
 
@@ -226,69 +245,48 @@ export default class Module extends React.Component {
   }
 
   render() {
-    var Synergy = window.Synergy || {};
-
     const { props } = this;
-    const defaults = { generateClasses: true, generateDataAttributes: true }
+    const { MODIFIERGLUE, COMPONENTGLUE, SINGLECLASS, GENERATECLASSES, GENERATEDATAATTRIBUTES } = this;
 
     /** */
+    let [CLASSES, SELECTOR, MODIFIERS] = [props.className ? props.className + ' ' : '', this.NAMESPACE, []];
+
+    MODIFIERS.push(props.modifiers);
+    MODIFIERS = MODIFIERS.concat(getModifiersFromProps(props));
+    MODIFIERS = MODIFIERS.filter((item, pos) => MODIFIERS.indexOf(item) === pos);
+    MODIFIERS = MODIFIERS.filter(Boolean);
+
+    if (SINGLECLASS) {
+      SELECTOR += MODIFIERS.length ? MODIFIERGLUE + MODIFIERS.join(MODIFIERGLUE) : '';
+    } else {
+      MODIFIERS.forEach(MODIFIER => CLASSES += SELECTOR + MODIFIERGLUE + MODIFIER + ' ');
+    }
+
+    CLASSES += SELECTOR;
+
+    /** */
+    const { before, after } = this.state;
+
+    const ATTRIBUTES = {
+      ...this.getDataAttributes(props),
+      ...this.getEventHandlers(props),
+      ...props.attributes,
+
+      onMouseEnter: this.handleMouseEnter.bind(this),
+      onMouseLeave: this.handleMouseLeave.bind(this),
+
+      className: GENERATECLASSES ? CLASSES : null,
+      'data-module': GENERATEDATAATTRIBUTES ? this.NAMESPACE : null
+    }
+
     return (
-      <ThemeContext.Consumer>
-        {theme => {
-          /** */
-          this.THEME = mergeThemes(window.theme, theme, props.theme);
-          if (typeof this.CONFIG === 'function') {
-            this.CONFIG = this.CONFIG(this.THEME);
-          }
-          this.CONFIG = Module.config(defaults, this.CONFIG, this.THEME.modules && this.THEME.modules[props.name]);
-          this.STYLES = this.getStyles(this.DATA, this.stylesConfig());
-
-          /** */
-          const MODIFIERGLUE = props.modifierGlue || this.CONFIG.modifierGlue || Synergy.modifierGlue || '--';
-          const COMPONENTGLUE = props.componentGlue || this.CONFIG.componentGlue || Synergy.componentGlue || '__';
-          const SINGLECLASS = props.singleClass || this.CONFIG.singleClass || false;
-          const GENERATECLASSES = props.generateClasses || this.CONFIG.generateClasses;
-          const GENERATEDATAATTRIBUTES = props.generateDataAttributes || this.CONFIG.generateDataAttributes;
-          const ID = props.id || `module-${increment}`;
-          const NAMESPACE = this.CONFIG.name || props.name || props.tag || ID;
-          const TAG = (props.href && 'a') || props.component || props.tag || 'div';
-
-          /** */
-          let [CLASSES, SELECTOR, MODIFIERS] = [props.className ? props.className + ' ' : '', NAMESPACE, []];
-
-          MODIFIERS.push(props.modifiers);
-          MODIFIERS = MODIFIERS.concat(getModifiersFromProps(props));
-          MODIFIERS = MODIFIERS.filter((item, pos) => MODIFIERS.indexOf(item) === pos);
-          MODIFIERS = MODIFIERS.filter(Boolean);
-
-          if (SINGLECLASS) {
-            SELECTOR += MODIFIERS.length ? MODIFIERGLUE + MODIFIERS.join(MODIFIERGLUE) : '';
-          } else {
-            MODIFIERS.forEach(MODIFIER => CLASSES += SELECTOR + MODIFIERGLUE + MODIFIER + ' ');
-          }
-
-          CLASSES += SELECTOR;
-
-          /** */
-          const { before, after } = this.state;
-
-          const ATTRIBUTES = {
-            ...this.getDataAttributes(props),
-            ...this.getEventHandlers(props),
-            ...props.attributes,
-      
-            onMouseEnter: this.handleMouseEnter.bind(this),
-            onMouseLeave: this.handleMouseLeave.bind(this),
-
-            className: GENERATECLASSES ? CLASSES : null,
-            'data-module': GENERATEDATAATTRIBUTES ? NAMESPACE : null
-          }
+      <ModuleContext.Consumer>
+        {moduleContext => {
+          this.STYLES = this.getStyles(this.DATA, this.stylesConfig({ context: moduleContext }));
 
           /** */
           const contextValues = {
-            PARENT: this,
-
-            ...this.context,
+            ...moduleContext,
             ...this.state,
             ...props,
 
@@ -296,7 +294,7 @@ export default class Module extends React.Component {
             CONFIG: this.CONFIG,
 
             STYLES: {
-              ...this.context.STYLES,
+              ...moduleContext.STYLES,
               ...this.STYLES
             },
 
@@ -306,33 +304,33 @@ export default class Module extends React.Component {
             GENERATECLASSES,
             GENERATEDATAATTRIBUTES,
 
-            [NAMESPACE]: {
+            [this.NAMESPACE]: {
               ...this.state,
               ...props
             },
 
-            NAMESPACE
+            NAMESPACE: this.NAMESPACE
           }
 
           return (
             <ModuleContext.Provider value={contextValues}>
-              <TAG id={props.id ? ID : null} ref={this.REF} {...ATTRIBUTES}>
+              <this.TAG id={props.id ? this.ID : null} ref={this.REF} {...ATTRIBUTES}>
                 {before && <Component name=':before'>{before.content}</Component>}
 
                 {props.content || props.children}
 
                 {after && <Component name=':after'>{after.content}</Component>}
-              </TAG>
+              </this.TAG>
             </ModuleContext.Provider>
           );
         }}
-      </ThemeContext.Consumer>
-    );
-  }
+      </ModuleContext.Consumer>
+    )
+  } 
 
   /** Static Methods/Properties */
 
-  static contextType = ModuleContext;
+  static contextType = ThemeContext;
 
   static config = (...params) => {
     if (process.env.SYNERGY) {
