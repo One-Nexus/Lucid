@@ -1,7 +1,6 @@
 import React from 'react';
 
-const ThemeContext = React.createContext({});
-export { ThemeContext }
+export const ThemeContext = React.createContext({});
 
 export default class Provider extends React.Component {
   render() {

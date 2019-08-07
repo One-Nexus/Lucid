@@ -11,8 +11,7 @@ if (typeof process === 'undefined') window.process = { env: {} }
 let increment = 1;
 
 /** Create a context object */
-const ModuleContext = React.createContext({});
-export { ModuleContext }
+export const ModuleContext = React.createContext({});
 
 /** Render a Synergy module */
 export default class Module extends React.Component {
@@ -34,10 +33,10 @@ export default class Module extends React.Component {
 
     if (window.Synergy) {
       const SYNERGY_MODULE = window[props.name] || {};
-      const { config, layout } = SYNERGY_MODULE;
+      const { config, styles } = SYNERGY_MODULE;
 
       if (config) DEFAULTS = config;
-      if (layout) this.DATA = layout;
+      if (styles) this.DATA = styles;
     }
 
     DEFAULTS = (typeof DEFAULTS === 'function') ? DEFAULTS(this.THEME) : DEFAULTS;
@@ -320,7 +319,7 @@ export default class Module extends React.Component {
               <this.TAG id={props.id ? this.ID : null} ref={this.REF} {...ATTRIBUTES}>
                 {before && <Component name=':before'>{before.content}</Component>}
 
-                {props.content || props.children}
+                {typeof props.children === 'function' ? props.children(this.CONFIG) : (props.content || props.children)}
 
                 {after && <Component name=':after'>{after.content}</Component>}
               </this.TAG>
