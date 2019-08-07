@@ -194,18 +194,28 @@ export default class Module extends React.Component {
     });
   }
 
-  setStyleStates() {
-    if (this.REF.current === this.REF.current.parentNode.firstChild) {
-      this.setState({ isFirstChild: true });
+  setStyleStates(prevState = this.state) {
+    const [CURRENT, PARENT] = [this.REF.current, this.REF.current.parentNode];
+
+    const [prevIsFirstChild, isFirstChild] = [prevState.isFirstChild, CURRENT === PARENT.firstChild];
+    const [prevIsLastChild, isLastChild] = [prevState.isLastChild, CURRENT === PARENT.lastChild];
+    const [prevBefore, before] = [prevState.before, this.STYLES[':before']];
+    const [prevAfter, after] = [prevState.after, this.STYLES[':after']];
+
+    if (prevIsFirstChild !== isFirstChild) {
+      this.setState({ isFirstChild });
     }
-    if (this.REF.current === this.REF.current.parentNode.lastChild) {
-      this.setState({ isLastChild: true });
+
+    if (prevIsLastChild !== isLastChild) {
+      this.setState({ isLastChild });
     }
-    if (this.STYLES && this.STYLES[':before']) {
-      this.setState({ before: this.STYLES[':before'] });
+
+    if (JSON.stringify(prevBefore) !== JSON.stringify(before)) {
+      this.setState({ before });
     }
-    if (this.STYLES && this.STYLES[':after']) {
-      this.setState({ before: this.STYLES[':after'] });
+
+    if (JSON.stringify(prevAfter) !== JSON.stringify(after)) {
+      this.setState({ after });
     }
   }
 
@@ -214,35 +224,27 @@ export default class Module extends React.Component {
   handleMouseEnter(event) {
     this.props.onMouseEnter && this.props.onMouseEnter(event);
 
-    this.setState({
-      isHovered: true
-    });
+    this.setState({ isHovered: true });
   }
 
   handleMouseLeave(event) {
     this.props.onMouseLeave && this.props.onMouseLeave(event);
 
-    this.setState({
-      isHovered: false
-    });
+    this.setState({ isHovered: false });
   }
 
   /** Lifecycle Methods */
 
   componentDidMount() {
     if (this.REF.current) {
-      this.paint(this.REF.current, this.DATA, this.stylesConfig());
       this.setStyleStates();
+      this.paint(this.REF.current, this.DATA, this.stylesConfig());
     }
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
+    this.setStyleStates(prevState);
     this.paint(this.REF.current, this.DATA, this.stylesConfig());
-
-    // @TODO confirm this does what is expected
-    if (prevProps.children && prevProps.children.length !== this.props.children.length) {
-      this.setStyleStates();
-    }
   }
 
   render() {
