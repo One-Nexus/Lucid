@@ -314,12 +314,18 @@ export default class Module extends React.Component {
             NAMESPACE: this.NAMESPACE
           }
 
+          let content = props.content || props.children;
+
+          if (typeof content === 'function') {
+            content = content({ config: this.CONFIG, context: contextValues });
+          }
+
           return (
             <ModuleContext.Provider value={contextValues}>
               <this.TAG id={props.id ? this.ID : null} ref={this.REF} {...ATTRIBUTES}>
                 {before && <Component name=':before'>{before.content}</Component>}
 
-                {typeof props.children === 'function' ? props.children(this.CONFIG) : (props.content || props.children)}
+                {content}
 
                 {after && <Component name=':after'>{after.content}</Component>}
               </this.TAG>
