@@ -24,7 +24,7 @@ export default class Module extends React.Component {
 
     this.REF = React.createRef();
     this.DATA = props.styles;
-    this.THEME = mergeThemes(window.theme, context, props.theme);
+    this.THEME = mergeThemes(context, window.theme, props.theme);
 
     const LUCIDDEFAULTS = { generateClasses: true, generateDataAttributes: true }
     const THEMECONFIG = this.THEME.modules && evalConfig(this.THEME.modules[props.name]);
@@ -317,7 +317,11 @@ export default class Module extends React.Component {
           let content = props.content || props.children;
 
           if (typeof content === 'function') {
-            content = content({ config: this.CONFIG, context: contextValues });
+            content = content({ 
+              theme: this.THEME, 
+              config: this.CONFIG, 
+              context: contextValues 
+            });
           }
 
           return (
