@@ -151,7 +151,7 @@ export default class Module extends React.Component {
     }
   
     Object.entries(styles).forEach(style => {
-      const key = style[0]; const value = style[1];
+      const key = style[0]; let value = style[1];
 
       if ((key === ':hover' || key === 'is-hovered') && options.state.isHovered) {
         return this.paint(node, value, options);
