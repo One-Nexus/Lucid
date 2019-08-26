@@ -259,6 +259,25 @@ __webpack_require__.r(__webpack_exports__);
 var external_react_ = __webpack_require__(0);
 var external_react_default = /*#__PURE__*/__webpack_require__.n(external_react_);
 
+// CONCATENATED MODULE: ./src/utilities/evalConfig.js
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function evalConfig(THEME) {
+  if (!THEME) return;
+  Object.entries(THEME).forEach(function (entry) {
+    var key = entry[0];
+    var value = entry[1];
+
+    if (_typeof(value) === 'object') {
+      return evalConfig(value);
+    }
+
+    if (typeof value === 'function') {
+      THEME[key] = value(THEME);
+    }
+  });
+  return THEME;
+}
 // CONCATENATED MODULE: ./src/utilities/getModifiersFromProps.js
 /**
  * @param {*} props 
@@ -292,8 +311,6 @@ function getModifiersFromProps(props) {
   return modifiers;
 }
 // CONCATENATED MODULE: ./src/utilities/mergeThemes.js
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
 function mergeThemes() {
   var THEME = {};
 
@@ -308,28 +325,9 @@ function mergeThemes() {
       THEME = deepMergeObjects(THEME, theme);
     }
   });
-  return evalVal(THEME);
-}
-/** */
-
-function evalVal(theme) {
-  var THEME = theme;
-  Object.entries(THEME).forEach(function (THEME) {
-    var key = THEME[0];
-    var value = THEME[1];
-
-    if (_typeof(value) === 'object') {
-      THEME[key] = evalVal(value);
-    }
-
-    if (typeof value === 'function') {
-      THEME[key] = value(THEME);
-    }
-  });
   return THEME;
 }
 /** */
-
 
 function deepMergeObjects() {
   if (process.env.SYNERGY) {
@@ -345,7 +343,19 @@ function deepMergeObjects() {
   }
 }
 // CONCATENATED MODULE: ./src/provider.jsx
-function provider_typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { provider_typeof = function _typeof(obj) { return typeof obj; }; } else { provider_typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return provider_typeof(obj); }
+
+var ThemeContext = external_react_default.a.createContext({});
+/* harmony default export */ var provider = (function (props) {
+  return external_react_default.a.createElement(ThemeContext.Provider, {
+    value: props.theme
+  }, props.children);
+});
+// CONCATENATED MODULE: ./src/module.jsx
+function module_typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { module_typeof = function _typeof(obj) { return typeof obj; }; } else { module_typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return module_typeof(obj); }
+
+function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -353,7 +363,7 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-function _possibleConstructorReturn(self, call) { if (call && (provider_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+function _possibleConstructorReturn(self, call) { if (call && (module_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
@@ -365,63 +375,6 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-
-var ThemeContext = external_react_default.a.createContext({});
-
-
-var provider_Provider =
-/*#__PURE__*/
-function (_React$Component) {
-  _inherits(Provider, _React$Component);
-
-  function Provider() {
-    _classCallCheck(this, Provider);
-
-    return _possibleConstructorReturn(this, _getPrototypeOf(Provider).apply(this, arguments));
-  }
-
-  _createClass(Provider, [{
-    key: "render",
-    value: function render() {
-      var theme = this.props.theme;
-      return external_react_default.a.createElement(ThemeContext.Provider, {
-        value: theme
-      }, this.props.children);
-    }
-  }]);
-
-  return Provider;
-}(external_react_default.a.Component);
-
-_defineProperty(provider_Provider, "contextType", ThemeContext);
-
-
-// CONCATENATED MODULE: ./src/module.jsx
-function module_typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { module_typeof = function _typeof(obj) { return typeof obj; }; } else { module_typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return module_typeof(obj); }
-
-function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-
-function _readOnlyError(name) { throw new Error("\"" + name + "\" is read-only"); }
-
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { module_defineProperty(target, key, source[key]); }); } return target; }
-
-function module_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function module_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function module_createClass(Constructor, protoProps, staticProps) { if (protoProps) module_defineProperties(Constructor.prototype, protoProps); if (staticProps) module_defineProperties(Constructor, staticProps); return Constructor; }
-
-function module_possibleConstructorReturn(self, call) { if (call && (module_typeof(call) === "object" || typeof call === "function")) { return call; } return module_assertThisInitialized(self); }
-
-function module_assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function module_getPrototypeOf(o) { module_getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return module_getPrototypeOf(o); }
-
-function module_inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) module_setPrototypeOf(subClass, superClass); }
-
-function module_setPrototypeOf(o, p) { module_setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return module_setPrototypeOf(o, p); }
-
-function module_defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
 
@@ -438,44 +391,62 @@ var increment = 1;
 /** Create a context object */
 
 var ModuleContext = external_react_default.a.createContext({});
-
 /** Render a Synergy module */
 
 var module_Module =
 /*#__PURE__*/
 function (_React$Component) {
-  module_inherits(Module, _React$Component);
+  _inherits(Module, _React$Component);
 
-  function Module(props) {
+  function Module(props, context) {
     var _this;
 
-    module_classCallCheck(this, Module);
+    _classCallCheck(this, Module);
 
-    _this = module_possibleConstructorReturn(this, module_getPrototypeOf(Module).call(this, props));
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(Module).call(this, props));
+    increment++;
+    var Synergy = window.Synergy || {};
     _this.REF = external_react_default.a.createRef();
+    _this.DATA = props.styles;
+    _this.THEME = mergeThemes(context, window.theme, props.theme);
+    var LUCIDDEFAULTS = {
+      generateClasses: true,
+      generateDataAttributes: true
+    };
+    var THEMECONFIG = _this.THEME.modules && evalConfig(_this.THEME.modules[props.name]);
+    var DEFAULTS = props.config;
+
+    if (window.Synergy) {
+      var SYNERGY_MODULE = window[props.name] || {};
+      var config = SYNERGY_MODULE.config,
+          styles = SYNERGY_MODULE.styles;
+      if (config) DEFAULTS = config;
+      if (styles) _this.DATA = styles;
+    }
+
+    DEFAULTS = typeof DEFAULTS === 'function' ? DEFAULTS(_this.THEME) : DEFAULTS;
+    _this.CONFIG = Module.config(LUCIDDEFAULTS, DEFAULTS, THEMECONFIG);
+    _this.ID = props.id || "module-".concat(increment);
+    _this.NAMESPACE = _this.CONFIG.name || props.name || props.tag || _this.ID;
+    _this.TAG = props.href && 'a' || props.component || props.tag || 'div';
+    _this.MODIFIERGLUE = props.modifierGlue || _this.CONFIG.modifierGlue || Synergy.modifierGlue || '--';
+    _this.COMPONENTGLUE = props.componentGlue || _this.CONFIG.componentGlue || Synergy.componentGlue || '__';
+    _this.SINGLECLASS = props.singleClass || _this.CONFIG.singleClass || false;
+    _this.GENERATECLASSES = props.generateClasses || _this.CONFIG.generateClasses;
+    _this.GENERATEDATAATTRIBUTES = props.generateDataAttributes || _this.CONFIG.generateDataAttributes;
     _this.state = {
-      isHovered: false
+      isHovered: false,
+      isFirstChild: false,
+      isLastChild: false,
+      before: null,
+      after: null
     };
     return _this;
   }
+  /** Get Attributes */
 
-  module_createClass(Module, [{
-    key: "handleMouseEnter",
-    value: function handleMouseEnter(event) {
-      this.props.onMouseEnter && this.props.onMouseEnter(event);
-      this.setState({
-        isHovered: true
-      });
-    }
-  }, {
-    key: "handleMouseLeave",
-    value: function handleMouseLeave(event) {
-      this.props.onMouseLeave && this.props.onMouseLeave(event);
-      this.setState({
-        isHovered: false
-      });
-    }
-  }, {
+
+  _createClass(Module, [{
     key: "getEventHandlers",
     value: function getEventHandlers(properties) {
       var eventHandlers = {};
@@ -507,6 +478,27 @@ function (_React$Component) {
 
       return dataAttributes;
     }
+    /** Styling */
+
+  }, {
+    key: "stylesConfig",
+    value: function stylesConfig() {
+      var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+          _ref$theme = _ref.theme,
+          theme = _ref$theme === void 0 ? this.THEME : _ref$theme,
+          _ref$config = _ref.config,
+          config = _ref$config === void 0 ? this.CONFIG : _ref$config,
+          _ref$context = _ref.context,
+          context = _ref$context === void 0 ? this.context : _ref$context;
+
+      return {
+        theme: theme,
+        config: config,
+        context: context,
+        state: _objectSpread({}, this.state, this.props),
+        element: this.REF.current
+      };
+    }
   }, {
     key: "getStyles",
     value: function getStyles() {
@@ -518,30 +510,33 @@ function (_React$Component) {
       }
 
       if (styles instanceof Array) {
-        // styles = Module.config({}, ...styles);
-        styles = Module.config({}, styles.reduce(function (acc, item) {
-          return Object.assign(acc, item);
-        }, {}));
+        styles = this.flattenStyles(styles, options);
       }
 
       return styles;
     }
   }, {
-    key: "stylesConfig",
-    value: function stylesConfig() {
-      var theme = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.THEME;
-      var config = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : this.CONFIG;
-      var node = this.REF.current;
-      return {
-        theme: theme,
-        config: config,
-        state: _objectSpread({
-          isFirstChild: node && node === node.parentNode.firstChild,
-          isLastChild: node && node === node.parentNode.lastChild
-        }, this.state, this.props),
-        element: node,
-        context: this.context
-      };
+    key: "flattenStyles",
+    value: function flattenStyles(styles, options) {
+      return styles.reduce(function (accumulator, item) {
+        if (!item) return accumulator;
+
+        if (typeof item === 'function') {
+          item = item(options);
+        }
+
+        Object.entries(item).forEach(function (entry) {
+          var key = entry[0];
+          var val = entry[1];
+
+          if (accumulator.hasOwnProperty(key)) {
+            accumulator[key] = accumulator[key] instanceof Array ? accumulator[key].concat(val) : [accumulator[key], val];
+          } else {
+            accumulator[key] = val;
+          }
+        });
+        return accumulator;
+      }, {});
     }
   }, {
     key: "paint",
@@ -565,22 +560,36 @@ function (_React$Component) {
         var key = style[0];
         var value = style[1];
 
-        if (value instanceof Array) {
-          node = value[0];
-          styles = value[1];
-          return _this2.paint(node(), styles, options);
+        if ((key === ':hover' || key === 'is-hovered') && options.state.isHovered) {
+          return _this2.paint(node, value, options);
+        }
+
+        if (key.indexOf('with-') === 0 && options.context[key.replace('with-', '')]) {
+          return _this2.paint(node, value, options.context[key.replace('with-', '')]);
+        }
+
+        if (key.indexOf('is-') === 0) {
+          if (options[key.replace('is-', '')] || options.state[key.replace('is-', '')]) {
+            return _this2.paint(node, value, options);
+          }
         }
 
         if (typeof value === 'function') {
           try {
-            value = (_readOnlyError("value"), value(node.style[key]));
+            value = value(node.style[key]);
           } catch (error) {
             return error;
           }
         }
 
-        if (key === ':hover' && options.state.isHovered) {
-          return _this2.paint(node, value, options);
+        if (value instanceof Array) {
+          node = value[0], styles = value[1];
+
+          try {
+            return _this2.paint(node(), styles, options);
+          } catch (error) {
+            return error;
+          }
         }
 
         try {
@@ -590,114 +599,168 @@ function (_React$Component) {
         }
       });
     }
+  }, {
+    key: "setStyleStates",
+    value: function setStyleStates() {
+      var prevState = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.state;
+      var _ref2 = [this.REF.current, this.REF.current.parentNode],
+          CURRENT = _ref2[0],
+          PARENT = _ref2[1];
+      var _ref3 = [prevState.isFirstChild, CURRENT === PARENT.firstChild],
+          prevIsFirstChild = _ref3[0],
+          isFirstChild = _ref3[1];
+      var _ref4 = [prevState.isLastChild, CURRENT === PARENT.lastChild],
+          prevIsLastChild = _ref4[0],
+          isLastChild = _ref4[1];
+      var _ref5 = [prevState.before, this.STYLES[':before']],
+          prevBefore = _ref5[0],
+          before = _ref5[1];
+      var _ref6 = [prevState.after, this.STYLES[':after']],
+          prevAfter = _ref6[0],
+          after = _ref6[1];
+
+      if (prevIsFirstChild !== isFirstChild) {
+        this.setState({
+          isFirstChild: isFirstChild
+        });
+      }
+
+      if (prevIsLastChild !== isLastChild) {
+        this.setState({
+          isLastChild: isLastChild
+        });
+      }
+
+      if (JSON.stringify(prevBefore) !== JSON.stringify(before)) {
+        this.setState({
+          before: before
+        });
+      }
+
+      if (JSON.stringify(prevAfter) !== JSON.stringify(after)) {
+        this.setState({
+          after: after
+        });
+      }
+    }
+    /** Event Handlers */
+
+  }, {
+    key: "handleMouseEnter",
+    value: function handleMouseEnter(event) {
+      this.props.onMouseEnter && this.props.onMouseEnter(event);
+      this.setState({
+        isHovered: true
+      });
+    }
+  }, {
+    key: "handleMouseLeave",
+    value: function handleMouseLeave(event) {
+      this.props.onMouseLeave && this.props.onMouseLeave(event);
+      this.setState({
+        isHovered: false
+      });
+    }
     /** Lifecycle Methods */
 
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      if (this.STYLES) {
-        this.paint(this.REF.current, this.STYLES, this.stylesConfig());
+      if (this.REF.current) {
+        this.setStyleStates();
+        this.paint(this.REF.current, this.DATA, this.stylesConfig());
       }
     }
   }, {
     key: "componentDidUpdate",
-    value: function componentDidUpdate() {
-      if (this.STYLES) {
-        this.paint(this.REF.current, this.STYLES, this.stylesConfig());
-      }
+    value: function componentDidUpdate(prevProps, prevState) {
+      this.setStyleStates(prevState);
+      this.paint(this.REF.current, this.DATA, this.stylesConfig());
     }
   }, {
     key: "render",
     value: function render() {
       var _this3 = this;
 
-      increment++;
-      var Synergy = window.Synergy || {};
       var props = this.props;
+      var MODIFIERGLUE = this.MODIFIERGLUE,
+          COMPONENTGLUE = this.COMPONENTGLUE,
+          SINGLECLASS = this.SINGLECLASS,
+          GENERATECLASSES = this.GENERATECLASSES,
+          GENERATEDATAATTRIBUTES = this.GENERATEDATAATTRIBUTES;
       /** */
 
-      return external_react_default.a.createElement(ThemeContext.Consumer, null, function (theme) {
+      var _ref7 = [props.className ? props.className + ' ' : '', this.NAMESPACE, []],
+          CLASSES = _ref7[0],
+          SELECTOR = _ref7[1],
+          MODIFIERS = _ref7[2];
+      MODIFIERS.push(props.modifiers);
+      MODIFIERS = MODIFIERS.concat(getModifiersFromProps(props));
+      MODIFIERS = MODIFIERS.filter(function (item, pos) {
+        return MODIFIERS.indexOf(item) === pos;
+      });
+      MODIFIERS = MODIFIERS.filter(Boolean);
+
+      if (SINGLECLASS) {
+        SELECTOR += MODIFIERS.length ? MODIFIERGLUE + MODIFIERS.join(MODIFIERGLUE) : '';
+      } else {
+        MODIFIERS.forEach(function (MODIFIER) {
+          return CLASSES += SELECTOR + MODIFIERGLUE + MODIFIER + ' ';
+        });
+      }
+
+      CLASSES += SELECTOR;
+      /** */
+
+      var _this$state = this.state,
+          before = _this$state.before,
+          after = _this$state.after;
+
+      var ATTRIBUTES = _objectSpread({}, this.getDataAttributes(props), this.getEventHandlers(props), props.attributes, {
+        onMouseEnter: this.handleMouseEnter.bind(this),
+        onMouseLeave: this.handleMouseLeave.bind(this),
+        className: GENERATECLASSES ? CLASSES : null,
+        'data-module': GENERATEDATAATTRIBUTES ? this.NAMESPACE : null
+      });
+
+      return external_react_default.a.createElement(ModuleContext.Consumer, null, function (moduleContext) {
         var _objectSpread2;
 
-        /** */
-        _this3.THEME = mergeThemes(window.theme, theme, props.theme);
-        _this3.CONFIG = Module.config({
-          generateClasses: true,
-          generateDataAttributes: true
-        }, props.config, _this3.THEME.modules && _this3.THEME.modules[props.name]);
-        _this3.STYLES = props.styles;
+        _this3.STYLES = _this3.getStyles(_this3.DATA, _this3.stylesConfig({
+          context: moduleContext
+        }));
         /** */
 
-        var MODIFIERGLUE = props.modifierGlue || _this3.CONFIG.modifierGlue || Synergy.modifierGlue || '--';
-        var COMPONENTGLUE = props.componentGlue || _this3.CONFIG.componentGlue || Synergy.componentGlue || '__';
-        var SINGLECLASS = props.singleClass || _this3.CONFIG.singleClass || false;
-        var GENERATECLASSES = props.generateClasses || _this3.CONFIG.generateClasses;
-        var GENERATEDATAATTRIBUTES = props.generateDataAttributes || _this3.CONFIG.generateDataAttributes;
-        var ID = props.id || "module-".concat(increment);
-        var NAMESPACE = _this3.CONFIG.name || props.name || props.tag || ID;
-        var TAG = props.href && 'a' || props.component || props.tag || 'div';
-        /** */
-
-        var CLASSES = props.className ? props.className + ' ' : '',
-            SELECTOR = NAMESPACE,
-            MODIFIERS = [];
-        MODIFIERS.push(props.modifiers); // MODIFIERS.push(...getModifiersFromProps(props));
-
-        MODIFIERS = MODIFIERS.concat(getModifiersFromProps(props));
-        MODIFIERS = MODIFIERS.filter(function (item, pos) {
-          return MODIFIERS.indexOf(item) === pos;
-        });
-        MODIFIERS = MODIFIERS.filter(Boolean);
-
-        if (SINGLECLASS) {
-          SELECTOR += MODIFIERS.length ? MODIFIERGLUE + MODIFIERS.join(MODIFIERGLUE) : '';
-        } else {
-          MODIFIERS.forEach(function (MODIFIER) {
-            return CLASSES += SELECTOR + MODIFIERGLUE + MODIFIER + ' ';
-          });
-        }
-
-        CLASSES += SELECTOR;
-        /** */
-
-        var styles = _this3.getStyles(_this3.STYLES, _this3.stylesConfig());
-
-        var _ref = [styles[':before'], styles[':after']],
-            before = _ref[0],
-            after = _ref[1];
-
-        var ATTRIBUTES = _objectSpread({}, _this3.getDataAttributes(props), _this3.getEventHandlers(props), props.attributes, {
-          onMouseEnter: _this3.handleMouseEnter.bind(_this3),
-          onMouseLeave: _this3.handleMouseLeave.bind(_this3),
-          className: GENERATECLASSES ? CLASSES : null,
-          'data-module': GENERATEDATAATTRIBUTES ? NAMESPACE : null
-          /** */
-
-        });
-
-        var contextValues = _objectSpread({
-          PARENT: _this3
-        }, _this3.context, _this3.state, props, (_objectSpread2 = {
+        var contextValues = _objectSpread({}, moduleContext, _this3.state, props, (_objectSpread2 = {
           THEME: _this3.THEME,
           CONFIG: _this3.CONFIG,
+          STYLES: _objectSpread({}, moduleContext.STYLES, _this3.STYLES),
           MODIFIERGLUE: MODIFIERGLUE,
           COMPONENTGLUE: COMPONENTGLUE,
           SINGLECLASS: SINGLECLASS,
           GENERATECLASSES: GENERATECLASSES,
           GENERATEDATAATTRIBUTES: GENERATEDATAATTRIBUTES
-        }, module_defineProperty(_objectSpread2, NAMESPACE, _objectSpread({}, _this3.state, props)), module_defineProperty(_objectSpread2, "STYLES", _objectSpread({}, _this3.context.STYLES, styles)), module_defineProperty(_objectSpread2, "NAMESPACE", NAMESPACE), _objectSpread2));
+        }, _defineProperty(_objectSpread2, _this3.NAMESPACE, _objectSpread({}, _this3.state, props)), _defineProperty(_objectSpread2, "NAMESPACE", _this3.NAMESPACE), _objectSpread2));
+
+        var content = props.content || props.children;
+
+        if (typeof content === 'function') {
+          content = content({
+            theme: _this3.THEME,
+            config: _this3.CONFIG,
+            context: contextValues
+          });
+        }
 
         return external_react_default.a.createElement(ModuleContext.Provider, {
           value: contextValues
-        }, external_react_default.a.createElement(TAG, _extends({
-          id: ID,
+        }, external_react_default.a.createElement(_this3.TAG, _extends({
+          id: props.id ? _this3.ID : null,
           ref: _this3.REF
-        }, ATTRIBUTES), before && external_react_default.a.createElement("div", {
-          className: "before",
-          style: before
-        }, before.content), props.content || props.children, after && external_react_default.a.createElement("div", {
-          className: "after",
-          style: after
+        }, ATTRIBUTES), before && external_react_default.a.createElement(Component, {
+          name: ":before"
+        }, before.content), content, after && external_react_default.a.createElement(Component, {
+          name: ":after"
         }, after.content)));
       });
     }
@@ -708,9 +771,9 @@ function (_React$Component) {
   return Module;
 }(external_react_default.a.Component);
 
-module_defineProperty(module_Module, "contextType", ModuleContext);
+_defineProperty(module_Module, "contextType", ThemeContext);
 
-module_defineProperty(module_Module, "config", function () {
+_defineProperty(module_Module, "config", function () {
   if (process.env.SYNERGY) {
     var _Synergy;
 
@@ -728,15 +791,15 @@ module_defineProperty(module_Module, "config", function () {
 var module_Wrapper =
 /*#__PURE__*/
 function (_Module) {
-  module_inherits(Wrapper, _Module);
+  _inherits(Wrapper, _Module);
 
   function Wrapper() {
-    module_classCallCheck(this, Wrapper);
+    _classCallCheck(this, Wrapper);
 
-    return module_possibleConstructorReturn(this, module_getPrototypeOf(Wrapper).apply(this, arguments));
+    return _possibleConstructorReturn(this, _getPrototypeOf(Wrapper).apply(this, arguments));
   }
 
-  module_createClass(Wrapper, [{
+  _createClass(Wrapper, [{
     key: "render",
     value: function render() {
       var MODULE = this.props.module;
@@ -750,7 +813,7 @@ function (_Module) {
         }
       }
 
-      var DYNAMICPROPS = module_defineProperty({}, MODULE, true);
+      var DYNAMICPROPS = _defineProperty({}, MODULE, true);
 
       return external_react_default.a.createElement(module_Module, _extends({
         name: NAMESPACE
@@ -763,15 +826,15 @@ function (_Module) {
 var module_Group =
 /*#__PURE__*/
 function (_Module2) {
-  module_inherits(Group, _Module2);
+  _inherits(Group, _Module2);
 
   function Group() {
-    module_classCallCheck(this, Group);
+    _classCallCheck(this, Group);
 
-    return module_possibleConstructorReturn(this, module_getPrototypeOf(Group).apply(this, arguments));
+    return _possibleConstructorReturn(this, _getPrototypeOf(Group).apply(this, arguments));
   }
 
-  module_createClass(Group, [{
+  _createClass(Group, [{
     key: "render",
     value: function render() {
       return external_react_default.a.createElement(module_Wrapper, _extends({
@@ -819,37 +882,32 @@ var component_Component =
 function (_Module) {
   component_inherits(Component, _Module);
 
-  function Component() {
+  function Component(props) {
+    var _this;
+
     component_classCallCheck(this, Component);
 
-    return component_possibleConstructorReturn(this, component_getPrototypeOf(Component).apply(this, arguments));
+    _this = component_possibleConstructorReturn(this, component_getPrototypeOf(Component).call(this, props));
+    _this.REF = external_react_default.a.createRef();
+    _this.NAMESPACE = props.name || props.tag;
+    return _this;
   }
 
   component_createClass(Component, [{
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      if (this.context.STYLES) {
-        this.paint(this.REF.current, this.context.STYLES[this.NAMESPACE], this.stylesConfig());
-      }
-    }
-  }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate() {
-      if (this.context.STYLES) {
-        this.paint(this.REF.current, this.context.STYLES[this.NAMESPACE], this.stylesConfig());
-      }
-    }
-  }, {
     key: "render",
     value: function render() {
       var _objectSpread2;
 
       /** */
+      this.DATA = this.context.STYLES[this.NAMESPACE];
+      this.STYLES = this.getStyles(this.DATA, this.stylesConfig({
+        theme: this.context.THEME,
+        config: this.context.CONFIG
+      }));
       var props = this.props;
       var _this$context = this.context,
           MODIFIERGLUE = _this$context.MODIFIERGLUE,
           COMPONENTGLUE = _this$context.COMPONENTGLUE;
-      this.NAMESPACE = props.name || props.tag;
       var STRICT_NAMESPACE = (this.context.STRICT_NAMESPACE || this.context.NAMESPACE) + COMPONENTGLUE + this.NAMESPACE;
       var TAG = props.href && 'a' || props.component || props.tag || 'div';
       /** */
@@ -857,8 +915,7 @@ function (_Module) {
       var CLASSES = props.className ? props.className + ' ' : '',
           MODIFIERS = [];
       var SELECTOR = props.subComponent ? STRICT_NAMESPACE : this.context.NAMESPACE + COMPONENTGLUE + this.NAMESPACE;
-      MODIFIERS.push(props.modifiers); // MODIFIERS.push(...getModifiersFromProps(props));
-
+      MODIFIERS.push(props.modifiers);
       MODIFIERS = MODIFIERS.concat(getModifiersFromProps(props));
       MODIFIERS = MODIFIERS.filter(function (item, pos) {
         return MODIFIERS.indexOf(item) === pos;
@@ -876,10 +933,9 @@ function (_Module) {
       CLASSES += SELECTOR;
       /** */
 
-      var styles = this.getStyles(this.context.STYLES[this.NAMESPACE], this.stylesConfig());
-      var _ref = [styles[':before'], styles[':after']],
-          before = _ref[0],
-          after = _ref[1];
+      var _this$state = this.state,
+          before = _this$state.before,
+          after = _this$state.after;
 
       var ATTRIBUTES = component_objectSpread({}, this.getDataAttributes(props), this.getEventHandlers(props), props.attributes, {
         onMouseEnter: this.handleMouseEnter.bind(this),
@@ -891,18 +947,19 @@ function (_Module) {
 
       });
 
-      var contextValues = component_objectSpread({}, this.context, this.state, props, (_objectSpread2 = {}, component_defineProperty(_objectSpread2, this.NAMESPACE, component_objectSpread({}, this.state, props)), component_defineProperty(_objectSpread2, "STYLES", component_objectSpread({}, this.context.STYLES, styles)), component_defineProperty(_objectSpread2, "STRICT_NAMESPACE", STRICT_NAMESPACE), _objectSpread2));
+      var contextValues = component_objectSpread({}, this.context, this.state, props, (_objectSpread2 = {}, component_defineProperty(_objectSpread2, this.NAMESPACE, component_objectSpread({}, this.state, props, {
+        state: component_objectSpread({}, this.state, props),
+        context: this.context
+      })), component_defineProperty(_objectSpread2, "STYLES", component_objectSpread({}, this.context.STYLES, this.STYLES)), component_defineProperty(_objectSpread2, "STRICT_NAMESPACE", STRICT_NAMESPACE), _objectSpread2));
 
       return external_react_default.a.createElement(ModuleContext.Provider, {
         value: contextValues
       }, external_react_default.a.createElement(TAG, component_extends({
         ref: this.REF
-      }, ATTRIBUTES), before && external_react_default.a.createElement("div", {
-        className: "before",
-        style: before
-      }, before.content), props.content || props.children, after && external_react_default.a.createElement("div", {
-        className: "after",
-        style: after
+      }, ATTRIBUTES), before && external_react_default.a.createElement(Component, {
+        name: ":before"
+      }, before.content), props.content || props.children, after && external_react_default.a.createElement(Component, {
+        name: ":after"
       }, after.content)));
     }
   }]);
@@ -918,13 +975,29 @@ var component_SubComponent = function SubComponent(props) {
     subComponent: true
   }, props), props.children);
 };
+// CONCATENATED MODULE: ./src/styled.js
+function styled_extends() { styled_extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return styled_extends.apply(this, arguments); }
+
+
+
+var styled_styled = function styled(name, props) {
+  var tag = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'div';
+  return React.createElement(component_Component, styled_extends({
+    name: name,
+    tag: tag
+  }, props), props.children);
+};
+
+/* harmony default export */ var src_styled = (styled_styled);
 // CONCATENATED MODULE: ./src/index.js
 /* concated harmony reexport Module */__webpack_require__.d(__webpack_exports__, "Module", function() { return module_Module; });
 /* concated harmony reexport Wrapper */__webpack_require__.d(__webpack_exports__, "Wrapper", function() { return module_Wrapper; });
 /* concated harmony reexport Group */__webpack_require__.d(__webpack_exports__, "Group", function() { return module_Group; });
 /* concated harmony reexport Component */__webpack_require__.d(__webpack_exports__, "Component", function() { return component_Component; });
 /* concated harmony reexport SubComponent */__webpack_require__.d(__webpack_exports__, "SubComponent", function() { return component_SubComponent; });
-/* concated harmony reexport Provider */__webpack_require__.d(__webpack_exports__, "Provider", function() { return provider_Provider; });
+/* concated harmony reexport Provider */__webpack_require__.d(__webpack_exports__, "Provider", function() { return provider; });
+/* concated harmony reexport styled */__webpack_require__.d(__webpack_exports__, "styled", function() { return src_styled; });
+
 
 
 
