@@ -603,6 +603,7 @@ function (_React$Component) {
     key: "setStyleStates",
     value: function setStyleStates() {
       var prevState = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.state;
+      if (!this.REF.current) return;
       var _ref2 = [this.REF.current, this.REF.current.parentNode],
           CURRENT = _ref2[0],
           PARENT = _ref2[1];
@@ -674,6 +675,7 @@ function (_React$Component) {
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate(prevProps, prevState) {
+      if (!this.DATA || !this.DATA.length) this.DATA = prevProps.styles || {};
       this.setStyleStates(prevState);
       this.paint(this.REF.current, this.DATA, this.stylesConfig());
     }
@@ -729,7 +731,12 @@ function (_React$Component) {
         _this3.STYLES = _this3.getStyles(_this3.DATA, _this3.stylesConfig({
           context: moduleContext
         }));
+
+        if ((_this3.STYLES.wrapper || _this3.STYLES.group) && moduleContext.setWrapperStyles) {
+          moduleContext.setWrapperStyles(_this3.STYLES.wrapper || _this3.STYLES.group);
+        }
         /** */
+
 
         var contextValues = _objectSpread({}, moduleContext, _this3.state, props, (_objectSpread2 = {
           THEME: _this3.THEME,
@@ -740,7 +747,7 @@ function (_React$Component) {
           SINGLECLASS: SINGLECLASS,
           GENERATECLASSES: GENERATECLASSES,
           GENERATEDATAATTRIBUTES: GENERATEDATAATTRIBUTES
-        }, _defineProperty(_objectSpread2, _this3.NAMESPACE, _objectSpread({}, _this3.state, props)), _defineProperty(_objectSpread2, "NAMESPACE", _this3.NAMESPACE), _objectSpread2));
+        }, _defineProperty(_objectSpread2, _this3.NAMESPACE, _objectSpread({}, _this3.state, props)), _defineProperty(_objectSpread2, "NAMESPACE", _this3.NAMESPACE), _defineProperty(_objectSpread2, "SETWRAPPERSTYLES", _this3.props.setWrapperStyles), _objectSpread2));
 
         var content = props.content || props.children;
 
@@ -793,31 +800,52 @@ var module_Wrapper =
 function (_Module) {
   _inherits(Wrapper, _Module);
 
-  function Wrapper() {
+  function Wrapper(props) {
+    var _this4;
+
     _classCallCheck(this, Wrapper);
 
-    return _possibleConstructorReturn(this, _getPrototypeOf(Wrapper).apply(this, arguments));
+    _this4 = _possibleConstructorReturn(this, _getPrototypeOf(Wrapper).call(this, props));
+    _this4.state = {
+      styles: {}
+    };
+    _this4.applyStyles = _this4.applyStyles.bind(_assertThisInitialized(_assertThisInitialized(_this4)));
+    return _this4;
   }
 
   _createClass(Wrapper, [{
+    key: "applyStyles",
+    value: function applyStyles(styles) {
+      if (JSON.stringify(styles) !== JSON.stringify(this.state.styles)) {
+        this.setState({
+          styles: styles
+        });
+      }
+    }
+  }, {
     key: "render",
     value: function render() {
+      var _DYNAMICPROPS;
+
       var MODULE = this.props.module;
       var NAMESPACE = this.props.name || 'wrapper';
 
       if (!MODULE) {
         if (this.props.children.length) {
-          MODULE = this.props.children[0].type.name.toLowerCase();
+          // console.log(this.props.children[0].props.name); @TODO
+          MODULE = this.props.children[0].type.name;
         } else {
-          MODULE = this.props.children.type.name.toLowerCase();
+          MODULE = this.props.children.type.name;
         }
       }
 
-      var DYNAMICPROPS = _defineProperty({}, MODULE, true);
+      var DYNAMICPROPS = (_DYNAMICPROPS = {}, _defineProperty(_DYNAMICPROPS, MODULE, true), _defineProperty(_DYNAMICPROPS, "setWrapperStyles", this.applyStyles), _DYNAMICPROPS); // console.log(NAMESPACE, this.state.styles);
 
       return external_react_default.a.createElement(module_Module, _extends({
         name: NAMESPACE
-      }, DYNAMICPROPS, this.props), this.props.children);
+      }, DYNAMICPROPS, this.props, {
+        styles: this.state.styles
+      }), this.props.children);
     }
   }]);
 
@@ -838,7 +866,8 @@ function (_Module2) {
     key: "render",
     value: function render() {
       return external_react_default.a.createElement(module_Wrapper, _extends({
-        name: "group"
+        name: "group",
+        styles: this.state.styles
       }, this.props), this.props.children);
     }
   }]);

@@ -194,6 +194,8 @@ export default class Module extends React.Component {
   }
 
   setStyleStates(prevState = this.state) {
+    if (!this.REF.current) return;
+
     const [CURRENT, PARENT] = [this.REF.current, this.REF.current.parentNode];
 
     const [prevIsFirstChild, isFirstChild] = [prevState.isFirstChild, CURRENT === PARENT.firstChild];
@@ -242,6 +244,9 @@ export default class Module extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    // @TODO handle this properly (re wrapper/group)
+    if (!this.DATA || !this.DATA.length) this.DATA = prevProps.styles || {};
+
     this.setStyleStates(prevState);
     this.paint(this.REF.current, this.DATA, this.stylesConfig());
   }
@@ -286,6 +291,10 @@ export default class Module extends React.Component {
         {moduleContext => {
           this.STYLES = this.getStyles(this.DATA, this.stylesConfig({ context: moduleContext }));
 
+          if ((this.STYLES.wrapper || this.STYLES.group) && moduleContext.setWrapperStyles) {
+            moduleContext.setWrapperStyles(this.STYLES.wrapper || this.STYLES.group);
+          }
+
           /** */
           const contextValues = {
             ...moduleContext,
@@ -311,7 +320,8 @@ export default class Module extends React.Component {
               ...props
             },
 
-            NAMESPACE: this.NAMESPACE
+            NAMESPACE: this.NAMESPACE,
+            SETWRAPPERSTYLES: this.props.setWrapperStyles
           }
 
           let content = props.content || props.children;
@@ -358,6 +368,19 @@ export default class Module extends React.Component {
 }
 
 export class Wrapper extends Module {
+  constructor(props) {
+    super(props);
+
+    this.state = { styles: {} }
+    this.applyStyles = this.applyStyles.bind(this);
+  }
+
+  applyStyles(styles) {
+    if (JSON.stringify(styles) !== JSON.stringify(this.state.styles)) {
+      this.setState({ styles });
+    }
+  }
+
   render() {
     let MODULE = this.props.module;
 
@@ -365,18 +388,20 @@ export class Wrapper extends Module {
 
     if (!MODULE) {
       if (this.props.children.length) {
-        MODULE = this.props.children[0].type.name.toLowerCase();
+        // console.log(this.props.children[0].props.name); @TODO
+        MODULE = this.props.children[0].type.name;
       } else {
-        MODULE = this.props.children.type.name.toLowerCase();
+        MODULE = this.props.children.type.name;
       }
     }
 
     const DYNAMICPROPS = {
-      [MODULE]: true
+      [MODULE]: true,
+      setWrapperStyles: this.applyStyles
     }
 
     return (
-      <Module name={NAMESPACE} {...DYNAMICPROPS} {...this.props}>
+      <Module name={NAMESPACE} {...DYNAMICPROPS} {...this.props} styles={this.state.styles}>
         {this.props.children}
       </Module>
     );
@@ -386,7 +411,7 @@ export class Wrapper extends Module {
 export class Group extends Module {
   render() {
     return (
-      <Wrapper name='group' {...this.props}>{this.props.children}</Wrapper>
+      <Wrapper name='group' styles={this.state.styles} {...this.props}>{this.props.children}</Wrapper>
     );
   }
 }
