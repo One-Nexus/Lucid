@@ -292,10 +292,10 @@ function getModifiersFromProps(props) {
         key = _ref[0],
         value = _ref[1];
     var firstLetter = prop[0]; // if prop is name of module, do not include in list
-
-    if (firstLetter === firstLetter.toUpperCase()) {
-      continue;
-    }
+    // UPDATE: in retrospect, this actually would be useful, so commenting out
+    // if (firstLetter === firstLetter.toUpperCase()) {
+    //   continue;
+    // }
 
     if (prop === 'subComponent') {
       continue;
@@ -675,7 +675,6 @@ function (_React$Component) {
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate(prevProps, prevState) {
-      if (!this.DATA || !this.DATA.length) this.DATA = prevProps.styles || {};
       this.setStyleStates(prevState);
       this.paint(this.REF.current, this.DATA, this.stylesConfig());
     }
@@ -728,12 +727,14 @@ function (_React$Component) {
       return external_react_default.a.createElement(ModuleContext.Consumer, null, function (moduleContext) {
         var _objectSpread2;
 
+        _this3.DATA = _this3.DATA || props.styles;
         _this3.STYLES = _this3.getStyles(_this3.DATA, _this3.stylesConfig({
           context: moduleContext
         }));
+        var WRAPPERSTYLES = _this3.STYLES.wrapper || _this3.STYLES.group;
 
-        if ((_this3.STYLES.wrapper || _this3.STYLES.group) && moduleContext.setWrapperStyles) {
-          moduleContext.setWrapperStyles(_this3.STYLES.wrapper || _this3.STYLES.group);
+        if (WRAPPERSTYLES && moduleContext.setWrapperStyles) {
+          moduleContext.setWrapperStyles(WRAPPERSTYLES);
         }
         /** */
 
@@ -749,7 +750,7 @@ function (_React$Component) {
           GENERATEDATAATTRIBUTES: GENERATEDATAATTRIBUTES
         }, _defineProperty(_objectSpread2, _this3.NAMESPACE, _objectSpread({}, _this3.state, props)), _defineProperty(_objectSpread2, "NAMESPACE", _this3.NAMESPACE), _defineProperty(_objectSpread2, "SETWRAPPERSTYLES", _this3.props.setWrapperStyles), _objectSpread2));
 
-        var content = props.content || props.children;
+        var content = props.content || props.render || props.children;
 
         if (typeof content === 'function') {
           content = content({
@@ -795,85 +796,6 @@ _defineProperty(module_Module, "config", function () {
 });
 
 
-var module_Wrapper =
-/*#__PURE__*/
-function (_Module) {
-  _inherits(Wrapper, _Module);
-
-  function Wrapper(props) {
-    var _this4;
-
-    _classCallCheck(this, Wrapper);
-
-    _this4 = _possibleConstructorReturn(this, _getPrototypeOf(Wrapper).call(this, props));
-    _this4.state = {
-      styles: {}
-    };
-    _this4.applyStyles = _this4.applyStyles.bind(_assertThisInitialized(_assertThisInitialized(_this4)));
-    return _this4;
-  }
-
-  _createClass(Wrapper, [{
-    key: "applyStyles",
-    value: function applyStyles(styles) {
-      if (JSON.stringify(styles) !== JSON.stringify(this.state.styles)) {
-        this.setState({
-          styles: styles
-        });
-      }
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var _DYNAMICPROPS;
-
-      var MODULE = this.props.module;
-      var NAMESPACE = this.props.name || 'wrapper';
-
-      if (!MODULE) {
-        if (this.props.children.length) {
-          // console.log(this.props.children[0].props.name); @TODO
-          MODULE = this.props.children[0].type.name;
-        } else {
-          MODULE = this.props.children.type.name;
-        }
-      }
-
-      var DYNAMICPROPS = (_DYNAMICPROPS = {}, _defineProperty(_DYNAMICPROPS, MODULE, true), _defineProperty(_DYNAMICPROPS, "setWrapperStyles", this.applyStyles), _DYNAMICPROPS); // console.log(NAMESPACE, this.state.styles);
-
-      return external_react_default.a.createElement(module_Module, _extends({
-        name: NAMESPACE
-      }, DYNAMICPROPS, this.props, {
-        styles: this.state.styles
-      }), this.props.children);
-    }
-  }]);
-
-  return Wrapper;
-}(module_Module);
-var module_Group =
-/*#__PURE__*/
-function (_Module2) {
-  _inherits(Group, _Module2);
-
-  function Group() {
-    _classCallCheck(this, Group);
-
-    return _possibleConstructorReturn(this, _getPrototypeOf(Group).apply(this, arguments));
-  }
-
-  _createClass(Group, [{
-    key: "render",
-    value: function render() {
-      return external_react_default.a.createElement(module_Wrapper, _extends({
-        name: "group",
-        styles: this.state.styles
-      }, this.props), this.props.children);
-    }
-  }]);
-
-  return Group;
-}(module_Module);
 // CONCATENATED MODULE: ./src/component.jsx
 function component_typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { component_typeof = function _typeof(obj) { return typeof obj; }; } else { component_typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return component_typeof(obj); }
 
@@ -1004,6 +926,79 @@ var component_SubComponent = function SubComponent(props) {
     subComponent: true
   }, props), props.children);
 };
+// CONCATENATED MODULE: ./src/wrapper.jsx
+function wrapper_typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { wrapper_typeof = function _typeof(obj) { return typeof obj; }; } else { wrapper_typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return wrapper_typeof(obj); }
+
+function wrapper_extends() { wrapper_extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return wrapper_extends.apply(this, arguments); }
+
+function wrapper_defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function wrapper_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function wrapper_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function wrapper_createClass(Constructor, protoProps, staticProps) { if (protoProps) wrapper_defineProperties(Constructor.prototype, protoProps); if (staticProps) wrapper_defineProperties(Constructor, staticProps); return Constructor; }
+
+function wrapper_possibleConstructorReturn(self, call) { if (call && (wrapper_typeof(call) === "object" || typeof call === "function")) { return call; } return wrapper_assertThisInitialized(self); }
+
+function wrapper_assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function wrapper_getPrototypeOf(o) { wrapper_getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return wrapper_getPrototypeOf(o); }
+
+function wrapper_inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) wrapper_setPrototypeOf(subClass, superClass); }
+
+function wrapper_setPrototypeOf(o, p) { wrapper_setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return wrapper_setPrototypeOf(o, p); }
+
+
+
+var wrapper_Wrapper =
+/*#__PURE__*/
+function (_React$Component) {
+  wrapper_inherits(Wrapper, _React$Component);
+
+  function Wrapper(props) {
+    var _this;
+
+    wrapper_classCallCheck(this, Wrapper);
+
+    _this = wrapper_possibleConstructorReturn(this, wrapper_getPrototypeOf(Wrapper).call(this, props));
+    _this.state = {};
+    return _this;
+  }
+
+  wrapper_createClass(Wrapper, [{
+    key: "applyStyles",
+    value: function applyStyles(styles) {
+      if (JSON.stringify(styles) !== JSON.stringify(this.state.styles)) {
+        this.setState({
+          styles: styles
+        });
+      }
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var _PROPS;
+
+      var NAMESPACE = this.props.name || 'wrapper';
+      var CHILD = this.props.children.length ? this.props.children[0] : this.props.children;
+      var MODULE = this.props.module || CHILD.props.name || CHILD.type.name;
+      var PROPS = (_PROPS = {}, wrapper_defineProperty(_PROPS, MODULE, true), wrapper_defineProperty(_PROPS, "styles", this.state.styles), wrapper_defineProperty(_PROPS, "setWrapperStyles", this.applyStyles.bind(this)), _PROPS);
+      return external_react_default.a.createElement(Module, wrapper_extends({
+        name: NAMESPACE
+      }, this.props, PROPS), this.props.children);
+    }
+  }]);
+
+  return Wrapper;
+}(external_react_default.a.Component);
+
+
+var wrapper_Group = function Group(props) {
+  return external_react_default.a.createElement(wrapper_Wrapper, wrapper_extends({
+    name: "group"
+  }, props), props.children);
+};
 // CONCATENATED MODULE: ./src/styled.js
 function styled_extends() { styled_extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return styled_extends.apply(this, arguments); }
 
@@ -1020,12 +1015,13 @@ var styled_styled = function styled(name, props) {
 /* harmony default export */ var src_styled = (styled_styled);
 // CONCATENATED MODULE: ./src/index.js
 /* concated harmony reexport Module */__webpack_require__.d(__webpack_exports__, "Module", function() { return module_Module; });
-/* concated harmony reexport Wrapper */__webpack_require__.d(__webpack_exports__, "Wrapper", function() { return module_Wrapper; });
-/* concated harmony reexport Group */__webpack_require__.d(__webpack_exports__, "Group", function() { return module_Group; });
+/* concated harmony reexport Wrapper */__webpack_require__.d(__webpack_exports__, "Wrapper", function() { return wrapper_Wrapper; });
+/* concated harmony reexport Group */__webpack_require__.d(__webpack_exports__, "Group", function() { return wrapper_Group; });
 /* concated harmony reexport Component */__webpack_require__.d(__webpack_exports__, "Component", function() { return component_Component; });
 /* concated harmony reexport SubComponent */__webpack_require__.d(__webpack_exports__, "SubComponent", function() { return component_SubComponent; });
 /* concated harmony reexport Provider */__webpack_require__.d(__webpack_exports__, "Provider", function() { return provider; });
 /* concated harmony reexport styled */__webpack_require__.d(__webpack_exports__, "styled", function() { return src_styled; });
+
 
 
 

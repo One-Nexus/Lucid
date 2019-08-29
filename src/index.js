@@ -1,5 +1,6 @@
-import Module, { Wrapper, Group } from './module';
+import Module from './module';
 import Component, { SubComponent } from './component';
+import Wrapper, { Group } from './wrapper';
 import Provider from './provider';
 import styled from './styled';
 

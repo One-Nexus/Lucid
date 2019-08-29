@@ -10,9 +10,10 @@ export default function getModifiersFromProps(props, blacklist = []) {
     const firstLetter = prop[0];
 
     // if prop is name of module, do not include in list
-    if (firstLetter === firstLetter.toUpperCase()) {
-      continue;
-    }
+    // UPDATE: in retrospect, this actually would be useful, so commenting out
+    // if (firstLetter === firstLetter.toUpperCase()) {
+    //   continue;
+    // }
 
     if (prop === 'subComponent') {
       continue;

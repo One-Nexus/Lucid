@@ -74,11 +74,12 @@ export default Accordion;
 
 * Most friendly CSS-in-JS API on the market ([change my mind](https://medium.com/@ESR360/why-i-dislike-existing-css-in-js-solutions-for-react-7b81786e0fd5))
 * Built to prioritise Developer Experience (DX)
-* It's just JavaScript; no nonsense CSS selectors as object keys etc.
+* It's just JavaScript; no nonsense CSS selectors as object keys etc...
 * No CSS classes or `className` props required
 * Improve the readability of your source code
 * Improve the readability of your production code ([why is this important?](https://twitter.com/ESR360/status/1151879057409265666))
-* Low barrier to entry - if you know React you can easily pick this up
+* [Media Queries](https://github.com/One-Nexus/Lucid/wiki/Styling-Concepts#media-queries)
+* [Pseudo States/Elements (`:hover`, `:before`, `:after`)](https://github.com/One-Nexus/Lucid/wiki/Styling-Concepts#pseudo-stateselements)
 * Based off state and context - not only the most fiendly API but the most flexible
 * Inherent flexible nature supports themes, configuration etc without dedicated APIs ([though they are provided](https://github.com/One-Nexus/Lucid/wiki/Creating-a-Styled-Module))
 * Automagically identify [cosmetic style properties](https://github.com/One-Nexus/Lucid/wiki/Creating-a-Styled-Module#retreiving-cosmetic-styles-from-config) from [configuration/state/props](https://github.com/One-Nexus/Lucid/wiki/Creating-a-Styled-Module#pass-array-of-styles)
@@ -89,7 +90,6 @@ export default Accordion;
 * Singular styles object (or function that returns an object) passed to `<Module>`
 * Styles are mapped to child components by matching keys with `<Component>` `name` props
 * Parent props/state are [available as `context`](https://github.com/One-Nexus/Lucid/wiki/Creating-a-Styled-Module#context), self props/state are [available as `state`](https://github.com/One-Nexus/Lucid/wiki/Creating-a-Styled-Module#state)
-* Simulate CSS *cascading* by [taking advantage of ES6 syntax](https://github.com/One-Nexus/Lucid/wiki/Creating-a-Styled-Module#simulated-cascading)
 
 ## Installation/Setup
 
@@ -110,8 +110,8 @@ import {
   Module,
   Component,
   SubComponent,
-  Group,
   Wrapper,
+  Group,
   Provider
 } from '@onenexus/lucid';
 ```

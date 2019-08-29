@@ -244,9 +244,6 @@ export default class Module extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    // @TODO handle this properly (re wrapper/group)
-    if (!this.DATA || !this.DATA.length) this.DATA = prevProps.styles || {};
-
     this.setStyleStates(prevState);
     this.paint(this.REF.current, this.DATA, this.stylesConfig());
   }
@@ -289,10 +286,13 @@ export default class Module extends React.Component {
     return (
       <ModuleContext.Consumer>
         {moduleContext => {
+          this.DATA = this.DATA || props.styles;
           this.STYLES = this.getStyles(this.DATA, this.stylesConfig({ context: moduleContext }));
 
-          if ((this.STYLES.wrapper || this.STYLES.group) && moduleContext.setWrapperStyles) {
-            moduleContext.setWrapperStyles(this.STYLES.wrapper || this.STYLES.group);
+          const WRAPPERSTYLES = this.STYLES.wrapper || this.STYLES.group;
+
+          if (WRAPPERSTYLES && moduleContext.setWrapperStyles) {
+            moduleContext.setWrapperStyles(WRAPPERSTYLES);
           }
 
           /** */
@@ -324,7 +324,7 @@ export default class Module extends React.Component {
             SETWRAPPERSTYLES: this.props.setWrapperStyles
           }
 
-          let content = props.content || props.children;
+          let content = props.content || props.render || props.children;
 
           if (typeof content === 'function') {
             content = content({ 
@@ -364,54 +364,5 @@ export default class Module extends React.Component {
     else {
       return require('deep-extend')(...params);
     }
-  }
-}
-
-export class Wrapper extends Module {
-  constructor(props) {
-    super(props);
-
-    this.state = { styles: {} }
-    this.applyStyles = this.applyStyles.bind(this);
-  }
-
-  applyStyles(styles) {
-    if (JSON.stringify(styles) !== JSON.stringify(this.state.styles)) {
-      this.setState({ styles });
-    }
-  }
-
-  render() {
-    let MODULE = this.props.module;
-
-    const NAMESPACE = this.props.name || 'wrapper';
-
-    if (!MODULE) {
-      if (this.props.children.length) {
-        // console.log(this.props.children[0].props.name); @TODO
-        MODULE = this.props.children[0].type.name;
-      } else {
-        MODULE = this.props.children.type.name;
-      }
-    }
-
-    const DYNAMICPROPS = {
-      [MODULE]: true,
-      setWrapperStyles: this.applyStyles
-    }
-
-    return (
-      <Module name={NAMESPACE} {...DYNAMICPROPS} {...this.props} styles={this.state.styles}>
-        {this.props.children}
-      </Module>
-    );
-  }
-}
-
-export class Group extends Module {
-  render() {
-    return (
-      <Wrapper name='group' styles={this.state.styles} {...this.props}>{this.props.children}</Wrapper>
-    );
   }
 }
