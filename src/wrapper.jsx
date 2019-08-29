@@ -5,6 +5,7 @@ export default class Wrapper extends React.Component {
     super(props);
 
     this.state = {}
+    this.applyStyles = this.applyStyles.bind(this);
   }
 
   applyStyles(styles) {
@@ -21,7 +22,7 @@ export default class Wrapper extends React.Component {
     const PROPS = {
       [MODULE]: true,
       styles: this.state.styles,
-      setWrapperStyles: this.applyStyles.bind(this)
+      setWrapperStyles: this.applyStyles
     }
 
     return (

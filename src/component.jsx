@@ -98,6 +98,6 @@ export default class Component extends Module {
   static contextType = ModuleContext;
 }
 
-export const SubComponent = props => (
+export const SubComponent = (props) => (
   <Component subComponent={true} {...props}>{props.children}</Component>
 );
