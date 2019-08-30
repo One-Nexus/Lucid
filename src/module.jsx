@@ -191,6 +191,12 @@ export default class Module extends React.Component {
         return error;
       }
     });
+  
+    const WRAPPERSTYLES = this.STYLES.wrapper || this.STYLES.group;
+
+    if (WRAPPERSTYLES && this.SETWRAPPERSTYLES) {
+      this.SETWRAPPERSTYLES(WRAPPERSTYLES);
+    }
   }
 
   setStyleStates(prevState = this.state) {
@@ -236,7 +242,7 @@ export default class Module extends React.Component {
 
   /** Lifecycle Methods */
 
-  componentDidMount() {
+  componentDidMount() {   
     if (this.REF.current) {
       this.setStyleStates();
       this.paint(this.REF.current, this.DATA, this.stylesConfig());
@@ -288,12 +294,7 @@ export default class Module extends React.Component {
         {moduleContext => {
           this.DATA = this.DATA || props.styles;
           this.STYLES = this.getStyles(this.DATA, this.stylesConfig({ context: moduleContext }));
-
-          const WRAPPERSTYLES = this.STYLES.wrapper || this.STYLES.group;
-
-          if (WRAPPERSTYLES && moduleContext.setWrapperStyles) {
-            moduleContext.setWrapperStyles(WRAPPERSTYLES);
-          }
+          this.SETWRAPPERSTYLES = moduleContext.setWrapperStyles;
 
           /** */
           const contextValues = {
