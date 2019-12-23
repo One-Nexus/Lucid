@@ -27,21 +27,13 @@ export default class Module extends React.Component {
     this.THEME = mergeThemes(context, window.theme, props.theme);
 
     const LUCIDDEFAULTS = { generateClasses: true, generateDataAttributes: true }
-    const THEMECONFIG = this.THEME.modules && evalConfig(this.THEME.modules[props.name]);
+    const GLOBAL_MODULE = window[props.name];
+    const RAW_DEFAULTS = GLOBAL_MODULE && GLOBAL_MODULE.defaultProps && GLOBAL_MODULE.defaultProps.config;
+    const DEFAULTS = (typeof RAW_DEFAULTS === 'function') ? RAW_DEFAULTS(this.THEME) : RAW_DEFAULTS;
+    const THEMECONFIG = this.THEME.modules && evalConfig(this.THEME.modules[props.name], this.THEME);
+    const PROPCONFIG = (typeof props.config === 'function') ? props.config(this.THEME) : props.config;
 
-    let DEFAULTS = props.config;
-
-    if (window.Synergy) {
-      const SYNERGY_MODULE = window[props.name] || {};
-      const { config, styles } = SYNERGY_MODULE;
-
-      if (config) DEFAULTS = config;
-      if (styles) this.DATA = styles;
-    }
-
-    DEFAULTS = (typeof DEFAULTS === 'function') ? DEFAULTS(this.THEME) : DEFAULTS;
-
-    this.CONFIG = Module.config(LUCIDDEFAULTS, DEFAULTS, THEMECONFIG);
+    this.CONFIG = Module.config(LUCIDDEFAULTS, DEFAULTS, THEMECONFIG, PROPCONFIG);
     this.ID = props.id || `module-${increment}`;
     this.NAMESPACE = this.CONFIG.name || props.name || props.tag || this.ID;
     this.TAG = (props.href && 'a') || props.component || props.tag || 'div';

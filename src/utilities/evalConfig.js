@@ -1,18 +1,18 @@
-export default function evalConfig(THEME) {
-  if (!THEME) return;
+export default function evalConfig(config, theme) {
+  if (!config) return;
 
-  Object.entries(THEME).forEach((entry) => {
+  Object.entries(config).forEach((entry) => {
     const key = entry[0]; 
     const value = entry[1];
 
     if (typeof value === 'object') {
-      return evalConfig(value)
+      return evalConfig(value, theme)
     }
 
     if (typeof value === 'function') {
-      THEME[key] = value(THEME);
+      config[key] = value(theme);
     }
   });
 
-  return THEME;
+  return config;
 }
