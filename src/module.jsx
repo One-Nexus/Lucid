@@ -1,4 +1,5 @@
 import React from 'react';
+import htmlVoidElements from 'html-void-elements';
 import evalConfig from './utilities/evalConfig';
 import getModifiersFromProps from './utilities/getModifiersFromProps';
 import mergeThemes from './utilities/mergeThemes';
@@ -29,9 +30,14 @@ export default class Module extends React.Component {
     const LUCIDDEFAULTS = { generateClasses: true, generateDataAttributes: true }
     const GLOBAL_MODULE = window[props.name];
     const RAW_DEFAULTS = GLOBAL_MODULE && GLOBAL_MODULE.defaultProps && GLOBAL_MODULE.defaultProps.config;
-    const DEFAULTS = (typeof RAW_DEFAULTS === 'function') ? RAW_DEFAULTS(this.THEME) : RAW_DEFAULTS;
-    const THEMECONFIG = this.THEME.modules && evalConfig(this.THEME.modules[props.name], this.THEME);
     const PROPCONFIG = (typeof props.config === 'function') ? props.config(this.THEME) : props.config;
+
+    let DEFAULTS = (typeof RAW_DEFAULTS === 'function') ? RAW_DEFAULTS(this.THEME) : RAW_DEFAULTS;
+    let THEMECONFIG = this.THEME.modules && evalConfig(this.THEME.modules[props.name], this.THEME);
+
+    if (PROPCONFIG && PROPCONFIG.displace) {
+      DEFAULTS = {}, THEMECONFIG = {}
+    }
 
     this.CONFIG = Module.config(LUCIDDEFAULTS, DEFAULTS, THEMECONFIG, PROPCONFIG);
     this.ID = props.id || `module-${increment}`;
@@ -39,7 +45,7 @@ export default class Module extends React.Component {
     this.TAG = (props.href && 'a') || props.component || props.tag || 'div';
     this.MODIFIERGLUE = props.modifierGlue || this.CONFIG.modifierGlue || Synergy.modifierGlue || '--';
     this.COMPONENTGLUE = props.componentGlue || this.CONFIG.componentGlue || Synergy.componentGlue || '__';
-    this.SINGLECLASS = props.singleClass || this.CONFIG.singleClass || false;
+    this.SINGLECLASS = props.singleClass || this.CONFIG.singleClass || false; // @TODO move to LUCIDDEFAULTS
     this.GENERATECLASSES = props.generateClasses || this.CONFIG.generateClasses;
     this.GENERATEDATAATTRIBUTES = props.generateDataAttributes || this.CONFIG.generateDataAttributes;
 
@@ -55,7 +61,7 @@ export default class Module extends React.Component {
   /** Get Attributes */
 
   getEventHandlers(properties) {
-    let eventHandlers = {};
+    let eventHandlers = {}
 
     for (let prop in properties) {
       if (Object.keys(window).includes(prop.toLowerCase())) {
@@ -72,8 +78,37 @@ export default class Module extends React.Component {
     return eventHandlers;
   }
 
+  getInputAttributes(properties) {
+    let inputAttributes = {}
+
+    const whitelist = [
+      'type',
+      'readonly',
+      'disabled',
+      'size',
+      'maxlength',
+      'autocomplete',
+      'autofocus',
+      'min',
+      'max',
+      'multiple',
+      'pattern',
+      'placeholder',
+      'required',
+      'step'
+    ];
+
+    for (let prop in properties) {
+      if (whitelist.includes(prop)) {
+        inputAttributes[prop] = properties[prop];
+      }
+    }
+
+    return inputAttributes;
+  }
+
   getDataAttributes(properties) {
-    let dataAttributes = {};
+    let dataAttributes = {}
 
     for (let prop in properties) {
       if (prop.indexOf('data-') === 0) {
@@ -95,7 +130,7 @@ export default class Module extends React.Component {
         ...this.state,
         ...this.props
       },
-      element: this.REF.current
+      element: this.REF.current || document.createElement('span')
     }
   }
 
@@ -272,6 +307,7 @@ export default class Module extends React.Component {
     const ATTRIBUTES = {
       ...this.getDataAttributes(props),
       ...this.getEventHandlers(props),
+      ...this.getInputAttributes(props),
       ...props.attributes,
 
       onMouseEnter: this.handleMouseEnter.bind(this),
@@ -327,15 +363,23 @@ export default class Module extends React.Component {
             });
           }
 
+          let RENDER = () => (
+            <this.TAG id={props.id ? this.ID : null} ref={this.REF} {...ATTRIBUTES}>
+              {before && <Component name=':before'>{before.content}</Component>}
+
+              {content}
+
+              {after && <Component name=':after'>{after.content}</Component>}
+            </this.TAG>       
+          );
+
+          if (htmlVoidElements.includes(this.TAG)) {
+            RENDER = () => <this.TAG id={props.id ? this.ID : null} ref={this.REF} {...ATTRIBUTES} />
+          }
+
           return (
             <ModuleContext.Provider value={contextValues}>
-              <this.TAG id={props.id ? this.ID : null} ref={this.REF} {...ATTRIBUTES}>
-                {before && <Component name=':before'>{before.content}</Component>}
-
-                {content}
-
-                {after && <Component name=':after'>{after.content}</Component>}
-              </this.TAG>
+              <RENDER />
             </ModuleContext.Provider>
           );
         }}

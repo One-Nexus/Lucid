@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "deep-extend": "^0.5.1",
+    "html-void-elements": "^1.0.4",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
   },

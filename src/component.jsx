@@ -1,4 +1,5 @@
 import React from 'react';
+import htmlVoidElements from 'html-void-elements';
 import getModifiersFromProps from './utilities/getModifiersFromProps';
 import Module, { ModuleContext } from './module.jsx';
 
@@ -46,6 +47,7 @@ export default class Component extends Module {
     const ATTRIBUTES = {
       ...this.getDataAttributes(props),
       ...this.getEventHandlers(props),
+      ...this.getInputAttributes(props),
       ...props.attributes,
 
       onMouseEnter: this.handleMouseEnter.bind(this),
@@ -82,15 +84,23 @@ export default class Component extends Module {
       STRICT_NAMESPACE
     }
 
+    let RENDER = () => (
+      <TAG ref={this.REF} {...ATTRIBUTES}>
+        {before && <Component name=':before'>{before.content}</Component>}
+
+        {props.content || props.children}
+
+        {after && <Component name=':after'>{after.content}</Component>}
+      </TAG>  
+    );
+
+    if (htmlVoidElements.includes(this.TAG)) {
+      RENDER = () => <this.TAG ref={this.REF} {...ATTRIBUTES} />
+    }
+
     return (
       <ModuleContext.Provider value={contextValues}>
-        <TAG ref={this.REF} {...ATTRIBUTES}>
-          {before && <Component name=':before'>{before.content}</Component>}
-
-          {props.content || props.children}
-
-          {after && <Component name=':after'>{after.content}</Component>}
-        </TAG>
+        <RENDER />
       </ModuleContext.Provider>
     );
   }
