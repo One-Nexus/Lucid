@@ -84,23 +84,17 @@ export default class Component extends Module {
       STRICT_NAMESPACE
     }
 
-    let RENDER = () => (
-      <TAG ref={this.REF} {...ATTRIBUTES}>
-        {before && <Component name=':before'>{before.content}</Component>}
-
-        {props.content || props.children}
-
-        {after && <Component name=':after'>{after.content}</Component>}
-      </TAG>  
-    );
-
-    if (htmlVoidElements.includes(this.TAG)) {
-      RENDER = () => <this.TAG ref={this.REF} {...ATTRIBUTES} />
-    }
-
     return (
       <ModuleContext.Provider value={contextValues}>
-        <RENDER />
+        {htmlVoidElements.includes(TAG) ? <TAG ref={this.REF} {...ATTRIBUTES} /> : (
+          <TAG ref={this.REF} {...ATTRIBUTES}>
+            {before && <Component name=':before'>{before.content}</Component>}
+
+            {props.content || props.children}
+
+            {after && <Component name=':after'>{after.content}</Component>}
+          </TAG>
+        )}
       </ModuleContext.Provider>
     );
   }

@@ -363,23 +363,17 @@ export default class Module extends React.Component {
             });
           }
 
-          let RENDER = () => (
-            <this.TAG id={props.id ? this.ID : null} ref={this.REF} {...ATTRIBUTES}>
-              {before && <Component name=':before'>{before.content}</Component>}
-
-              {content}
-
-              {after && <Component name=':after'>{after.content}</Component>}
-            </this.TAG>       
-          );
-
-          if (htmlVoidElements.includes(this.TAG)) {
-            RENDER = () => <this.TAG id={props.id ? this.ID : null} ref={this.REF} {...ATTRIBUTES} />
-          }
-
           return (
             <ModuleContext.Provider value={contextValues}>
-              <RENDER />
+              {htmlVoidElements.includes(this.TAG) ? <this.TAG id={props.id ? this.ID : null} ref={this.REF} {...ATTRIBUTES} /> : (
+                <this.TAG id={props.id ? this.ID : null} ref={this.REF} {...ATTRIBUTES}>
+                  {before && <Component name=':before'>{before.content}</Component>}
+
+                  {content}
+
+                  {after && <Component name=':after'>{after.content}</Component>}
+                </this.TAG>
+              )}
             </ModuleContext.Provider>
           );
         }}
