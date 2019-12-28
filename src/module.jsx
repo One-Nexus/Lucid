@@ -49,13 +49,7 @@ export default class Module extends React.Component {
     this.GENERATECLASSES = props.generateClasses || this.CONFIG.generateClasses;
     this.GENERATEDATAATTRIBUTES = props.generateDataAttributes || this.CONFIG.generateDataAttributes;
 
-    this.state = {
-      isHovered: false,
-      isFirstChild: false,
-      isLastChild: false,
-      before: null,
-      after: null
-    }
+    this.state = {}
   }
 
   /** Get Attributes */
@@ -233,8 +227,6 @@ export default class Module extends React.Component {
 
     const [prevIsFirstChild, isFirstChild] = [prevState.isFirstChild, CURRENT === PARENT.firstChild];
     const [prevIsLastChild, isLastChild] = [prevState.isLastChild, CURRENT === PARENT.lastChild];
-    const [prevBefore, before] = [prevState.before, this.STYLES[':before']];
-    const [prevAfter, after] = [prevState.after, this.STYLES[':after']];
 
     if (prevIsFirstChild !== isFirstChild) {
       this.setState({ isFirstChild });
@@ -244,12 +236,8 @@ export default class Module extends React.Component {
       this.setState({ isLastChild });
     }
 
-    if (JSON.stringify(prevBefore) !== JSON.stringify(before)) {
-      this.setState({ before });
-    }
-
-    if (JSON.stringify(prevAfter) !== JSON.stringify(after)) {
-      this.setState({ after });
+    if (!this.StyleStatesApplied) {
+      this.StyleStatesApplied = true;
     }
   }
 
@@ -272,12 +260,14 @@ export default class Module extends React.Component {
   componentDidMount() {   
     if (this.REF.current) {
       this.setStyleStates();
-      this.paint(this.REF.current, this.DATA, this.stylesConfig());
     }
   }
 
   componentDidUpdate(prevProps, prevState) {
-    this.setStyleStates(prevState);
+    if (!prevState.length && JSON.stringify(this.state) === JSON.stringify(prevState)) {
+      this.setStyleStates(prevState);
+    }
+
     this.paint(this.REF.current, this.DATA, this.stylesConfig());
   }
 
@@ -302,8 +292,6 @@ export default class Module extends React.Component {
     CLASSES += SELECTOR;
 
     /** */
-    const { before, after } = this.state;
-
     const ATTRIBUTES = {
       ...this.getDataAttributes(props),
       ...this.getEventHandlers(props),
@@ -321,8 +309,11 @@ export default class Module extends React.Component {
       <ModuleContext.Consumer>
         {moduleContext => {
           this.DATA = this.DATA || props.styles;
-          this.STYLES = this.getStyles(this.DATA, this.stylesConfig({ context: moduleContext }));
           this.SETWRAPPERSTYLES = moduleContext.setWrapperStyles;
+          this.STYLES = this.getStyles(this.DATA, this.stylesConfig({ context: moduleContext }));
+
+          const before = this.STYLES[':before'];
+          const after = this.STYLES[':after'];
 
           /** */
           const contextValues = {
@@ -379,7 +370,7 @@ export default class Module extends React.Component {
         }}
       </ModuleContext.Consumer>
     )
-  } 
+  }
 
   /** Static Methods/Properties */
 

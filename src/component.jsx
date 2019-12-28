@@ -17,7 +17,15 @@ export default class Component extends Module {
   render() {
     /** */
     this.DATA = this.context.STYLES[this.NAMESPACE];
-    this.STYLES = this.getStyles(this.DATA, this.stylesConfig({ theme: this.context.THEME, config: this.context.CONFIG }));
+
+    let before, after;
+
+    if (this.StyleStatesApplied) {
+      this.STYLES = this.getStyles(this.DATA, this.stylesConfig({ theme: this.context.THEME, config: this.context.CONFIG }));
+      
+      before = this.STYLES[':before'];
+      after = this.STYLES[':after'];
+    }
 
     const { props } = this;
     const { MODIFIERGLUE, COMPONENTGLUE } = this.context;
@@ -42,8 +50,6 @@ export default class Component extends Module {
     CLASSES += SELECTOR;
 
     /** */
-    const { before, after } = this.state;
-
     const ATTRIBUTES = {
       ...this.getDataAttributes(props),
       ...this.getEventHandlers(props),
