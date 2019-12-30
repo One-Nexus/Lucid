@@ -29,8 +29,8 @@ export default class Component extends Module {
 
     const { props } = this;
     const { MODIFIERGLUE, COMPONENTGLUE } = this.context;
-    const STRICT_NAMESPACE = (this.context.STRICT_NAMESPACE || this.context.NAMESPACE) + COMPONENTGLUE + this.NAMESPACE;
     const TAG = (props.href && 'a') || props.component || props.tag || 'div';
+    const STRICT_NAMESPACE = (props.subComponent ? this.context.STRICT_NAMESPACE : this.context.NAMESPACE) + COMPONENTGLUE + this.NAMESPACE;
 
     /** */
     let [CLASSES, MODIFIERS] = [props.className ? props.className + ' ' : '', []];
