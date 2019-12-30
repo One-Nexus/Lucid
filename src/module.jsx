@@ -77,6 +77,7 @@ export default class Module extends React.Component {
 
     const whitelist = [
       'type',
+      'value',
       'readonly',
       'disabled',
       'size',
@@ -171,21 +172,67 @@ export default class Module extends React.Component {
       return styles.forEach(style => this.paint(node, style, options));
     }
   
+    /**
+     * Cell Query Draft
+     */
     Object.entries(styles).forEach(style => {
       const key = style[0]; let value = style[1];
 
-      if ((key === ':hover' || key === 'is-hovered') && options.state.isHovered) {
-        return this.paint(node, value, options);
-      }
-
-      if (key.indexOf('with-') === 0 && options.context[key.replace('with-', '')]) {
-        return this.paint(node, value, options.context[key.replace('with-', '')]);
-      }
-
+      /**
+       * Determine if current node is queried modifier/state
+       */
       if (key.indexOf('is-') === 0) {
         if (options[key.replace('is-', '')] || options.state[key.replace('is-', '')]) {
           return this.paint(node, value, options);
         }
+
+        return;
+      }
+
+      /**
+       * Determine if parent module/block is queried modifier/state
+       */
+      if (key.indexOf('block-is-') === 0 || key.indexOf('~') === 0) {
+        const MODULE = options.context.NAMESPACE;
+        const CONTEXT = key.indexOf('~') === 0 ? key.slice(1, key.length) : key.slice(9, key.length);
+
+        if (options.context[MODULE][CONTEXT]) {
+          return this.paint(node, value, options);
+        }
+
+        return;
+      }
+
+      /**
+       * Determine if specified parent component is queried modifier/state
+       */
+      if (key.indexOf('-is-') > -1) {
+        const COMPONENT = key.slice(0, key.indexOf('-is-'));
+        const CONTEXT = key.slice(key.indexOf('-is-') + 4, key.length);
+
+        if (options.context[COMPONENT][CONTEXT]) {
+          return this.paint(node, value, options);
+        }
+
+        return;
+      }
+
+      /**
+       * Determine if current node is a child of the queried component/module,
+       * and set the queried component/module as the new context
+       */
+      if (key.indexOf('with-') === 0) {
+        const COMPONENT = key.replace('with-', '');
+
+        if (options.context[COMPONENT]) {
+          return this.paint(node, value, options.context[COMPONENT]);
+        }
+
+        return;
+      }
+
+      if ((key === ':hover' || key === 'is-hovered') && options.state.isHovered) {
+        return this.paint(node, value, options);
       }
 
       if (typeof value === 'function') {
