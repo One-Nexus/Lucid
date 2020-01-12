@@ -19,6 +19,11 @@ export default function getModifiersFromProps(props, blacklist = []) {
       continue;
     }
 
+    // @TODO add these (with above subComponent) to whitelist array instead
+    if (prop === 'permeable') {
+      continue;
+    }
+
     if (typeof value === 'boolean' && value) {
       if (blacklist.indexOf(key) < 0) {
         modifiers.push(key);

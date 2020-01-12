@@ -22,7 +22,8 @@ export default class Wrapper extends React.Component {
     const PROPS = {
       [MODULE]: true,
       styles: this.state.styles,
-      setWrapperStyles: this.applyStyles
+      setWrapperStyles: this.applyStyles,
+      permeable: true
     }
 
     return (

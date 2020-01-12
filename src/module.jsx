@@ -387,7 +387,8 @@ export default class Module extends React.Component {
               ...props
             },
 
-            NAMESPACE: this.NAMESPACE,
+            ...(!props.permeable && { NAMESPACE: this.NAMESPACE }),
+
             SETWRAPPERSTYLES: this.props.setWrapperStyles
           }
 
