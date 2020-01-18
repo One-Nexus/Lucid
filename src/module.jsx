@@ -163,7 +163,7 @@ export default class Module extends React.Component {
     }, {});
   }
 
-  paint(node, styles = {}, options) {
+  paint(node, styles = {}, options, { prevNamespace, prevContext } = {}) {
     if (typeof styles === 'function') {
       styles = styles(options);
     }
@@ -182,7 +182,13 @@ export default class Module extends React.Component {
        * Determine if current node is queried modifier/state
        */
       if (key.indexOf('is-') === 0) {
-        if (options[key.replace('is-', '')] || options.state[key.replace('is-', '')]) {
+        const CONTEXT = key.replace('is-', '');
+
+        if (options.state.name === ':before' || options.state.name === ':after') {
+          options = options.context[options.state.referer];
+        }
+
+        if (options[CONTEXT] || options.state[CONTEXT]) {
           return this.paint(node, value, options);
         }
 
@@ -192,9 +198,9 @@ export default class Module extends React.Component {
       /**
        * Determine if parent module/block is queried modifier/state
        */
-      if (key.indexOf('block-is-') === 0 || key.indexOf('~') === 0) {
+      if (key.indexOf('$-is-') === 0 || key.indexOf('$:') === 0) {
         const MODULE = options.context.NAMESPACE;
-        const CONTEXT = key.indexOf('~') === 0 ? key.slice(1, key.length) : key.slice(9, key.length);
+        const CONTEXT = key.indexOf('$:') === 0 ? key.slice(1, key.length) : key.slice(5, key.length);
 
         if (options.context[MODULE][CONTEXT]) {
           return this.paint(node, value, options);
@@ -204,35 +210,56 @@ export default class Module extends React.Component {
       }
 
       /**
-       * Determine if specified parent component is queried modifier/state
+       * Determine if previously specified parent component is queried modifier/state
        */
-      if (key.indexOf('-is-') > -1) {
-        const COMPONENT = key.slice(0, key.indexOf('-is-'));
-        const CONTEXT = key.slice(key.indexOf('-is-') + 4, key.length);
+      if (key.indexOf('and-is-') === 0 || key.indexOf('and:') === 0) {
+        const CONTEXT = key.indexOf('and:') === 0 ? key.replace('and', '') : key.replace('and-is-', '');
 
-        if (options.context[COMPONENT][CONTEXT]) {
-          return this.paint(node, value, options);
+        if (options.context[prevNamespace][CONTEXT]) {
+          return this.paint(node, value, options, { prevNamespace });
         }
 
         return;
       }
 
       /**
-       * Determine if current node is a child of the queried component/module,
-       * and set the queried component/module as the new context
+       * Determine if specified parent component is queried modifier/state
        */
-      if (key.indexOf('with-') === 0) {
-        const COMPONENT = key.replace('with-', '');
+      if (key.indexOf('-is-') > -1 || key.indexOf(':') > 0) {
+        const COMPONENT = key.indexOf(':') > 0 ? key.slice(0, key.indexOf(':')) : key.slice(0, key.indexOf('-is-'));
+        const CONTEXT = key.indexOf(':') > 0 ? key.slice(key.indexOf(':'), key.length) : key.slice(key.indexOf('-is-') + 4, key.length);
 
-        if (options.context[COMPONENT]) {
-          return this.paint(node, value, options.context[COMPONENT]);
+        if (options.context[COMPONENT][CONTEXT]) {
+          return this.paint(node, value, options, { 
+            prevNamespace: COMPONENT
+          });
         }
 
         return;
       }
 
-      if ((key === ':hover' || key === 'is-hovered') && options.state.isHovered) {
-        return this.paint(node, value, options);
+      /**
+       * Determine if current node is a child of the queried component/module
+       */
+      if (key.indexOf('in-') === 0) {
+        const COMPONENT = key.replace('in-', '');
+
+        if (options.context[COMPONENT]) {
+          return this.paint(node, value, options, {
+            prevNamespace: COMPONENT
+          });
+        }
+
+        return;
+      }
+
+      /**
+       * Key defines pseudo-state
+       */
+      if (key.indexOf(':') === 0) {
+        if (options.state[key]) {
+          return this.paint(node, value, options);
+        }
       }
 
       if (typeof value === 'function') {
@@ -293,13 +320,13 @@ export default class Module extends React.Component {
   handleMouseEnter(event) {
     this.props.onMouseEnter && this.props.onMouseEnter(event);
 
-    this.setState({ isHovered: true });
+    this.setState({ isHovered: true, ':hover': true });
   }
 
   handleMouseLeave(event) {
     this.props.onMouseLeave && this.props.onMouseLeave(event);
 
-    this.setState({ isHovered: false });
+    this.setState({ isHovered: false, ':hover': false });
   }
 
   /** Lifecycle Methods */
@@ -406,11 +433,11 @@ export default class Module extends React.Component {
             <ModuleContext.Provider value={contextValues}>
               {htmlVoidElements.includes(this.TAG) ? <this.TAG id={props.id ? this.ID : null} ref={this.REF} {...ATTRIBUTES} /> : (
                 <this.TAG id={props.id ? this.ID : null} ref={this.REF} {...ATTRIBUTES}>
-                  {before && <Component name=':before'>{before.content}</Component>}
+                  {before && <Component name=':before' referer={this.NAMESPACE}>{before.content}</Component>}
 
                   {content}
 
-                  {after && <Component name=':after'>{after.content}</Component>}
+                  {after && <Component name=':after' referer={this.NAMESPACE}>{after.content}</Component>}
                 </this.TAG>
               )}
             </ModuleContext.Provider>

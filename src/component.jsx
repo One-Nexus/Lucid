@@ -94,11 +94,11 @@ export default class Component extends Module {
       <ModuleContext.Provider value={contextValues}>
         {htmlVoidElements.includes(TAG) ? <TAG ref={this.REF} {...ATTRIBUTES} /> : (
           <TAG ref={this.REF} {...ATTRIBUTES}>
-            {before && <Component name=':before'>{before.content}</Component>}
+            {before && <Component name=':before' referer={this.NAMESPACE}>{before.content}</Component>}
 
             {props.content || props.children}
 
-            {after && <Component name=':after'>{after.content}</Component>}
+            {after && <Component name=':after' referer={this.NAMESPACE}>{after.content}</Component>}
           </TAG>
         )}
       </ModuleContext.Provider>
