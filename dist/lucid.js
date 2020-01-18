@@ -82,7 +82,7 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 2);
+/******/ 	return __webpack_require__(__webpack_require__.s = 3);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -93,6 +93,12 @@ module.exports = require("react");
 
 /***/ }),
 /* 1 */
+/***/ (function(module) {
+
+module.exports = ["area","base","basefont","bgsound","br","col","command","embed","frame","hr","image","img","input","isindex","keygen","link","menuitem","meta","nextid","param","source","track","wbr"];
+
+/***/ }),
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -249,7 +255,7 @@ var deepExtend = module.exports = function (/*obj_1, [obj_2], [obj_N]*/) {
 
 
 /***/ }),
-/* 2 */
+/* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -259,24 +265,27 @@ __webpack_require__.r(__webpack_exports__);
 var external_react_ = __webpack_require__(0);
 var external_react_default = /*#__PURE__*/__webpack_require__.n(external_react_);
 
+// EXTERNAL MODULE: ./node_modules/html-void-elements/index.json
+var html_void_elements = __webpack_require__(1);
+
 // CONCATENATED MODULE: ./src/utilities/evalConfig.js
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-function evalConfig(THEME) {
-  if (!THEME) return;
-  Object.entries(THEME).forEach(function (entry) {
+function evalConfig(config, theme) {
+  if (!config) return;
+  Object.entries(config).forEach(function (entry) {
     var key = entry[0];
     var value = entry[1];
 
     if (_typeof(value) === 'object') {
-      return evalConfig(value);
+      return evalConfig(value, theme);
     }
 
     if (typeof value === 'function') {
-      THEME[key] = value(THEME);
+      config[key] = value(theme);
     }
   });
-  return THEME;
+  return config;
 }
 // CONCATENATED MODULE: ./src/utilities/getModifiersFromProps.js
 /**
@@ -298,6 +307,11 @@ function getModifiersFromProps(props) {
     // }
 
     if (prop === 'subComponent') {
+      continue;
+    } // @TODO add these (with above subComponent) to whitelist array instead
+
+
+    if (prop === 'permeable') {
       continue;
     }
 
@@ -339,7 +353,7 @@ function deepMergeObjects() {
 
     return (_Synergy2 = Synergy).config.apply(_Synergy2, arguments);
   } else {
-    return __webpack_require__(1).apply(void 0, arguments);
+    return __webpack_require__(2).apply(void 0, arguments);
   }
 }
 // CONCATENATED MODULE: ./src/provider.jsx
@@ -380,6 +394,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 
 
+
 /** spoof env process to assist bundle size */
 
 if (typeof process === 'undefined') window.process = {
@@ -413,34 +428,27 @@ function (_React$Component) {
       generateClasses: true,
       generateDataAttributes: true
     };
-    var THEMECONFIG = _this.THEME.modules && evalConfig(_this.THEME.modules[props.name]);
-    var DEFAULTS = props.config;
+    var GLOBAL_MODULE = window[props.name];
+    var RAW_DEFAULTS = GLOBAL_MODULE && GLOBAL_MODULE.defaultProps && GLOBAL_MODULE.defaultProps.config;
+    var PROPCONFIG = typeof props.config === 'function' ? props.config(_this.THEME) : props.config;
+    var DEFAULTS = typeof RAW_DEFAULTS === 'function' ? RAW_DEFAULTS(_this.THEME) : RAW_DEFAULTS;
+    var THEMECONFIG = _this.THEME.modules && evalConfig(_this.THEME.modules[props.name], _this.THEME);
 
-    if (window.Synergy) {
-      var SYNERGY_MODULE = window[props.name] || {};
-      var config = SYNERGY_MODULE.config,
-          styles = SYNERGY_MODULE.styles;
-      if (config) DEFAULTS = config;
-      if (styles) _this.DATA = styles;
+    if (PROPCONFIG && PROPCONFIG.displace) {
+      DEFAULTS = {}, THEMECONFIG = {};
     }
 
-    DEFAULTS = typeof DEFAULTS === 'function' ? DEFAULTS(_this.THEME) : DEFAULTS;
-    _this.CONFIG = Module.config(LUCIDDEFAULTS, DEFAULTS, THEMECONFIG);
+    _this.CONFIG = Module.config(LUCIDDEFAULTS, DEFAULTS, THEMECONFIG, PROPCONFIG);
     _this.ID = props.id || "module-".concat(increment);
     _this.NAMESPACE = _this.CONFIG.name || props.name || props.tag || _this.ID;
     _this.TAG = props.href && 'a' || props.component || props.tag || 'div';
     _this.MODIFIERGLUE = props.modifierGlue || _this.CONFIG.modifierGlue || Synergy.modifierGlue || '--';
     _this.COMPONENTGLUE = props.componentGlue || _this.CONFIG.componentGlue || Synergy.componentGlue || '__';
-    _this.SINGLECLASS = props.singleClass || _this.CONFIG.singleClass || false;
+    _this.SINGLECLASS = props.singleClass || _this.CONFIG.singleClass || false; // @TODO move to LUCIDDEFAULTS
+
     _this.GENERATECLASSES = props.generateClasses || _this.CONFIG.generateClasses;
     _this.GENERATEDATAATTRIBUTES = props.generateDataAttributes || _this.CONFIG.generateDataAttributes;
-    _this.state = {
-      isHovered: false,
-      isFirstChild: false,
-      isLastChild: false,
-      before: null,
-      after: null
-    };
+    _this.state = {};
     return _this;
   }
   /** Get Attributes */
@@ -464,6 +472,20 @@ function (_React$Component) {
       }
 
       return eventHandlers;
+    }
+  }, {
+    key: "getInputAttributes",
+    value: function getInputAttributes(properties) {
+      var inputAttributes = {};
+      var whitelist = ['type', 'value', 'readonly', 'disabled', 'size', 'maxlength', 'autocomplete', 'autofocus', 'min', 'max', 'multiple', 'pattern', 'placeholder', 'required', 'step'];
+
+      for (var prop in properties) {
+        if (whitelist.includes(prop)) {
+          inputAttributes[prop] = properties[prop];
+        }
+      }
+
+      return inputAttributes;
     }
   }, {
     key: "getDataAttributes",
@@ -496,7 +518,7 @@ function (_React$Component) {
         config: config,
         context: context,
         state: _objectSpread({}, this.state, this.props),
-        element: this.REF.current
+        element: this.REF.current || document.createElement('span')
       };
     }
   }, {
@@ -546,6 +568,10 @@ function (_React$Component) {
       var styles = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       var options = arguments.length > 2 ? arguments[2] : undefined;
 
+      var _ref2 = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {},
+          prevNamespace = _ref2.prevNamespace,
+          prevContext = _ref2.prevContext;
+
       if (typeof styles === 'function') {
         styles = styles(options);
       }
@@ -555,21 +581,104 @@ function (_React$Component) {
           return _this2.paint(node, style, options);
         });
       }
+      /**
+       * Cell Query
+       */
+
 
       Object.entries(styles).forEach(function (style) {
         var key = style[0];
         var value = style[1];
-
-        if ((key === ':hover' || key === 'is-hovered') && options.state.isHovered) {
-          return _this2.paint(node, value, options);
-        }
-
-        if (key.indexOf('with-') === 0 && options.context[key.replace('with-', '')]) {
-          return _this2.paint(node, value, options.context[key.replace('with-', '')]);
-        }
+        /**
+         * Determine if current node is queried modifier/state
+         */
 
         if (key.indexOf('is-') === 0) {
-          if (options[key.replace('is-', '')] || options.state[key.replace('is-', '')]) {
+          var CONTEXT = key.replace('is-', '');
+
+          if (options.state.name === ':before' || options.state.name === ':after') {
+            options = options.context[options.state.referer];
+          }
+
+          if (options[CONTEXT] || options.state[CONTEXT]) {
+            return _this2.paint(node, value, options);
+          }
+
+          return;
+        }
+        /**
+         * Determine if parent module/block is queried modifier/state
+         */
+
+
+        if (key.indexOf('$-is-') === 0 || key.indexOf('$:') === 0) {
+          var MODULE = options.context.NAMESPACE;
+
+          var _CONTEXT = key.indexOf('$:') === 0 ? key.slice(1, key.length) : key.slice(5, key.length);
+
+          if (options.context[MODULE][_CONTEXT]) {
+            return _this2.paint(node, value, options);
+          }
+
+          return;
+        }
+        /**
+         * Determine if previously specified parent component is queried modifier/state
+         */
+
+
+        if (key.indexOf('and-is-') === 0 || key.indexOf('and:') === 0) {
+          var _CONTEXT2 = key.indexOf('and:') === 0 ? key.replace('and', '') : key.replace('and-is-', '');
+
+          if (options.context[prevNamespace][_CONTEXT2]) {
+            return _this2.paint(node, value, options, {
+              prevNamespace: prevNamespace
+            });
+          }
+
+          return;
+        }
+        /**
+         * Determine if specified parent component is queried modifier/state
+         */
+
+
+        if (key.indexOf('-is-') > -1 || key.indexOf(':') > 0) {
+          var COMPONENT = key.indexOf(':') > 0 ? key.slice(0, key.indexOf(':')) : key.slice(0, key.indexOf('-is-'));
+
+          var _CONTEXT3 = key.indexOf(':') > 0 ? key.slice(key.indexOf(':'), key.length) : key.slice(key.indexOf('-is-') + 4, key.length);
+
+          if (options.context[COMPONENT][_CONTEXT3]) {
+            return _this2.paint(node, value, options, {
+              prevNamespace: COMPONENT
+            });
+          }
+
+          return;
+        }
+        /**
+         * Determine if current node is a child of the queried component/module
+         */
+
+
+        if (key.indexOf('in-') === 0) {
+          var _COMPONENT = key.replace('in-', '');
+
+          if (options.context[_COMPONENT]) {
+            return _this2.paint(node, value, options, {
+              prevNamespace: _COMPONENT
+            });
+          }
+
+          return;
+        }
+        /**
+         * Key defines pseudo-state
+         */
+
+
+        if (key.indexOf(':') === 0) {
+          if (options.state[key]) {
             return _this2.paint(node, value, options);
           }
         }
@@ -609,21 +718,15 @@ function (_React$Component) {
     value: function setStyleStates() {
       var prevState = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.state;
       if (!this.REF.current) return;
-      var _ref2 = [this.REF.current, this.REF.current.parentNode],
-          CURRENT = _ref2[0],
-          PARENT = _ref2[1];
-      var _ref3 = [prevState.isFirstChild, CURRENT === PARENT.firstChild],
-          prevIsFirstChild = _ref3[0],
-          isFirstChild = _ref3[1];
-      var _ref4 = [prevState.isLastChild, CURRENT === PARENT.lastChild],
-          prevIsLastChild = _ref4[0],
-          isLastChild = _ref4[1];
-      var _ref5 = [prevState.before, this.STYLES[':before']],
-          prevBefore = _ref5[0],
-          before = _ref5[1];
-      var _ref6 = [prevState.after, this.STYLES[':after']],
-          prevAfter = _ref6[0],
-          after = _ref6[1];
+      var _ref3 = [this.REF.current, this.REF.current.parentNode],
+          CURRENT = _ref3[0],
+          PARENT = _ref3[1];
+      var _ref4 = [prevState.isFirstChild, CURRENT === PARENT.firstChild],
+          prevIsFirstChild = _ref4[0],
+          isFirstChild = _ref4[1];
+      var _ref5 = [prevState.isLastChild, CURRENT === PARENT.lastChild],
+          prevIsLastChild = _ref5[0],
+          isLastChild = _ref5[1];
 
       if (prevIsFirstChild !== isFirstChild) {
         this.setState({
@@ -637,16 +740,8 @@ function (_React$Component) {
         });
       }
 
-      if (JSON.stringify(prevBefore) !== JSON.stringify(before)) {
-        this.setState({
-          before: before
-        });
-      }
-
-      if (JSON.stringify(prevAfter) !== JSON.stringify(after)) {
-        this.setState({
-          after: after
-        });
+      if (!this.StyleStatesApplied) {
+        this.StyleStatesApplied = true;
       }
     }
     /** Event Handlers */
@@ -656,7 +751,8 @@ function (_React$Component) {
     value: function handleMouseEnter(event) {
       this.props.onMouseEnter && this.props.onMouseEnter(event);
       this.setState({
-        isHovered: true
+        isHovered: true,
+        ':hover': true
       });
     }
   }, {
@@ -664,7 +760,8 @@ function (_React$Component) {
     value: function handleMouseLeave(event) {
       this.props.onMouseLeave && this.props.onMouseLeave(event);
       this.setState({
-        isHovered: false
+        isHovered: false,
+        ':hover': false
       });
     }
     /** Lifecycle Methods */
@@ -674,13 +771,15 @@ function (_React$Component) {
     value: function componentDidMount() {
       if (this.REF.current) {
         this.setStyleStates();
-        this.paint(this.REF.current, this.DATA, this.stylesConfig());
       }
     }
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate(prevProps, prevState) {
-      this.setStyleStates(prevState);
+      if (!prevState.length && JSON.stringify(this.state) === JSON.stringify(prevState)) {
+        this.setStyleStates(prevState);
+      }
+
       this.paint(this.REF.current, this.DATA, this.stylesConfig());
     }
   }, {
@@ -696,10 +795,10 @@ function (_React$Component) {
           GENERATEDATAATTRIBUTES = this.GENERATEDATAATTRIBUTES;
       /** */
 
-      var _ref7 = [props.className ? props.className + ' ' : '', this.NAMESPACE, []],
-          CLASSES = _ref7[0],
-          SELECTOR = _ref7[1],
-          MODIFIERS = _ref7[2];
+      var _ref6 = [props.className ? props.className + ' ' : '', this.NAMESPACE, []],
+          CLASSES = _ref6[0],
+          SELECTOR = _ref6[1],
+          MODIFIERS = _ref6[2];
       MODIFIERS.push(props.modifiers);
       MODIFIERS = MODIFIERS.concat(getModifiersFromProps(props));
       MODIFIERS = MODIFIERS.filter(function (item, pos) {
@@ -718,11 +817,7 @@ function (_React$Component) {
       CLASSES += SELECTOR;
       /** */
 
-      var _this$state = this.state,
-          before = _this$state.before,
-          after = _this$state.after;
-
-      var ATTRIBUTES = _objectSpread({}, this.getDataAttributes(props), this.getEventHandlers(props), props.attributes, {
+      var ATTRIBUTES = _objectSpread({}, this.getDataAttributes(props), this.getEventHandlers(props), this.getInputAttributes(props), props.attributes, {
         onMouseEnter: this.handleMouseEnter.bind(this),
         onMouseLeave: this.handleMouseLeave.bind(this),
         className: GENERATECLASSES ? CLASSES : null,
@@ -730,16 +825,16 @@ function (_React$Component) {
       });
 
       return external_react_default.a.createElement(ModuleContext.Consumer, null, function (moduleContext) {
-        var _objectSpread2;
-
         _this3.DATA = _this3.DATA || props.styles;
+        _this3.SETWRAPPERSTYLES = moduleContext.setWrapperStyles;
         _this3.STYLES = _this3.getStyles(_this3.DATA, _this3.stylesConfig({
           context: moduleContext
         }));
-        _this3.SETWRAPPERSTYLES = moduleContext.setWrapperStyles;
+        var before = _this3.STYLES[':before'];
+        var after = _this3.STYLES[':after'];
         /** */
 
-        var contextValues = _objectSpread({}, moduleContext, _this3.state, props, (_objectSpread2 = {
+        var contextValues = _objectSpread({}, moduleContext, _this3.state, props, _defineProperty({
           THEME: _this3.THEME,
           CONFIG: _this3.CONFIG,
           STYLES: _objectSpread({}, moduleContext.STYLES, _this3.STYLES),
@@ -748,7 +843,11 @@ function (_React$Component) {
           SINGLECLASS: SINGLECLASS,
           GENERATECLASSES: GENERATECLASSES,
           GENERATEDATAATTRIBUTES: GENERATEDATAATTRIBUTES
-        }, _defineProperty(_objectSpread2, _this3.NAMESPACE, _objectSpread({}, _this3.state, props)), _defineProperty(_objectSpread2, "NAMESPACE", _this3.NAMESPACE), _defineProperty(_objectSpread2, "SETWRAPPERSTYLES", _this3.props.setWrapperStyles), _objectSpread2));
+        }, _this3.NAMESPACE, _objectSpread({}, _this3.state, props)), !props.permeable && {
+          NAMESPACE: _this3.NAMESPACE
+        }, {
+          SETWRAPPERSTYLES: _this3.props.setWrapperStyles
+        });
 
         var content = props.content || props.render || props.children;
 
@@ -762,13 +861,18 @@ function (_React$Component) {
 
         return external_react_default.a.createElement(ModuleContext.Provider, {
           value: contextValues
-        }, external_react_default.a.createElement(_this3.TAG, _extends({
+        }, html_void_elements.includes(_this3.TAG) ? external_react_default.a.createElement(_this3.TAG, _extends({
+          id: props.id ? _this3.ID : null,
+          ref: _this3.REF
+        }, ATTRIBUTES)) : external_react_default.a.createElement(_this3.TAG, _extends({
           id: props.id ? _this3.ID : null,
           ref: _this3.REF
         }, ATTRIBUTES), before && external_react_default.a.createElement(Component, {
-          name: ":before"
+          name: ":before",
+          referer: _this3.NAMESPACE
         }, before.content), content, after && external_react_default.a.createElement(Component, {
-          name: ":after"
+          name: ":after",
+          referer: _this3.NAMESPACE
         }, after.content)));
       });
     }
@@ -791,7 +895,7 @@ _defineProperty(module_Module, "config", function () {
 
     return (_Synergy2 = Synergy).config.apply(_Synergy2, arguments);
   } else {
-    return __webpack_require__(1).apply(void 0, arguments);
+    return __webpack_require__(2).apply(void 0, arguments);
   }
 });
 
@@ -824,6 +928,7 @@ function component_defineProperty(obj, key, value) { if (key in obj) { Object.de
 
 
 
+
 /**
  * Render a Synergy component
  */
@@ -851,16 +956,24 @@ function (_Module) {
 
       /** */
       this.DATA = this.context.STYLES[this.NAMESPACE];
-      this.STYLES = this.getStyles(this.DATA, this.stylesConfig({
-        theme: this.context.THEME,
-        config: this.context.CONFIG
-      }));
+      this.SETWRAPPERSTYLES = this.context.setWrapperStyles;
+      var before, after;
+
+      if (this.StyleStatesApplied) {
+        this.STYLES = this.getStyles(this.DATA, this.stylesConfig({
+          theme: this.context.THEME,
+          config: this.context.CONFIG
+        }));
+        before = this.STYLES[':before'];
+        after = this.STYLES[':after'];
+      }
+
       var props = this.props;
       var _this$context = this.context,
           MODIFIERGLUE = _this$context.MODIFIERGLUE,
           COMPONENTGLUE = _this$context.COMPONENTGLUE;
-      var STRICT_NAMESPACE = (this.context.STRICT_NAMESPACE || this.context.NAMESPACE) + COMPONENTGLUE + this.NAMESPACE;
       var TAG = props.href && 'a' || props.component || props.tag || 'div';
+      var STRICT_NAMESPACE = (props.subComponent ? this.context.STRICT_NAMESPACE : this.context.NAMESPACE) + COMPONENTGLUE + this.NAMESPACE;
       /** */
 
       var CLASSES = props.className ? props.className + ' ' : '',
@@ -884,11 +997,7 @@ function (_Module) {
       CLASSES += SELECTOR;
       /** */
 
-      var _this$state = this.state,
-          before = _this$state.before,
-          after = _this$state.after;
-
-      var ATTRIBUTES = component_objectSpread({}, this.getDataAttributes(props), this.getEventHandlers(props), props.attributes, {
+      var ATTRIBUTES = component_objectSpread({}, this.getDataAttributes(props), this.getEventHandlers(props), this.getInputAttributes(props), props.attributes, {
         onMouseEnter: this.handleMouseEnter.bind(this),
         onMouseLeave: this.handleMouseLeave.bind(this),
         className: this.context.GENERATECLASSES ? CLASSES : null,
@@ -905,12 +1014,16 @@ function (_Module) {
 
       return external_react_default.a.createElement(ModuleContext.Provider, {
         value: contextValues
-      }, external_react_default.a.createElement(TAG, component_extends({
+      }, html_void_elements.includes(TAG) ? external_react_default.a.createElement(TAG, component_extends({
+        ref: this.REF
+      }, ATTRIBUTES)) : external_react_default.a.createElement(TAG, component_extends({
         ref: this.REF
       }, ATTRIBUTES), before && external_react_default.a.createElement(Component, {
-        name: ":before"
+        name: ":before",
+        referer: this.NAMESPACE
       }, before.content), props.content || props.children, after && external_react_default.a.createElement(Component, {
-        name: ":after"
+        name: ":after",
+        referer: this.NAMESPACE
       }, after.content)));
     }
   }]);
@@ -984,7 +1097,7 @@ function (_React$Component) {
       var NAMESPACE = this.props.name || 'wrapper';
       var CHILD = this.props.children.length ? this.props.children[0] : this.props.children;
       var MODULE = this.props.module || CHILD.props.name || CHILD.type.name;
-      var PROPS = (_PROPS = {}, wrapper_defineProperty(_PROPS, MODULE, true), wrapper_defineProperty(_PROPS, "styles", this.state.styles), wrapper_defineProperty(_PROPS, "setWrapperStyles", this.applyStyles), _PROPS);
+      var PROPS = (_PROPS = {}, wrapper_defineProperty(_PROPS, MODULE, true), wrapper_defineProperty(_PROPS, "styles", this.state.styles), wrapper_defineProperty(_PROPS, "setWrapperStyles", this.applyStyles), wrapper_defineProperty(_PROPS, "permeable", true), _PROPS);
       return external_react_default.a.createElement(Module, wrapper_extends({
         name: NAMESPACE
       }, this.props, PROPS), this.props.children);
