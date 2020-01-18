@@ -173,7 +173,7 @@ export default class Module extends React.Component {
     }
   
     /**
-     * Cell Query Draft
+     * Cell Query
      */
     Object.entries(styles).forEach(style => {
       const key = style[0]; let value = style[1];

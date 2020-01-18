@@ -17,6 +17,7 @@ export default class Component extends Module {
   render() {
     /** */
     this.DATA = this.context.STYLES[this.NAMESPACE];
+    this.SETWRAPPERSTYLES = this.context.setWrapperStyles;
 
     let before, after;
 
