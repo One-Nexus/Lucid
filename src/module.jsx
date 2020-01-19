@@ -419,7 +419,7 @@ export default class Module extends React.Component {
             SETWRAPPERSTYLES: this.props.setWrapperStyles
           }
 
-          let content = props.content || props.render || props.children;
+          let content = (typeof props.content !== 'boolean' && props.content) || props.render || props.children;
 
           if (typeof content === 'function') {
             content = content({ 
