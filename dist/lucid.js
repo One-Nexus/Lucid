@@ -764,6 +764,24 @@ function (_React$Component) {
         ':hover': false
       });
     }
+  }, {
+    key: "handleFocus",
+    value: function handleFocus(event) {
+      this.props.onFocus && this.props.onFocus(event);
+      this.setState({
+        isFocused: true,
+        ':focus': true
+      });
+    }
+  }, {
+    key: "handleBlur",
+    value: function handleBlur(event) {
+      this.props.onBlur && this.props.onBlur(event);
+      this.setState({
+        isFocused: false,
+        ':focus': false
+      });
+    }
     /** Lifecycle Methods */
 
   }, {
@@ -785,7 +803,8 @@ function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      var _this3 = this;
+      var _objectSpread2,
+          _this3 = this;
 
       var props = this.props;
       var MODIFIERGLUE = this.MODIFIERGLUE,
@@ -817,12 +836,9 @@ function (_React$Component) {
       CLASSES += SELECTOR;
       /** */
 
-      var ATTRIBUTES = _objectSpread({}, this.getDataAttributes(props), this.getEventHandlers(props), this.getInputAttributes(props), props.attributes, {
-        onMouseEnter: this.handleMouseEnter.bind(this),
-        onMouseLeave: this.handleMouseLeave.bind(this),
-        className: GENERATECLASSES ? CLASSES : null,
-        'data-module': GENERATEDATAATTRIBUTES ? this.NAMESPACE : null
-      });
+      var ATTRIBUTES = _objectSpread({}, this.getDataAttributes(props), this.getEventHandlers(props), this.getInputAttributes(props), props.attributes, (_objectSpread2 = {
+        onMouseEnter: this.handleMouseEnter.bind(this)
+      }, _defineProperty(_objectSpread2, "onMouseEnter", this.handleMouseEnter.bind(this)), _defineProperty(_objectSpread2, "onFocus", this.handleFocus.bind(this)), _defineProperty(_objectSpread2, "onBlur", this.handleBlur.bind(this)), _defineProperty(_objectSpread2, "className", GENERATECLASSES ? CLASSES : null), _defineProperty(_objectSpread2, 'data-module', GENERATEDATAATTRIBUTES ? this.NAMESPACE : null), _objectSpread2));
 
       return external_react_default.a.createElement(ModuleContext.Consumer, null, function (moduleContext) {
         _this3.DATA = _this3.DATA || props.styles;
@@ -1000,6 +1016,8 @@ function (_Module) {
       var ATTRIBUTES = component_objectSpread({}, this.getDataAttributes(props), this.getEventHandlers(props), this.getInputAttributes(props), props.attributes, {
         onMouseEnter: this.handleMouseEnter.bind(this),
         onMouseLeave: this.handleMouseLeave.bind(this),
+        onFocus: this.handleFocus.bind(this),
+        onBlur: this.handleBlur.bind(this),
         className: this.context.GENERATECLASSES ? CLASSES : null,
         'data-component': this.context.GENERATEDATAATTRIBUTES ? this.NAMESPACE : null,
         'data-sub-component': this.context.GENERATEDATAATTRIBUTES ? props.subComponent : null
