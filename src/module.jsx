@@ -329,6 +329,18 @@ export default class Module extends React.Component {
     this.setState({ isHovered: false, ':hover': false });
   }
 
+  handleFocus(event) {
+    this.props.onFocus && this.props.onFocus(event);
+
+    this.setState({ isFocused: true, ':focus': true });
+  }
+
+  handleBlur(event) {
+    this.props.onBlur && this.props.onBlur(event);
+
+    this.setState({ isFocused: false, ':focus': false });
+  }
+
   /** Lifecycle Methods */
 
   componentDidMount() {   
@@ -373,7 +385,9 @@ export default class Module extends React.Component {
       ...props.attributes,
 
       onMouseEnter: this.handleMouseEnter.bind(this),
-      onMouseLeave: this.handleMouseLeave.bind(this),
+      onMouseEnter: this.handleMouseEnter.bind(this),
+      onFocus: this.handleFocus.bind(this),
+      onBlur: this.handleBlur.bind(this),
 
       className: GENERATECLASSES ? CLASSES : null,
       'data-module': GENERATEDATAATTRIBUTES ? this.NAMESPACE : null

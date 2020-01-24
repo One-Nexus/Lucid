@@ -59,6 +59,8 @@ export default class Component extends Module {
 
       onMouseEnter: this.handleMouseEnter.bind(this),
       onMouseLeave: this.handleMouseLeave.bind(this),
+      onFocus: this.handleFocus.bind(this),
+      onBlur: this.handleBlur.bind(this),
 
       className: this.context.GENERATECLASSES ? CLASSES : null,
       'data-component': this.context.GENERATEDATAATTRIBUTES ? this.NAMESPACE : null,
