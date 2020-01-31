@@ -1,6 +1,6 @@
 {
   "name": "@onenexus/lucid",
-  "version": "1.0.0-beta.13",
+  "version": "1.0.0-beta.14",
   "description": "No nonsense JavaScript styling for React DOM projects",
   "main": "dist/lucid.js",
   "author": "(Edmund Reed)[http://twitter.com/esr360] <esr360@live.com>",

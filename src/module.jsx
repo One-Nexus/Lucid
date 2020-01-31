@@ -1,9 +1,9 @@
 import React from 'react';
 import htmlVoidElements from 'html-void-elements';
-import evalConfig from './utilities/evalConfig';
+import evalTheme from './utilities/evalTheme';
 import getModifiersFromProps from './utilities/getModifiersFromProps';
 import mergeThemes from './utilities/mergeThemes';
-import { ThemeContext } from './provider';
+import { UIContext } from './provider';
 
 /** spoof env process to assist bundle size */
 if (typeof process === 'undefined') window.process = { env: {} }
@@ -16,7 +16,7 @@ export const ModuleContext = React.createContext({});
 
 /** Render a Synergy module */
 export default class Module extends React.Component {
-  constructor(props, context) {
+  constructor(props, context = {}) {
     super(props);
 
     increment++;
@@ -25,15 +25,20 @@ export default class Module extends React.Component {
 
     this.REF = React.createRef();
     this.DATA = props.styles;
-    this.THEME = mergeThemes(context, window.theme, props.theme);
+    this.THEME = evalTheme(mergeThemes(context.theme, window.theme, props.theme));
+    this.UTILS = context.utils || window.utils;
 
     const LUCIDDEFAULTS = { generateClasses: true, generateDataAttributes: true }
     const GLOBAL_MODULE = window[props.name];
     const RAW_DEFAULTS = GLOBAL_MODULE && GLOBAL_MODULE.defaultProps && GLOBAL_MODULE.defaultProps.config;
-    const PROPCONFIG = (typeof props.config === 'function') ? props.config(this.THEME) : props.config;
-
+    
+    let PROPCONFIG = (typeof props.config === 'function') ? props.config(this.THEME) : props.config;
     let DEFAULTS = (typeof RAW_DEFAULTS === 'function') ? RAW_DEFAULTS(this.THEME) : RAW_DEFAULTS;
-    let THEMECONFIG = this.THEME.modules && evalConfig(this.THEME.modules[props.name], this.THEME);
+    let THEMECONFIG = this.THEME.modules && this.THEME.modules[props.name];
+
+    if (THEMECONFIG && JSON.stringify(DEFAULTS) === JSON.stringify(PROPCONFIG)) {
+      PROPCONFIG = null;
+    }
 
     if (PROPCONFIG && PROPCONFIG.displace) {
       DEFAULTS = {}, THEMECONFIG = {}
@@ -116,11 +121,12 @@ export default class Module extends React.Component {
 
   /** Styling */
 
-  stylesConfig({ theme = this.THEME, config = this.CONFIG, context = this.context } = {}) {
+  stylesConfig({ theme = this.THEME, config = this.CONFIG, context = this.context, utils = this.UTILS } = {}) {
     return {
       theme,
       config,
       context,
+      utils,
       state: {
         ...this.state,
         ...this.props
@@ -463,7 +469,7 @@ export default class Module extends React.Component {
 
   /** Static Methods/Properties */
 
-  static contextType = ThemeContext;
+  static contextType = UIContext;
 
   static config = (...params) => {
     if (process.env.SYNERGY) {

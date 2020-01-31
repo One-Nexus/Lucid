@@ -1,9 +1,11 @@
 import React from 'react';
 
-export const ThemeContext = React.createContext({});
+export const UIContext = React.createContext({ 
+  theme: {}, utils: {} 
+});
 
 export default (props) => (
-  <ThemeContext.Provider value={props.theme}>
+  <UIContext.Provider value={{ theme: props.theme, utils: props.utils }}>
     {props.children}
-  </ThemeContext.Provider>
+  </UIContext.Provider>
 );

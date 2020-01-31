@@ -268,24 +268,29 @@ var external_react_default = /*#__PURE__*/__webpack_require__.n(external_react_)
 // EXTERNAL MODULE: ./node_modules/html-void-elements/index.json
 var html_void_elements = __webpack_require__(1);
 
-// CONCATENATED MODULE: ./src/utilities/evalConfig.js
+// CONCATENATED MODULE: ./src/utilities/evalTheme.js
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-function evalConfig(config, theme) {
-  if (!config) return;
-  Object.entries(config).forEach(function (entry) {
+function evalTheme(theme) {
+  var core = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : theme;
+  if (!theme) return;
+  if (Array.isArray(theme)) return theme;
+  var result = {};
+  Object.entries(theme).forEach(function (entry) {
     var key = entry[0];
     var value = entry[1];
 
     if (_typeof(value) === 'object') {
-      return evalConfig(value, theme);
-    }
-
-    if (typeof value === 'function') {
-      config[key] = value(theme);
+      result[key] = evalTheme(value, core);
+    } else {
+      if (typeof value === 'function') {
+        result[key] = value(core);
+      } else {
+        result[key] = value;
+      }
     }
   });
-  return config;
+  return result;
 }
 // CONCATENATED MODULE: ./src/utilities/getModifiersFromProps.js
 /**
@@ -358,10 +363,16 @@ function deepMergeObjects() {
 }
 // CONCATENATED MODULE: ./src/provider.jsx
 
-var ThemeContext = external_react_default.a.createContext({});
+var UIContext = external_react_default.a.createContext({
+  theme: {},
+  utils: {}
+});
 /* harmony default export */ var provider = (function (props) {
-  return external_react_default.a.createElement(ThemeContext.Provider, {
-    value: props.theme
+  return external_react_default.a.createElement(UIContext.Provider, {
+    value: {
+      theme: props.theme,
+      utils: props.utils
+    }
   }, props.children);
 });
 // CONCATENATED MODULE: ./src/module.jsx
@@ -413,8 +424,10 @@ var module_Module =
 function (_React$Component) {
   _inherits(Module, _React$Component);
 
-  function Module(props, context) {
+  function Module(props) {
     var _this;
+
+    var context = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
     _classCallCheck(this, Module);
 
@@ -423,7 +436,8 @@ function (_React$Component) {
     var Synergy = window.Synergy || {};
     _this.REF = external_react_default.a.createRef();
     _this.DATA = props.styles;
-    _this.THEME = mergeThemes(context, window.theme, props.theme);
+    _this.THEME = evalTheme(mergeThemes(context.theme, window.theme, props.theme));
+    _this.UTILS = context.utils || window.utils;
     var LUCIDDEFAULTS = {
       generateClasses: true,
       generateDataAttributes: true
@@ -432,7 +446,11 @@ function (_React$Component) {
     var RAW_DEFAULTS = GLOBAL_MODULE && GLOBAL_MODULE.defaultProps && GLOBAL_MODULE.defaultProps.config;
     var PROPCONFIG = typeof props.config === 'function' ? props.config(_this.THEME) : props.config;
     var DEFAULTS = typeof RAW_DEFAULTS === 'function' ? RAW_DEFAULTS(_this.THEME) : RAW_DEFAULTS;
-    var THEMECONFIG = _this.THEME.modules && evalConfig(_this.THEME.modules[props.name], _this.THEME);
+    var THEMECONFIG = _this.THEME.modules && _this.THEME.modules[props.name];
+
+    if (THEMECONFIG && JSON.stringify(DEFAULTS) === JSON.stringify(PROPCONFIG)) {
+      PROPCONFIG = null;
+    }
 
     if (PROPCONFIG && PROPCONFIG.displace) {
       DEFAULTS = {}, THEMECONFIG = {};
@@ -511,12 +529,15 @@ function (_React$Component) {
           _ref$config = _ref.config,
           config = _ref$config === void 0 ? this.CONFIG : _ref$config,
           _ref$context = _ref.context,
-          context = _ref$context === void 0 ? this.context : _ref$context;
+          context = _ref$context === void 0 ? this.context : _ref$context,
+          _ref$utils = _ref.utils,
+          utils = _ref$utils === void 0 ? this.UTILS : _ref$utils;
 
       return {
         theme: theme,
         config: config,
         context: context,
+        utils: utils,
         state: _objectSpread({}, this.state, this.props),
         element: this.REF.current || document.createElement('span')
       };
@@ -899,7 +920,7 @@ function (_React$Component) {
   return Module;
 }(external_react_default.a.Component);
 
-_defineProperty(module_Module, "contextType", ThemeContext);
+_defineProperty(module_Module, "contextType", UIContext);
 
 _defineProperty(module_Module, "config", function () {
   if (process.env.SYNERGY) {
