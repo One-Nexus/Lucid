@@ -891,6 +891,7 @@ function (_React$Component) {
         if (typeof content === 'function') {
           content = content({
             theme: _this3.THEME,
+            utils: _this3.UTILS,
             config: _this3.CONFIG,
             context: contextValues
           });

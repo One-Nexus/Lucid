@@ -443,7 +443,8 @@ export default class Module extends React.Component {
 
           if (typeof content === 'function') {
             content = content({ 
-              theme: this.THEME, 
+              theme: this.THEME,
+              utils: this.UTILS,
               config: this.CONFIG, 
               context: contextValues 
             });
