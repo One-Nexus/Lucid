@@ -82,23 +82,17 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, exports) {
-
-module.exports = require("react");
-
-/***/ }),
-/* 1 */
 /***/ (function(module) {
 
 module.exports = ["area","base","basefont","bgsound","br","col","command","embed","frame","hr","image","img","input","isindex","keygen","link","menuitem","meta","nextid","param","source","track","wbr"];
 
 /***/ }),
-/* 2 */
+/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -255,18 +249,14 @@ var deepExtend = module.exports = function (/*obj_1, [obj_2], [obj_N]*/) {
 
 
 /***/ }),
-/* 3 */
+/* 2 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 
-// EXTERNAL MODULE: external "react"
-var external_react_ = __webpack_require__(0);
-var external_react_default = /*#__PURE__*/__webpack_require__.n(external_react_);
-
 // EXTERNAL MODULE: ./node_modules/html-void-elements/index.json
-var html_void_elements = __webpack_require__(1);
+var html_void_elements = __webpack_require__(0);
 
 // CONCATENATED MODULE: ./src/utilities/evalTheme.js
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -358,17 +348,16 @@ function deepMergeObjects() {
 
     return (_Synergy2 = Synergy).config.apply(_Synergy2, arguments);
   } else {
-    return __webpack_require__(2).apply(void 0, arguments);
+    return __webpack_require__(1).apply(void 0, arguments);
   }
 }
 // CONCATENATED MODULE: ./src/provider.jsx
-
-var UIContext = external_react_default.a.createContext({
+var UIContext = React.createContext({
   theme: {},
   utils: {}
 });
 /* harmony default export */ var provider = (function (props) {
-  return external_react_default.a.createElement(UIContext.Provider, {
+  return React.createElement(UIContext.Provider, {
     value: {
       theme: props.theme,
       utils: props.utils
@@ -405,7 +394,6 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 
 
-
 /** spoof env process to assist bundle size */
 
 if (typeof process === 'undefined') window.process = {
@@ -416,7 +404,7 @@ if (typeof process === 'undefined') window.process = {
 var increment = 1;
 /** Create a context object */
 
-var ModuleContext = external_react_default.a.createContext({});
+var ModuleContext = React.createContext({});
 /** Render a Synergy module */
 
 var module_Module =
@@ -434,7 +422,7 @@ function (_React$Component) {
     _this = _possibleConstructorReturn(this, _getPrototypeOf(Module).call(this, props));
     increment++;
     var Synergy = window.Synergy || {};
-    _this.REF = external_react_default.a.createRef();
+    _this.REF = React.createRef();
     _this.DATA = props.styles;
     _this.THEME = evalTheme(mergeThemes(context.theme, window.theme, props.theme));
     _this.UTILS = context.utils || window.utils;
@@ -861,7 +849,7 @@ function (_React$Component) {
         onMouseEnter: this.handleMouseEnter.bind(this)
       }, _defineProperty(_objectSpread2, "onMouseEnter", this.handleMouseEnter.bind(this)), _defineProperty(_objectSpread2, "onFocus", this.handleFocus.bind(this)), _defineProperty(_objectSpread2, "onBlur", this.handleBlur.bind(this)), _defineProperty(_objectSpread2, "className", GENERATECLASSES ? CLASSES : null), _defineProperty(_objectSpread2, 'data-module', GENERATEDATAATTRIBUTES ? this.NAMESPACE : null), _objectSpread2));
 
-      return external_react_default.a.createElement(ModuleContext.Consumer, null, function (moduleContext) {
+      return React.createElement(ModuleContext.Consumer, null, function (moduleContext) {
         _this3.DATA = _this3.DATA || props.styles;
         _this3.SETWRAPPERSTYLES = moduleContext.setWrapperStyles;
         _this3.STYLES = _this3.getStyles(_this3.DATA, _this3.stylesConfig({
@@ -897,18 +885,18 @@ function (_React$Component) {
           });
         }
 
-        return external_react_default.a.createElement(ModuleContext.Provider, {
+        return React.createElement(ModuleContext.Provider, {
           value: contextValues
-        }, html_void_elements.includes(_this3.TAG) ? external_react_default.a.createElement(_this3.TAG, _extends({
+        }, html_void_elements.includes(_this3.TAG) ? React.createElement(_this3.TAG, _extends({
           id: props.id ? _this3.ID : null,
           ref: _this3.REF
-        }, ATTRIBUTES)) : external_react_default.a.createElement(_this3.TAG, _extends({
+        }, ATTRIBUTES)) : React.createElement(_this3.TAG, _extends({
           id: props.id ? _this3.ID : null,
           ref: _this3.REF
-        }, ATTRIBUTES), before && external_react_default.a.createElement(Component, {
+        }, ATTRIBUTES), before && React.createElement(Component, {
           name: ":before",
           referer: _this3.NAMESPACE
-        }, before.content), content, after && external_react_default.a.createElement(Component, {
+        }, before.content), content, after && React.createElement(Component, {
           name: ":after",
           referer: _this3.NAMESPACE
         }, after.content)));
@@ -919,7 +907,7 @@ function (_React$Component) {
   }]);
 
   return Module;
-}(external_react_default.a.Component);
+}(React.Component);
 
 _defineProperty(module_Module, "contextType", UIContext);
 
@@ -933,7 +921,7 @@ _defineProperty(module_Module, "config", function () {
 
     return (_Synergy2 = Synergy).config.apply(_Synergy2, arguments);
   } else {
-    return __webpack_require__(2).apply(void 0, arguments);
+    return __webpack_require__(1).apply(void 0, arguments);
   }
 });
 
@@ -966,7 +954,6 @@ function component_defineProperty(obj, key, value) { if (key in obj) { Object.de
 
 
 
-
 /**
  * Render a Synergy component
  */
@@ -982,7 +969,7 @@ function (_Module) {
     component_classCallCheck(this, Component);
 
     _this = component_possibleConstructorReturn(this, component_getPrototypeOf(Component).call(this, props));
-    _this.REF = external_react_default.a.createRef();
+    _this.REF = React.createRef();
     _this.NAMESPACE = props.name || props.tag;
     return _this;
   }
@@ -1052,16 +1039,16 @@ function (_Module) {
         context: this.context
       })), component_defineProperty(_objectSpread2, "STYLES", component_objectSpread({}, this.context.STYLES, this.STYLES)), component_defineProperty(_objectSpread2, "STRICT_NAMESPACE", STRICT_NAMESPACE), _objectSpread2));
 
-      return external_react_default.a.createElement(ModuleContext.Provider, {
+      return React.createElement(ModuleContext.Provider, {
         value: contextValues
-      }, html_void_elements.includes(TAG) ? external_react_default.a.createElement(TAG, component_extends({
+      }, html_void_elements.includes(TAG) ? React.createElement(TAG, component_extends({
         ref: this.REF
-      }, ATTRIBUTES)) : external_react_default.a.createElement(TAG, component_extends({
+      }, ATTRIBUTES)) : React.createElement(TAG, component_extends({
         ref: this.REF
-      }, ATTRIBUTES), before && external_react_default.a.createElement(Component, {
+      }, ATTRIBUTES), before && React.createElement(Component, {
         name: ":before",
         referer: this.NAMESPACE
-      }, before.content), props.content || props.children, after && external_react_default.a.createElement(Component, {
+      }, before.content), props.content || props.children, after && React.createElement(Component, {
         name: ":after",
         referer: this.NAMESPACE
       }, after.content)));
@@ -1074,8 +1061,8 @@ function (_Module) {
 component_defineProperty(component_Component, "contextType", ModuleContext);
 
 
-var component_SubComponent = function SubComponent(props) {
-  return external_react_default.a.createElement(component_Component, component_extends({
+var SubComponent = function SubComponent(props) {
+  return React.createElement(component_Component, component_extends({
     subComponent: true
   }, props), props.children);
 };
@@ -1102,9 +1089,7 @@ function wrapper_setPrototypeOf(o, p) { wrapper_setPrototypeOf = Object.setProto
 
 function wrapper_assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
-
-
-var wrapper_Wrapper =
+var Wrapper =
 /*#__PURE__*/
 function (_React$Component) {
   wrapper_inherits(Wrapper, _React$Component);
@@ -1138,18 +1123,18 @@ function (_React$Component) {
       var CHILD = this.props.children.length ? this.props.children[0] : this.props.children;
       var MODULE = this.props.module || CHILD.props.name || CHILD.type.name;
       var PROPS = (_PROPS = {}, wrapper_defineProperty(_PROPS, MODULE, true), wrapper_defineProperty(_PROPS, "styles", this.state.styles), wrapper_defineProperty(_PROPS, "setWrapperStyles", this.applyStyles), wrapper_defineProperty(_PROPS, "permeable", true), _PROPS);
-      return external_react_default.a.createElement(Module, wrapper_extends({
+      return React.createElement(Module, wrapper_extends({
         name: NAMESPACE
       }, this.props, PROPS), this.props.children);
     }
   }]);
 
   return Wrapper;
-}(external_react_default.a.Component);
+}(React.Component);
 
 
-var wrapper_Group = function Group(props) {
-  return external_react_default.a.createElement(wrapper_Wrapper, wrapper_extends({
+var Group = function Group(props) {
+  return React.createElement(Wrapper, wrapper_extends({
     name: "group"
   }, props), props.children);
 };
@@ -1167,14 +1152,24 @@ var styled_styled = function styled(name, props) {
 };
 
 /* harmony default export */ var src_styled = (styled_styled);
+// CONCATENATED MODULE: ./src/useTheme.js
+
+/* harmony default export */ var useTheme = (function () {
+  var _useContext = useContext(UIContext),
+      theme = _useContext.theme;
+
+  return theme;
+});
 // CONCATENATED MODULE: ./src/index.js
 /* concated harmony reexport Module */__webpack_require__.d(__webpack_exports__, "Module", function() { return module_Module; });
-/* concated harmony reexport Wrapper */__webpack_require__.d(__webpack_exports__, "Wrapper", function() { return wrapper_Wrapper; });
-/* concated harmony reexport Group */__webpack_require__.d(__webpack_exports__, "Group", function() { return wrapper_Group; });
+/* concated harmony reexport Wrapper */__webpack_require__.d(__webpack_exports__, "Wrapper", function() { return Wrapper; });
+/* concated harmony reexport Group */__webpack_require__.d(__webpack_exports__, "Group", function() { return Group; });
 /* concated harmony reexport Component */__webpack_require__.d(__webpack_exports__, "Component", function() { return component_Component; });
-/* concated harmony reexport SubComponent */__webpack_require__.d(__webpack_exports__, "SubComponent", function() { return component_SubComponent; });
+/* concated harmony reexport SubComponent */__webpack_require__.d(__webpack_exports__, "SubComponent", function() { return SubComponent; });
 /* concated harmony reexport Provider */__webpack_require__.d(__webpack_exports__, "Provider", function() { return provider; });
 /* concated harmony reexport styled */__webpack_require__.d(__webpack_exports__, "styled", function() { return src_styled; });
+/* concated harmony reexport useTheme */__webpack_require__.d(__webpack_exports__, "useTheme", function() { return useTheme; });
+
 
 
 

@@ -1,4 +1,3 @@
-import React from 'react';
 import htmlVoidElements from 'html-void-elements';
 import evalTheme from './utilities/evalTheme';
 import getModifiersFromProps from './utilities/getModifiersFromProps';

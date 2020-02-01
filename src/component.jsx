@@ -1,4 +1,3 @@
-import React from 'react';
 import htmlVoidElements from 'html-void-elements';
 import getModifiersFromProps from './utilities/getModifiersFromProps';
 import Module, { ModuleContext } from './module.jsx';
