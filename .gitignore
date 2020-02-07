@@ -2,6 +2,7 @@
 .nyc_output
 .settings
 .vscode
+.DS_Store
 coverage
 debug.log
 docs

@@ -40,7 +40,7 @@ export default function() {
     module: {
       rules: [{
         test: /\.(js|jsx)$/,
-        exclude: /node_modules/,
+        exclude: (MODULE) => ~MODULE.indexOf('/node_modules/') && !(~MODULE.indexOf('/@onenexus/')),
         loader: 'babel-loader'
       }]
     },
