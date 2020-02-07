@@ -1,3 +1,5 @@
+import deepMergeObjects from './deepMergeObjects';
+
 export default function mergeThemes(...themes) {
   let THEME = {};
 
@@ -10,17 +12,4 @@ export default function mergeThemes(...themes) {
   });
 
   return THEME;
-}
-
-/** */
-function deepMergeObjects(...params) {
-  if (process.env.SYNERGY) {
-    return Synergy.config(...params);
-  } 
-  else if (typeof Synergy !== 'undefined' && typeof Synergy.config === 'function') {
-    return Synergy.config(...params);
-  } 
-  else {
-    return require('deep-extend')(...params);
-  }
 }

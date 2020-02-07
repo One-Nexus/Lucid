@@ -1,5 +1,5 @@
 export const UIContext = React.createContext({ 
-  theme: {}, utils: {} 
+  theme: {}, utils: {}
 });
 
 export default (props) => (

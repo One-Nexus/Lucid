@@ -1,7 +1,7 @@
 import { UIContext } from './provider';
 
 export default () => {
-  const { theme } = useContext(UIContext);
+  const { theme } = React.useContext(UIContext);
 
   return theme;
 }

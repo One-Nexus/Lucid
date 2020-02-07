@@ -15,6 +15,10 @@ export default function() {
       libraryTarget: 'commonjs2'
     },
 
+    resolve: { 
+      extensions: ['.js', '.jsx'] 
+    },
+
     optimization: {
       minimizer: [
         new UglifyJsPlugin({
@@ -29,18 +33,15 @@ export default function() {
     },
 
     externals: {
-      'react': 'react',
-      'react-dom': 'react-dom'
+      'react': 'React',
+      'react-dom': 'ReactDOM'
     },
 
     module: {
       rules: [{
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
-        loader: 'babel-loader',
-        resolve: { 
-          extensions: ['.js', '.jsx'] 
-        }
+        loader: 'babel-loader'
       }]
     },
 

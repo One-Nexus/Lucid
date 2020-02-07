@@ -13,9 +13,7 @@
 
 ## Overview
 
-> Lucid is a __CSS-in-JS__ solution which utilises *state* and *context*
-
-Lucid is a collection of React components that should be used to construct your JSX. Lucid uses *state* and *context* to determine which styles to apply to a given component; it maps keys from your styles object to components with a matching `name` prop, avoiding the need for class names. 
+Lucid is a collection of React Components that should be used to create your [Presentational Components](https://learn.co/lessons/react-presentation-components). Lucid uses *state* and *context* to determine which styles to apply to a given component; it maps keys from your styles object to components with a matching `name` prop, avoiding the need for class names. 
 
 Checkout this example to see how Lucid can be used to create a simple UI accordion:
 
@@ -46,24 +44,22 @@ const styles = () => ({
   })
 });
 
-const Accordion = ({ panels }) => (
-  <Module styles={styles}>
-    {panels.map(({ heading, content }) => {
-      const [isOpen, toggle] = useState(false);
+const Accordion = ({ panels, ...props }) => {
+  const [activeIndex, toggle] = useState(0);
 
-      return (
-        <Component name='panel' isOpen={isOpen}>
-          <Component name='heading' onClick={() => toggle(!isOpen)}>
+  return (
+    <Module name='Accordion' styles={styles} { ...props }>
+      {panels.map(({ heading, content }, index) => (
+        <Component name='panel' isOpen={index === activeIndex}>
+          <Component name='heading' onClick={() => toggle(index === activeIndex ? -1 : index)}>
             {heading}
           </Component>
-          <Component name='content'>
-            {content}
-          </Component>
+          <Component name='content' content={content} />
         </Component>
-      );
-    })}
-  </Module>
-);
+      ))}
+    </Module>
+  );
+}
 
 export default Accordion;
 ```
@@ -72,24 +68,27 @@ export default Accordion;
 
 ### Features
 
-* Most friendly CSS-in-JS API on the market ([change my mind](https://medium.com/@ESR360/why-i-dislike-existing-css-in-js-solutions-for-react-7b81786e0fd5))
 * Built to prioritise Developer Experience (DX)
-* It's just JavaScript; no nonsense CSS selectors as object keys etc...
+* It's just JavaScript; no CSS selectors as object keys etc...
 * No CSS classes or `className` props required
 * Improve the readability of your source code
 * Improve the readability of your production code ([why is this important?](https://twitter.com/ESR360/status/1151879057409265666))
-* [Media Queries](https://github.com/One-Nexus/Lucid/wiki/Styling-Concepts#media-queries)
-* [Pseudo States/Elements (`:hover`, `:before`, `:after`)](https://github.com/One-Nexus/Lucid/wiki/Styling-Concepts#pseudo-stateselements)
+* [Media Queries](https://github.com/One-Nexus/Lucid/wiki/Styles#media-queries)
+* [Pseudo States/Elements (`:hover`, `:focus`, `:before`, `:after`)](https://github.com/One-Nexus/Lucid/wiki/Styles#pseudo-stateselements)
 * Based off state and context - not only the most fiendly API but the most flexible
-* Inherent flexible nature supports themes, configuration etc without dedicated APIs ([though they are provided](https://github.com/One-Nexus/Lucid/wiki/Creating-a-Styled-Module))
-* Automagically identify [cosmetic style properties](https://github.com/One-Nexus/Lucid/wiki/Creating-a-Styled-Module#retreiving-cosmetic-styles-from-config) from [configuration/state/props](https://github.com/One-Nexus/Lucid/wiki/Creating-a-Styled-Module#pass-array-of-styles)
+* Inherent flexible nature supports themes, configuration etc without dedicated APIs ([though they are provided](https://github.com/One-Nexus/Lucid/wiki/Config))
+* Automagically identify [cosmetic style properties](https://github.com/One-Nexus/Lucid/wiki/Config#retreiving-cosmetic-styles-from-config) from [configuration/state/props](https://github.com/One-Nexus/Lucid/wiki/Styles#pass-array-of-styles)
 
 ### How it Works
 
 * Utilises React's context API under the hood
 * Singular styles object (or function that returns an object) passed to `<Module>`
 * Styles are mapped to child components by matching keys with `<Component>` `name` props
-* Parent props/state are [available as `context`](https://github.com/One-Nexus/Lucid/wiki/Creating-a-Styled-Module#context), self props/state are [available as `state`](https://github.com/One-Nexus/Lucid/wiki/Creating-a-Styled-Module#state)
+* Parent props/state are [available as `context`](https://github.com/One-Nexus/Lucid/wiki/Context), self props/state are [available as `state`](hhttps://github.com/One-Nexus/Lucid/wiki/Statee)
+
+### NOT CSS-in-JS!
+
+Whilst Lucid _is_ a JavaScript tool for authoring styles, we don't consider it to be "CSS-in-JS". CSS is a language with its own rules and concepts such as classes, selectors, pseudo-elements, cascading, etc. Lucid is not a tool for translating CSS paradigms into JavaScript (unlike other solutions) - it is a tool for applying CSS _properties_ to your React components using a super friendly API. It results in inline-styles being applied to the DOM - Lucid doesn't generate any CSS.
 
 ## Installation/Setup
 
@@ -128,9 +127,12 @@ import {
 
 ---
 
-<a href="https://twitter.com/ESR360">
-  <img src="http://edmundreed.com/assets/images/twitter.gif?v=1" width="250px" />
-</a>
 <a href="https://github.com/ESR360">
-  <img src="http://edmundreed.com/assets/images/github.gif?v=1" width="250px" />
+  <img src="http://edmundreed.com/assets/images/github.gif?v=1" width="230px" />
+</a>
+<a href="https://twitter.com/ESR360">
+  <img src="http://edmundreed.com/assets/images/twitter.gif?v=1" width="230px" />
+</a>
+<a href="https://www.instagram.com/edmund_reed/">
+  <img src="http://edmundreed.com/assets/images/insta.png" width="230px" />
 </a>

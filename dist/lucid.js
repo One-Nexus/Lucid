@@ -319,7 +319,22 @@ function getModifiersFromProps(props) {
 
   return modifiers;
 }
+// CONCATENATED MODULE: ./src/utilities/deepMergeObjects.js
+function deepMergeObjects() {
+  if (process.env.SYNERGY) {
+    var _Synergy;
+
+    return (_Synergy = Synergy).deepextend.apply(_Synergy, arguments);
+  } else if (typeof Synergy !== 'undefined' && typeof Synergy.deepextend === 'function') {
+    var _Synergy2;
+
+    return (_Synergy2 = Synergy).deepextend.apply(_Synergy2, arguments);
+  } else {
+    return __webpack_require__(1).apply(void 0, arguments);
+  }
+}
 // CONCATENATED MODULE: ./src/utilities/mergeThemes.js
+
 function mergeThemes() {
   var THEME = {};
 
@@ -335,21 +350,6 @@ function mergeThemes() {
     }
   });
   return THEME;
-}
-/** */
-
-function deepMergeObjects() {
-  if (process.env.SYNERGY) {
-    var _Synergy;
-
-    return (_Synergy = Synergy).config.apply(_Synergy, arguments);
-  } else if (typeof Synergy !== 'undefined' && typeof Synergy.config === 'function') {
-    var _Synergy2;
-
-    return (_Synergy2 = Synergy).config.apply(_Synergy2, arguments);
-  } else {
-    return __webpack_require__(1).apply(void 0, arguments);
-  }
 }
 // CONCATENATED MODULE: ./src/provider.jsx
 var UIContext = React.createContext({
@@ -388,6 +388,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 
 
 
@@ -444,7 +445,7 @@ function (_React$Component) {
       DEFAULTS = {}, THEMECONFIG = {};
     }
 
-    _this.CONFIG = Module.config(LUCIDDEFAULTS, DEFAULTS, THEMECONFIG, PROPCONFIG);
+    _this.CONFIG = deepMergeObjects(LUCIDDEFAULTS, DEFAULTS, THEMECONFIG, PROPCONFIG);
     _this.ID = props.id || "module-".concat(increment);
     _this.NAMESPACE = _this.CONFIG.name || props.name || props.tag || _this.ID;
     _this.TAG = props.href && 'a' || props.component || props.tag || 'div';
@@ -911,20 +912,6 @@ function (_React$Component) {
 
 _defineProperty(module_Module, "contextType", UIContext);
 
-_defineProperty(module_Module, "config", function () {
-  if (process.env.SYNERGY) {
-    var _Synergy;
-
-    return (_Synergy = Synergy).config.apply(_Synergy, arguments);
-  } else if (typeof Synergy !== 'undefined' && typeof Synergy.config === 'function') {
-    var _Synergy2;
-
-    return (_Synergy2 = Synergy).config.apply(_Synergy2, arguments);
-  } else {
-    return __webpack_require__(1).apply(void 0, arguments);
-  }
-});
-
 
 // CONCATENATED MODULE: ./src/component.jsx
 function component_typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { component_typeof = function _typeof(obj) { return typeof obj; }; } else { component_typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return component_typeof(obj); }
@@ -1155,8 +1142,8 @@ var styled_styled = function styled(name, props) {
 // CONCATENATED MODULE: ./src/useTheme.js
 
 /* harmony default export */ var useTheme = (function () {
-  var _useContext = useContext(UIContext),
-      theme = _useContext.theme;
+  var _React$useContext = React.useContext(UIContext),
+      theme = _React$useContext.theme;
 
   return theme;
 });
@@ -1169,6 +1156,8 @@ var styled_styled = function styled(name, props) {
 /* concated harmony reexport Provider */__webpack_require__.d(__webpack_exports__, "Provider", function() { return provider; });
 /* concated harmony reexport styled */__webpack_require__.d(__webpack_exports__, "styled", function() { return src_styled; });
 /* concated harmony reexport useTheme */__webpack_require__.d(__webpack_exports__, "useTheme", function() { return useTheme; });
+/* concated harmony reexport evalTheme */__webpack_require__.d(__webpack_exports__, "evalTheme", function() { return evalTheme; });
+
 
 
 

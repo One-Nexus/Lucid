@@ -2,6 +2,7 @@ import htmlVoidElements from 'html-void-elements';
 import evalTheme from './utilities/evalTheme';
 import getModifiersFromProps from './utilities/getModifiersFromProps';
 import mergeThemes from './utilities/mergeThemes';
+import deepextend from './utilities/deepMergeObjects';
 import { UIContext } from './provider';
 
 /** spoof env process to assist bundle size */
@@ -43,7 +44,7 @@ export default class Module extends React.Component {
       DEFAULTS = {}, THEMECONFIG = {}
     }
 
-    this.CONFIG = Module.config(LUCIDDEFAULTS, DEFAULTS, THEMECONFIG, PROPCONFIG);
+    this.CONFIG = deepextend(LUCIDDEFAULTS, DEFAULTS, THEMECONFIG, PROPCONFIG);
     this.ID = props.id || `module-${increment}`;
     this.NAMESPACE = this.CONFIG.name || props.name || props.tag || this.ID;
     this.TAG = (props.href && 'a') || props.component || props.tag || 'div';
@@ -470,16 +471,4 @@ export default class Module extends React.Component {
   /** Static Methods/Properties */
 
   static contextType = UIContext;
-
-  static config = (...params) => {
-    if (process.env.SYNERGY) {
-      return Synergy.config(...params);
-    } 
-    else if (typeof Synergy !== 'undefined' && typeof Synergy.config === 'function') {
-      return Synergy.config(...params);
-    } 
-    else {
-      return require('deep-extend')(...params);
-    }
-  }
 }
