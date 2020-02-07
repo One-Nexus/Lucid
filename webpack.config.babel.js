@@ -1,4 +1,3 @@
-import path from 'path';
 import UglifyJsPlugin from 'uglifyjs-webpack-plugin';
 
 export default function() {
@@ -9,9 +8,7 @@ export default function() {
     },
 
     output: {
-      path: path.resolve(__dirname, 'dist/'),
       filename: '[name].js',
-      publicPath: '/',
       libraryTarget: 'commonjs2'
     },
 
