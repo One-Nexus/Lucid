@@ -1,9 +1,13 @@
 import htmlVoidElements from 'html-void-elements';
-import evalTheme from './utilities/evalTheme';
-import getModifiersFromProps from './utilities/getModifiersFromProps';
-import mergeThemes from './utilities/mergeThemes';
-import deepextend from './utilities/deepMergeObjects';
+import evalTheme from '../utilities/evalTheme';
+import getModifiersFromProps from '../utilities/getModifiersFromProps';
+import mergeThemes from '../utilities/mergeThemes';
+import deepextend from '../utilities/deepMergeObjects';
 import { UIContext } from './provider';
+
+if (typeof React === 'undefined') {
+  var React = require('react');
+}
 
 /** spoof env process to assist bundle size */
 if (typeof process === 'undefined') window.process = { env: {} }

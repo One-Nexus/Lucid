@@ -82,17 +82,23 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 2);
+/******/ 	return __webpack_require__(__webpack_require__.s = 3);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
+/***/ (function(module, exports) {
+
+module.exports = require("React");
+
+/***/ }),
+/* 1 */
 /***/ (function(module) {
 
 module.exports = ["area","base","basefont","bgsound","br","col","command","embed","frame","hr","image","img","input","isindex","keygen","link","menuitem","meta","nextid","param","source","track","wbr"];
 
 /***/ }),
-/* 1 */
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -249,14 +255,14 @@ var deepExtend = module.exports = function (/*obj_1, [obj_2], [obj_N]*/) {
 
 
 /***/ }),
-/* 2 */
+/* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 
 // EXTERNAL MODULE: ./node_modules/html-void-elements/index.json
-var html_void_elements = __webpack_require__(0);
+var html_void_elements = __webpack_require__(1);
 
 // CONCATENATED MODULE: ./src/utilities/evalTheme.js
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -330,7 +336,7 @@ function deepMergeObjects() {
 
     return (_Synergy2 = Synergy).deepextend.apply(_Synergy2, arguments);
   } else {
-    return __webpack_require__(1).apply(void 0, arguments);
+    return __webpack_require__(2).apply(void 0, arguments);
   }
 }
 // CONCATENATED MODULE: ./src/utilities/mergeThemes.js
@@ -351,20 +357,24 @@ function mergeThemes() {
   });
   return THEME;
 }
-// CONCATENATED MODULE: ./src/provider.jsx
-var UIContext = React.createContext({
+// CONCATENATED MODULE: ./src/components/provider.jsx
+if (typeof provider_React === 'undefined') {
+  var provider_React = __webpack_require__(0);
+}
+
+var UIContext = provider_React.createContext({
   theme: {},
   utils: {}
 });
 /* harmony default export */ var provider = (function (props) {
-  return React.createElement(UIContext.Provider, {
+  return provider_React.createElement(UIContext.Provider, {
     value: {
       theme: props.theme,
       utils: props.utils
     }
   }, props.children);
 });
-// CONCATENATED MODULE: ./src/module.jsx
+// CONCATENATED MODULE: ./src/components/module.jsx
 function module_typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { module_typeof = function _typeof(obj) { return typeof obj; }; } else { module_typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return module_typeof(obj); }
 
 function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
@@ -395,7 +405,12 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 
 
+
+if (typeof module_React === 'undefined') {
+  var module_React = __webpack_require__(0);
+}
 /** spoof env process to assist bundle size */
+
 
 if (typeof process === 'undefined') window.process = {
   env: {}
@@ -405,7 +420,7 @@ if (typeof process === 'undefined') window.process = {
 var increment = 1;
 /** Create a context object */
 
-var ModuleContext = React.createContext({});
+var ModuleContext = module_React.createContext({});
 /** Render a Synergy module */
 
 var module_Module =
@@ -423,7 +438,7 @@ function (_React$Component) {
     _this = _possibleConstructorReturn(this, _getPrototypeOf(Module).call(this, props));
     increment++;
     var Synergy = window.Synergy || {};
-    _this.REF = React.createRef();
+    _this.REF = module_React.createRef();
     _this.DATA = props.styles;
     _this.THEME = evalTheme(mergeThemes(context.theme, window.theme, props.theme));
     _this.UTILS = context.utils || window.utils;
@@ -850,7 +865,7 @@ function (_React$Component) {
         onMouseEnter: this.handleMouseEnter.bind(this)
       }, _defineProperty(_objectSpread2, "onMouseEnter", this.handleMouseEnter.bind(this)), _defineProperty(_objectSpread2, "onFocus", this.handleFocus.bind(this)), _defineProperty(_objectSpread2, "onBlur", this.handleBlur.bind(this)), _defineProperty(_objectSpread2, "className", GENERATECLASSES ? CLASSES : null), _defineProperty(_objectSpread2, 'data-module', GENERATEDATAATTRIBUTES ? this.NAMESPACE : null), _objectSpread2));
 
-      return React.createElement(ModuleContext.Consumer, null, function (moduleContext) {
+      return module_React.createElement(ModuleContext.Consumer, null, function (moduleContext) {
         _this3.DATA = _this3.DATA || props.styles;
         _this3.SETWRAPPERSTYLES = moduleContext.setWrapperStyles;
         _this3.STYLES = _this3.getStyles(_this3.DATA, _this3.stylesConfig({
@@ -886,18 +901,18 @@ function (_React$Component) {
           });
         }
 
-        return React.createElement(ModuleContext.Provider, {
+        return module_React.createElement(ModuleContext.Provider, {
           value: contextValues
-        }, html_void_elements.includes(_this3.TAG) ? React.createElement(_this3.TAG, _extends({
+        }, html_void_elements.includes(_this3.TAG) ? module_React.createElement(_this3.TAG, _extends({
           id: props.id ? _this3.ID : null,
           ref: _this3.REF
-        }, ATTRIBUTES)) : React.createElement(_this3.TAG, _extends({
+        }, ATTRIBUTES)) : module_React.createElement(_this3.TAG, _extends({
           id: props.id ? _this3.ID : null,
           ref: _this3.REF
-        }, ATTRIBUTES), before && React.createElement(Component, {
+        }, ATTRIBUTES), before && module_React.createElement(Component, {
           name: ":before",
           referer: _this3.NAMESPACE
-        }, before.content), content, after && React.createElement(Component, {
+        }, before.content), content, after && module_React.createElement(Component, {
           name: ":after",
           referer: _this3.NAMESPACE
         }, after.content)));
@@ -908,12 +923,12 @@ function (_React$Component) {
   }]);
 
   return Module;
-}(React.Component);
+}(module_React.Component);
 
 _defineProperty(module_Module, "contextType", UIContext);
 
 
-// CONCATENATED MODULE: ./src/component.jsx
+// CONCATENATED MODULE: ./src/components/component.jsx
 function component_typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { component_typeof = function _typeof(obj) { return typeof obj; }; } else { component_typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return component_typeof(obj); }
 
 function component_extends() { component_extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return component_extends.apply(this, arguments); }
@@ -941,9 +956,14 @@ function component_defineProperty(obj, key, value) { if (key in obj) { Object.de
 
 
 
+
+if (typeof component_React === 'undefined') {
+  var component_React = __webpack_require__(0);
+}
 /**
  * Render a Synergy component
  */
+
 
 var component_Component =
 /*#__PURE__*/
@@ -956,7 +976,7 @@ function (_Module) {
     component_classCallCheck(this, Component);
 
     _this = component_possibleConstructorReturn(this, component_getPrototypeOf(Component).call(this, props));
-    _this.REF = React.createRef();
+    _this.REF = component_React.createRef();
     _this.NAMESPACE = props.name || props.tag;
     return _this;
   }
@@ -1026,16 +1046,16 @@ function (_Module) {
         context: this.context
       })), component_defineProperty(_objectSpread2, "STYLES", component_objectSpread({}, this.context.STYLES, this.STYLES)), component_defineProperty(_objectSpread2, "STRICT_NAMESPACE", STRICT_NAMESPACE), _objectSpread2));
 
-      return React.createElement(ModuleContext.Provider, {
+      return component_React.createElement(ModuleContext.Provider, {
         value: contextValues
-      }, html_void_elements.includes(TAG) ? React.createElement(TAG, component_extends({
+      }, html_void_elements.includes(TAG) ? component_React.createElement(TAG, component_extends({
         ref: this.REF
-      }, ATTRIBUTES)) : React.createElement(TAG, component_extends({
+      }, ATTRIBUTES)) : component_React.createElement(TAG, component_extends({
         ref: this.REF
-      }, ATTRIBUTES), before && React.createElement(Component, {
+      }, ATTRIBUTES), before && component_React.createElement(Component, {
         name: ":before",
         referer: this.NAMESPACE
-      }, before.content), props.content || props.children, after && React.createElement(Component, {
+      }, before.content), props.content || props.children, after && component_React.createElement(Component, {
         name: ":after",
         referer: this.NAMESPACE
       }, after.content)));
@@ -1049,11 +1069,11 @@ component_defineProperty(component_Component, "contextType", ModuleContext);
 
 
 var SubComponent = function SubComponent(props) {
-  return React.createElement(component_Component, component_extends({
+  return component_React.createElement(component_Component, component_extends({
     subComponent: true
   }, props), props.children);
 };
-// CONCATENATED MODULE: ./src/wrapper.jsx
+// CONCATENATED MODULE: ./src/components/wrapper.jsx
 function wrapper_typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { wrapper_typeof = function _typeof(obj) { return typeof obj; }; } else { wrapper_typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return wrapper_typeof(obj); }
 
 function wrapper_extends() { wrapper_extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return wrapper_extends.apply(this, arguments); }
@@ -1075,6 +1095,10 @@ function wrapper_inherits(subClass, superClass) { if (typeof superClass !== "fun
 function wrapper_setPrototypeOf(o, p) { wrapper_setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return wrapper_setPrototypeOf(o, p); }
 
 function wrapper_assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+if (typeof wrapper_React === 'undefined') {
+  var wrapper_React = __webpack_require__(0);
+}
 
 var Wrapper =
 /*#__PURE__*/
@@ -1110,43 +1134,65 @@ function (_React$Component) {
       var CHILD = this.props.children.length ? this.props.children[0] : this.props.children;
       var MODULE = this.props.module || CHILD.props.name || CHILD.type.name;
       var PROPS = (_PROPS = {}, wrapper_defineProperty(_PROPS, MODULE, true), wrapper_defineProperty(_PROPS, "styles", this.state.styles), wrapper_defineProperty(_PROPS, "setWrapperStyles", this.applyStyles), wrapper_defineProperty(_PROPS, "permeable", true), _PROPS);
-      return React.createElement(Module, wrapper_extends({
+      return wrapper_React.createElement(Module, wrapper_extends({
         name: NAMESPACE
       }, this.props, PROPS), this.props.children);
     }
   }]);
 
   return Wrapper;
-}(React.Component);
+}(wrapper_React.Component);
 
 
 var Group = function Group(props) {
-  return React.createElement(Wrapper, wrapper_extends({
+  return wrapper_React.createElement(Wrapper, wrapper_extends({
     name: "group"
   }, props), props.children);
 };
-// CONCATENATED MODULE: ./src/styled.js
-function styled_extends() { styled_extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return styled_extends.apply(this, arguments); }
+// CONCATENATED MODULE: ./src/hooks/useTheme.js
 
-
-
-var styled_styled = function styled(name, props) {
-  var tag = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'div';
-  return React.createElement(component_Component, styled_extends({
-    name: name,
-    tag: tag
-  }, props), props.children);
-};
-
-/* harmony default export */ var src_styled = (styled_styled);
-// CONCATENATED MODULE: ./src/useTheme.js
 
 /* harmony default export */ var useTheme = (function () {
   var _React$useContext = React.useContext(UIContext),
       theme = _React$useContext.theme;
 
-  return theme;
+  return evalTheme(theme);
 });
+// CONCATENATED MODULE: ./src/hooks/useConfig.js
+
+/* harmony default export */ var useConfig = (function () {
+  var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+  var theme = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var evaluatedConfig = typeof config === 'function' ? config(theme) : config;
+  var themeConfig = theme.modules && theme.modules[evaluatedConfig.name] || {};
+  return deepMergeObjects(evaluatedConfig, themeConfig);
+});
+// CONCATENATED MODULE: ./src/hooks/useUtils.js
+
+/* harmony default export */ var useUtils = (function () {
+  var _React$useContext = React.useContext(UIContext),
+      utils = _React$useContext.utils;
+
+  return utils;
+});
+// CONCATENATED MODULE: ./src/components/styled.jsx
+function styled_extends() { styled_extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return styled_extends.apply(this, arguments); }
+
+
+
+if (typeof styled_React === 'undefined') {
+  var styled_React = __webpack_require__(0);
+}
+
+var styled_styled = function styled(name, props) {
+  var tag = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'div';
+  return styled_React.createElement(component_Component, styled_extends({
+    name: name,
+    tag: tag
+  }, props), props.children);
+};
+
+/* harmony default export */ var components_styled = (styled_styled);
 // CONCATENATED MODULE: ./src/index.js
 /* concated harmony reexport Module */__webpack_require__.d(__webpack_exports__, "Module", function() { return module_Module; });
 /* concated harmony reexport Wrapper */__webpack_require__.d(__webpack_exports__, "Wrapper", function() { return Wrapper; });
@@ -1154,9 +1200,13 @@ var styled_styled = function styled(name, props) {
 /* concated harmony reexport Component */__webpack_require__.d(__webpack_exports__, "Component", function() { return component_Component; });
 /* concated harmony reexport SubComponent */__webpack_require__.d(__webpack_exports__, "SubComponent", function() { return SubComponent; });
 /* concated harmony reexport Provider */__webpack_require__.d(__webpack_exports__, "Provider", function() { return provider; });
-/* concated harmony reexport styled */__webpack_require__.d(__webpack_exports__, "styled", function() { return src_styled; });
+/* concated harmony reexport styled */__webpack_require__.d(__webpack_exports__, "styled", function() { return components_styled; });
 /* concated harmony reexport useTheme */__webpack_require__.d(__webpack_exports__, "useTheme", function() { return useTheme; });
+/* concated harmony reexport useConfig */__webpack_require__.d(__webpack_exports__, "useConfig", function() { return useConfig; });
+/* concated harmony reexport useUtils */__webpack_require__.d(__webpack_exports__, "useUtils", function() { return useUtils; });
 /* concated harmony reexport evalTheme */__webpack_require__.d(__webpack_exports__, "evalTheme", function() { return evalTheme; });
+
+
 
 
 

@@ -1,4 +1,4 @@
-import deepextend from './utilities/deepMergeObjects';
+import deepextend from '../utilities/deepMergeObjects';
 
 export default (config = {}, theme = {}) => {
   const evaluatedConfig = (typeof config === 'function') ? config(theme) : config;

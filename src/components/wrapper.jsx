@@ -1,3 +1,7 @@
+if (typeof React === 'undefined') {
+  var React = require('react');
+}
+
 export default class Wrapper extends React.Component {
   constructor(props) {
     super(props);

@@ -1,6 +1,10 @@
 import htmlVoidElements from 'html-void-elements';
-import getModifiersFromProps from './utilities/getModifiersFromProps';
+import getModifiersFromProps from '../utilities/getModifiersFromProps';
 import Module, { ModuleContext } from './module.jsx';
+
+if (typeof React === 'undefined') {
+  var React = require('react');
+}
 
 /**
  * Render a Synergy component
