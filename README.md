@@ -13,9 +13,11 @@
 
 ## Overview
 
-Lucid is a collection of React Components that should be used to create your [Presentational Components](https://learn.co/lessons/react-presentation-components). Lucid uses *state* and *context* to determine which styles to apply to a given component; it maps keys from your styles object to components with a matching `name` prop, avoiding the need for class names. 
+Lucid is a collection of React Components that should be used to create your [Presentational Components](https://learn.co/lessons/react-presentation-components). Lucid uses *state* and *context* to determine which styles to apply to a given Component; it maps keys from your styles object to Components with a matching `name` prop, avoiding the need for class names. 
 
 Checkout this example to see how Lucid can be used to create a simple UI accordion:
+
+> [View a live demo of this example on CodeSandbox](https://codesandbox.io/s/fervent-pine-3lgoo)
 
 ```jsx
 import React, { useState } from 'react';
@@ -64,8 +66,6 @@ const Accordion = ({ panels, ...props }) => {
 export default Accordion;
 ```
 
-> [View this example on CodeSandbox](https://codesandbox.io/s/fervent-pine-3lgoo)
-
 ### Features
 
 * Built to prioritise Developer Experience (DX)
@@ -83,12 +83,12 @@ export default Accordion;
 
 * Utilises React's context API under the hood
 * Singular styles object (or function that returns an object) passed to `<Module>`
-* Styles are mapped to child components by matching keys with `<Component>` `name` props
+* Styles are mapped to child Components by matching keys with `<Component>` `name` props
 * Parent props/state are [available as `context`](https://github.com/One-Nexus/Lucid/wiki/Context), self props/state are [available as `state`](hhttps://github.com/One-Nexus/Lucid/wiki/Statee)
 
 ### NOT CSS-in-JS!
 
-Whilst Lucid _is_ a JavaScript tool for authoring styles, we don't consider it to be "CSS-in-JS". CSS is a language with its own rules and concepts such as classes, selectors, pseudo-elements, cascading, etc. Lucid is not a tool for translating CSS paradigms into JavaScript (unlike other solutions) - it is a tool for applying CSS _properties_ to your React components using a super friendly API. It results in inline-styles being applied to the DOM - Lucid doesn't generate any CSS.
+Whilst Lucid _is_ a JavaScript tool for authoring styles, we don't consider it to be "CSS-in-JS". CSS is a language with its own rules and concepts such as classes, selectors, pseudo-elements, cascading, etc. Lucid is not a tool for translating CSS paradigms into JavaScript (unlike other solutions) - it is a tool for applying CSS _properties_ to your React Components using a super friendly API. It results in inline-styles being applied to the DOM - Lucid doesn't generate any CSS.
 
 ## Installation/Setup
 
