@@ -32,7 +32,7 @@ export default class Module extends React.Component {
     this.THEME = evalTheme(mergeThemes(context.theme, window.theme, props.theme));
     this.UTILS = context.utils || window.utils;
 
-    const LUCIDDEFAULTS = { generateClasses: true, generateDataAttributes: true }
+    const LUCIDDEFAULTS = { generateClasses: true, generateDataAttributes: true, singleClass: false }
     const GLOBAL_MODULE = window[props.name];
     const RAW_DEFAULTS = GLOBAL_MODULE && GLOBAL_MODULE.defaultProps && GLOBAL_MODULE.defaultProps.config;
     
@@ -54,9 +54,10 @@ export default class Module extends React.Component {
     this.TAG = (props.href && 'a') || props.component || props.tag || 'div';
     this.MODIFIERGLUE = props.modifierGlue || this.CONFIG.modifierGlue || Synergy.modifierGlue || '--';
     this.COMPONENTGLUE = props.componentGlue || this.CONFIG.componentGlue || Synergy.componentGlue || '__';
-    this.SINGLECLASS = props.singleClass || this.CONFIG.singleClass || false; // @TODO move to LUCIDDEFAULTS
-    this.GENERATECLASSES = props.generateClasses || this.CONFIG.generateClasses;
-    this.GENERATEDATAATTRIBUTES = props.generateDataAttributes || this.CONFIG.generateDataAttributes;
+
+    this.SINGLECLASS = props.singleClass ?? this.THEME.singleClass ?? this.CONFIG.singleClass;
+    this.GENERATECLASSES = props.generateClasses ?? this.THEME.generateClasses ?? this.CONFIG.generateClasses;
+    this.GENERATEDATAATTRIBUTES = props.generateDataAttributes ?? this.THEME.generateDataAttributes ?? this.CONFIG.generateDataAttributes;
 
     this.state = {}
   }

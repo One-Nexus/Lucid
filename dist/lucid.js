@@ -429,6 +429,8 @@ function (_React$Component) {
   _inherits(Module, _React$Component);
 
   function Module(props) {
+    var _ref, _props$singleClass, _ref2, _props$generateClasse, _ref3, _props$generateDataAt;
+
     var _this;
 
     var context = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
@@ -444,7 +446,8 @@ function (_React$Component) {
     _this.UTILS = context.utils || window.utils;
     var LUCIDDEFAULTS = {
       generateClasses: true,
-      generateDataAttributes: true
+      generateDataAttributes: true,
+      singleClass: false
     };
     var GLOBAL_MODULE = window[props.name];
     var RAW_DEFAULTS = GLOBAL_MODULE && GLOBAL_MODULE.defaultProps && GLOBAL_MODULE.defaultProps.config;
@@ -466,10 +469,9 @@ function (_React$Component) {
     _this.TAG = props.href && 'a' || props.component || props.tag || 'div';
     _this.MODIFIERGLUE = props.modifierGlue || _this.CONFIG.modifierGlue || Synergy.modifierGlue || '--';
     _this.COMPONENTGLUE = props.componentGlue || _this.CONFIG.componentGlue || Synergy.componentGlue || '__';
-    _this.SINGLECLASS = props.singleClass || _this.CONFIG.singleClass || false; // @TODO move to LUCIDDEFAULTS
-
-    _this.GENERATECLASSES = props.generateClasses || _this.CONFIG.generateClasses;
-    _this.GENERATEDATAATTRIBUTES = props.generateDataAttributes || _this.CONFIG.generateDataAttributes;
+    _this.SINGLECLASS = (_ref = (_props$singleClass = props.singleClass) !== null && _props$singleClass !== void 0 ? _props$singleClass : _this.THEME.singleClass) !== null && _ref !== void 0 ? _ref : _this.CONFIG.singleClass;
+    _this.GENERATECLASSES = (_ref2 = (_props$generateClasse = props.generateClasses) !== null && _props$generateClasse !== void 0 ? _props$generateClasse : _this.THEME.generateClasses) !== null && _ref2 !== void 0 ? _ref2 : _this.CONFIG.generateClasses;
+    _this.GENERATEDATAATTRIBUTES = (_ref3 = (_props$generateDataAt = props.generateDataAttributes) !== null && _props$generateDataAt !== void 0 ? _props$generateDataAt : _this.THEME.generateDataAttributes) !== null && _ref3 !== void 0 ? _ref3 : _this.CONFIG.generateDataAttributes;
     _this.state = {};
     return _this;
   }
@@ -527,15 +529,15 @@ function (_React$Component) {
   }, {
     key: "stylesConfig",
     value: function stylesConfig() {
-      var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-          _ref$theme = _ref.theme,
-          theme = _ref$theme === void 0 ? this.THEME : _ref$theme,
-          _ref$config = _ref.config,
-          config = _ref$config === void 0 ? this.CONFIG : _ref$config,
-          _ref$context = _ref.context,
-          context = _ref$context === void 0 ? this.context : _ref$context,
-          _ref$utils = _ref.utils,
-          utils = _ref$utils === void 0 ? this.UTILS : _ref$utils;
+      var _ref4 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+          _ref4$theme = _ref4.theme,
+          theme = _ref4$theme === void 0 ? this.THEME : _ref4$theme,
+          _ref4$config = _ref4.config,
+          config = _ref4$config === void 0 ? this.CONFIG : _ref4$config,
+          _ref4$context = _ref4.context,
+          context = _ref4$context === void 0 ? this.context : _ref4$context,
+          _ref4$utils = _ref4.utils,
+          utils = _ref4$utils === void 0 ? this.UTILS : _ref4$utils;
 
       return {
         theme: theme,
@@ -593,9 +595,9 @@ function (_React$Component) {
       var styles = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       var options = arguments.length > 2 ? arguments[2] : undefined;
 
-      var _ref2 = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {},
-          prevNamespace = _ref2.prevNamespace,
-          prevContext = _ref2.prevContext;
+      var _ref5 = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {},
+          prevNamespace = _ref5.prevNamespace,
+          prevContext = _ref5.prevContext;
 
       if (typeof styles === 'function') {
         styles = styles(options);
@@ -743,15 +745,15 @@ function (_React$Component) {
     value: function setStyleStates() {
       var prevState = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.state;
       if (!this.REF.current) return;
-      var _ref3 = [this.REF.current, this.REF.current.parentNode],
-          CURRENT = _ref3[0],
-          PARENT = _ref3[1];
-      var _ref4 = [prevState.isFirstChild, CURRENT === PARENT.firstChild],
-          prevIsFirstChild = _ref4[0],
-          isFirstChild = _ref4[1];
-      var _ref5 = [prevState.isLastChild, CURRENT === PARENT.lastChild],
-          prevIsLastChild = _ref5[0],
-          isLastChild = _ref5[1];
+      var _ref6 = [this.REF.current, this.REF.current.parentNode],
+          CURRENT = _ref6[0],
+          PARENT = _ref6[1];
+      var _ref7 = [prevState.isFirstChild, CURRENT === PARENT.firstChild],
+          prevIsFirstChild = _ref7[0],
+          isFirstChild = _ref7[1];
+      var _ref8 = [prevState.isLastChild, CURRENT === PARENT.lastChild],
+          prevIsLastChild = _ref8[0],
+          isLastChild = _ref8[1];
 
       if (prevIsFirstChild !== isFirstChild) {
         this.setState({
@@ -839,10 +841,10 @@ function (_React$Component) {
           GENERATEDATAATTRIBUTES = this.GENERATEDATAATTRIBUTES;
       /** */
 
-      var _ref6 = [props.className ? props.className + ' ' : '', this.NAMESPACE, []],
-          CLASSES = _ref6[0],
-          SELECTOR = _ref6[1],
-          MODIFIERS = _ref6[2];
+      var _ref9 = [props.className ? props.className + ' ' : '', this.NAMESPACE, []],
+          CLASSES = _ref9[0],
+          SELECTOR = _ref9[1],
+          MODIFIERS = _ref9[2];
       MODIFIERS.push(props.modifiers);
       MODIFIERS = MODIFIERS.concat(getModifiersFromProps(props));
       MODIFIERS = MODIFIERS.filter(function (item, pos) {
