@@ -13,7 +13,7 @@
 
 ## Overview
 
-Lucid is a collection of React Components that should be used to create your [Presentational Components](https://learn.co/lessons/react-presentation-components). Lucid uses [*state*](https://github.com/One-Nexus/Lucid/wiki/State) and [*context*](https://github.com/One-Nexus/Lucid/wiki/Context) to determine which styles to apply to a given [Element](#TODO); it maps CSS keys from your styles Object to [Components](#TODO) with a matching `name` prop (with top level keys applying to the parent [Module](#TODO)), avoiding the need for class names.
+Lucid is a collection of React Components that should be used to create your [Presentational Components](https://learn.co/lessons/react-presentation-components). Lucid uses [*state*](https://github.com/One-Nexus/Lucid/wiki/State) and [*context*](https://github.com/One-Nexus/Lucid/wiki/Context) to determine which styles to apply to a given [Element](https://github.com/One-Nexus/Synergy/wiki/Modules,-Components-and-Modifiers#elements); it maps CSS keys from your styles Object to [Components](https://github.com/One-Nexus/Lucid/wiki/Component) with a matching `name` prop (with top level keys applying to the parent [Module](https://github.com/One-Nexus/Lucid/wiki/Module)), avoiding the need for class names.
 
 Checkout this example to see how Lucid can be used to create a simple UI accordion that is both styled and functional:
 
