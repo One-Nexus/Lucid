@@ -9,12 +9,6 @@ export default function getModifiersFromProps(props, blacklist = []) {
     const [key, value] = [prop, props[prop]];
     const firstLetter = prop[0];
 
-    // if prop is name of module, do not include in list
-    // UPDATE: in retrospect, this actually would be useful, so commenting out
-    // if (firstLetter === firstLetter.toUpperCase()) {
-    //   continue;
-    // }
-
     if (prop === 'subComponent') {
       continue;
     }
@@ -24,8 +18,13 @@ export default function getModifiersFromProps(props, blacklist = []) {
       continue;
     }
 
-    if (typeof value === 'boolean' && value) {
-      if (blacklist.indexOf(key) < 0) {
+    if (blacklist.indexOf(key) < 0) {
+      // assume prop to be name of module
+      if (firstLetter === firstLetter.toUpperCase()) {
+        modifiers.push(key);
+      }
+
+      if (typeof value === 'boolean' && value) {
         modifiers.push(key);
       }
     }

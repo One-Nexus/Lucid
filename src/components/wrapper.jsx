@@ -11,9 +11,7 @@ export default class Wrapper extends React.Component {
   }
 
   applyStyles(styles) {
-    if (JSON.stringify(styles) !== JSON.stringify(this.state.styles)) {
-      this.setState({ styles });
-    }
+    this.setState({ styles });
   }
 
   render() {
@@ -22,7 +20,7 @@ export default class Wrapper extends React.Component {
     const MODULE = this.props.module || CHILD.props.name || CHILD.type.name;
 
     const PROPS = {
-      [MODULE]: true,
+      modifiers: [MODULE],
       styles: this.state.styles,
       setWrapperStyles: this.applyStyles,
       permeable: true

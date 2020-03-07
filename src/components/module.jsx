@@ -3,6 +3,7 @@ import evalTheme from '../utilities/evalTheme';
 import getModifiersFromProps from '../utilities/getModifiersFromProps';
 import mergeThemes from '../utilities/mergeThemes';
 import deepextend from '../utilities/deepMergeObjects';
+import generateElementClasses from '../utilities/generateElementClasses';
 import { UIContext } from './provider';
 
 if (typeof React === 'undefined') {
@@ -59,6 +60,10 @@ export default class Module extends React.Component {
     this.GENERATECLASSES = props.generateClasses ?? this.THEME.generateClasses ?? this.CONFIG.generateClasses;
     this.GENERATEDATAATTRIBUTES = props.generateDataAttributes ?? this.THEME.generateDataAttributes ?? this.CONFIG.generateDataAttributes;
 
+    this.ACTORMODULES = Object.keys(props).filter(key => key[0] === key[0].toUpperCase()).reduce((obj, key) => {
+      return obj[key] = props[key], obj;
+    }, {});
+
     this.state = {}
   }
 
@@ -70,6 +75,11 @@ export default class Module extends React.Component {
     for (let prop in properties) {
       if (Object.keys(window).includes(prop.toLowerCase())) {
         if (prop === 'theme') {
+          continue;
+        }
+
+        // edge case
+        if (prop === 'Alert') {
           continue;
         }
 
@@ -126,7 +136,7 @@ export default class Module extends React.Component {
 
   /** Styling */
 
-  stylesConfig({ theme = this.THEME, config = this.CONFIG, context = this.context, utils = this.UTILS } = {}) {
+  stylesConfig({ theme = this.THEME, config = this.CONFIG, context = this.CONTEXT, utils = this.UTILS, state } = {}) {
     return {
       theme,
       config,
@@ -134,7 +144,8 @@ export default class Module extends React.Component {
       utils,
       state: {
         ...this.state,
-        ...this.props
+        ...this.props,
+        ...state
       },
       element: this.REF.current || document.createElement('span')
     }
@@ -366,6 +377,16 @@ export default class Module extends React.Component {
     }
 
     this.paint(this.REF.current, this.DATA, this.stylesConfig());
+
+    Object.entries(this.ACTORMODULES).forEach(([NAMESPACE, MODIFIERS]) => {
+      let { styles, config } = window[NAMESPACE]?.defaultProps;
+
+      const state = Object.assign(...MODIFIERS.map(key => ({ [key]: true })));
+
+      config = (typeof config === 'function') ? config(this.THEME) : config;
+
+      this.paint(this.REF.current, styles, this.stylesConfig({ config, state }));
+    });
   }
 
   render() {
@@ -380,13 +401,12 @@ export default class Module extends React.Component {
     MODIFIERS = MODIFIERS.filter((item, pos) => MODIFIERS.indexOf(item) === pos);
     MODIFIERS = MODIFIERS.filter(Boolean);
 
-    if (SINGLECLASS) {
-      SELECTOR += MODIFIERS.length ? MODIFIERGLUE + MODIFIERS.join(MODIFIERGLUE) : '';
-    } else {
-      MODIFIERS.forEach(MODIFIER => CLASSES += SELECTOR + MODIFIERGLUE + MODIFIER + ' ');
-    }
+    CLASSES += generateElementClasses({ NAMESPACE: SELECTOR, MODIFIERS, MODIFIERGLUE, SINGLECLASS });
 
-    CLASSES += SELECTOR;
+    // Generate class(es) when Module also acts as another Module
+    Object.entries(this.ACTORMODULES).forEach(([NAMESPACE, MODIFIERS]) => {
+      CLASSES += ' ' + generateElementClasses({ NAMESPACE, MODIFIERS, MODIFIERGLUE, SINGLECLASS });
+    });
 
     /** */
     const ATTRIBUTES = {
@@ -396,7 +416,7 @@ export default class Module extends React.Component {
       ...props.attributes,
 
       onMouseEnter: this.handleMouseEnter.bind(this),
-      onMouseEnter: this.handleMouseEnter.bind(this),
+      onMouseLeave: this.handleMouseLeave.bind(this),
       onFocus: this.handleFocus.bind(this),
       onBlur: this.handleBlur.bind(this),
 
@@ -409,6 +429,7 @@ export default class Module extends React.Component {
         {moduleContext => {
           this.DATA = this.DATA || props.styles;
           this.SETWRAPPERSTYLES = moduleContext.setWrapperStyles;
+          this.CONTEXT = moduleContext;
           this.STYLES = this.getStyles(this.DATA, this.stylesConfig({ context: moduleContext }));
 
           const before = this.STYLES[':before'];
@@ -425,7 +446,7 @@ export default class Module extends React.Component {
 
             STYLES: {
               ...moduleContext.STYLES,
-              ...this.STYLES
+              // ...this.STYLES
             },
 
             MODIFIERGLUE, 
