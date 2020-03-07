@@ -446,7 +446,7 @@ export default class Module extends React.Component {
 
             STYLES: {
               ...moduleContext.STYLES,
-              // ...this.STYLES
+              ...this.STYLES
             },
 
             MODIFIERGLUE, 
