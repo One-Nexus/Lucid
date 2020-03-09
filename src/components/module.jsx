@@ -278,6 +278,12 @@ export default class Module extends React.Component {
       /**
        * Key defines pseudo-state
        */
+      if (key === 'hover') {
+        if (options.state[':hover']) {
+          return this.paint(node, value, options);
+        }
+      }
+
       if (key.indexOf(':') === 0) {
         if (options.state[key]) {
           return this.paint(node, value, options);
