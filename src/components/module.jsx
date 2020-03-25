@@ -33,25 +33,13 @@ export default class Module extends React.Component {
     this.THEME = evalTheme(mergeThemes(context.theme, window.theme, props.theme));
     this.UTILS = context.utils || window.utils;
 
-    const LUCIDDEFAULTS = { generateClasses: true, generateDataAttributes: true, singleClass: false }
-    const GLOBAL_MODULE = window[props.name];
-    const RAW_DEFAULTS = GLOBAL_MODULE && GLOBAL_MODULE.defaultProps && GLOBAL_MODULE.defaultProps.config;
-    
-    let PROPCONFIG = (typeof props.config === 'function') ? props.config(this.THEME) : props.config;
-    let DEFAULTS = (typeof RAW_DEFAULTS === 'function') ? RAW_DEFAULTS(this.THEME) : RAW_DEFAULTS;
-    let THEMECONFIG = this.THEME.modules && this.THEME.modules[props.name];
+    const LUCIDDEFAULTS = { generateClasses: true, generateDataAttributes: true, singleClass: false } 
+    const PROPCONFIG = (typeof props.config === 'function') ? props.config(this.THEME) : props.config;
+    const THEMECONFIG = this.THEME.modules && this.THEME.modules[props.name];
 
-    if (THEMECONFIG && JSON.stringify(DEFAULTS) === JSON.stringify(PROPCONFIG)) {
-      PROPCONFIG = null;
-    }
-
-    if (PROPCONFIG && PROPCONFIG.displace) {
-      DEFAULTS = {}, THEMECONFIG = {}
-    }
-
-    this.CONFIG = deepextend(LUCIDDEFAULTS, DEFAULTS, THEMECONFIG, PROPCONFIG);
+    this.CONFIG = deepextend(LUCIDDEFAULTS, PROPCONFIG, THEMECONFIG);
     this.ID = props.id || `module-${increment}`;
-    this.NAMESPACE = this.CONFIG.name || props.name || props.tag || this.ID;
+    this.NAMESPACE = props.name || this.CONFIG.name || props.tag || this.ID;
     this.TAG = (props.href && 'a') || props.component || props.tag || 'div';
     this.MODIFIERGLUE = props.modifierGlue || this.CONFIG.modifierGlue || Synergy.modifierGlue || '--';
     this.COMPONENTGLUE = props.componentGlue || this.CONFIG.componentGlue || Synergy.componentGlue || '__';
@@ -63,6 +51,16 @@ export default class Module extends React.Component {
     this.ACTORMODULES = Object.keys(props).filter(key => key[0] === key[0].toUpperCase()).reduce((obj, key) => {
       return obj[key] = props[key], obj;
     }, {});
+
+    // Object.entries(this.ACTORMODULES).forEach(([NAMESPACE, MODIFIERS]) => {
+    //   let { styles, config } = window[NAMESPACE]?.defaultProps;
+
+    //   const state = Object.assign(...MODIFIERS.map(key => ({ [key]: true })));
+
+    //   config = (typeof config === 'function') ? config(this.THEME) : config;
+
+    //   console.log(styles, config, state);
+    // });
 
     this.state = {}
   }
@@ -140,13 +138,9 @@ export default class Module extends React.Component {
     return {
       theme,
       config,
-      context,
       utils,
-      state: {
-        ...this.state,
-        ...this.props,
-        ...state
-      },
+      context: { ...this.context, ...context },
+      state: { ...this.state, ...this.props, ...state },
       element: this.REF.current || document.createElement('span')
     }
   }
@@ -384,10 +378,12 @@ export default class Module extends React.Component {
 
     this.paint(this.REF.current, this.DATA, this.stylesConfig());
 
-    Object.entries(this.ACTORMODULES).forEach(([NAMESPACE, MODIFIERS]) => {
+    Object.entries(this.ACTORMODULES).forEach(([NAMESPACE, PROPS]) => {
       let { styles, config } = window[NAMESPACE]?.defaultProps;
 
-      const state = Object.assign(...MODIFIERS.map(key => ({ [key]: true })));
+      const state = Object.assign(...PROPS.map(PROP => {
+        return typeof PROP === 'string' ? { [PROP]: true } : PROP;
+      }));
 
       config = (typeof config === 'function') ? config(this.THEME) : config;
 
