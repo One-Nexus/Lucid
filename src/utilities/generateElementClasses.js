@@ -1,7 +1,9 @@
 export default function generateElementClasses({ NAMESPACE, MODIFIERS, MODIFIERGLUE, SINGLECLASS }) {
   let CLASSES = '';
 
-  MODIFIERS = MODIFIERS.filter(MODIFIER => typeof MODIFIER === 'string');
+  if (MODIFIERS.constructor === Object) {
+    MODIFIERS = Object.keys(MODIFIERS).filter(key => typeof MODIFIERS[key] === 'boolean' && MODIFIERS[key]);
+  }
 
   if (SINGLECLASS) {
     NAMESPACE += MODIFIERS.length ? MODIFIERGLUE + MODIFIERS.join(MODIFIERGLUE) : '';

@@ -378,12 +378,14 @@ export default class Module extends React.Component {
 
     this.paint(this.REF.current, this.DATA, this.stylesConfig());
 
-    Object.entries(this.ACTORMODULES).forEach(([NAMESPACE, PROPS]) => {
+    Object.entries(this.ACTORMODULES).forEach(([NAMESPACE, state]) => {
       let { styles, config } = window[NAMESPACE]?.defaultProps;
 
-      const state = Object.assign(...PROPS.map(PROP => {
-        return typeof PROP === 'string' ? { [PROP]: true } : PROP;
-      }));
+      if (state.constructor === Array) {
+        state = Object.assign(...state.map(PROP => {
+          return typeof PROP === 'string' ? { [PROP]: true } : PROP;
+        }));
+      }
 
       config = (typeof config === 'function') ? config(this.THEME) : config;
 
