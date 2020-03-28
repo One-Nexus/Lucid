@@ -52,16 +52,6 @@ export default class Module extends React.Component {
       return obj[key] = props[key], obj;
     }, {});
 
-    // Object.entries(this.ACTORMODULES).forEach(([NAMESPACE, MODIFIERS]) => {
-    //   let { styles, config } = window[NAMESPACE]?.defaultProps;
-
-    //   const state = Object.assign(...MODIFIERS.map(key => ({ [key]: true })));
-
-    //   config = (typeof config === 'function') ? config(this.THEME) : config;
-
-    //   console.log(styles, config, state);
-    // });
-
     this.state = {}
   }
 
@@ -139,8 +129,16 @@ export default class Module extends React.Component {
       theme,
       config,
       utils,
-      context: { ...this.context, ...context },
-      state: { ...this.state, ...this.props, ...state },
+      context: { 
+        ...this.context, 
+        ...context 
+      },
+      state: { 
+        ...this.state, 
+        ...this.context[this.NAMESPACE], 
+        ...this.props, 
+        ...state 
+      },
       element: this.REF.current || document.createElement('span')
     }
   }
@@ -179,7 +177,7 @@ export default class Module extends React.Component {
     }, {});
   }
 
-  paint(node, styles = {}, options, { prevNamespace, prevContext } = {}) {
+  paint(node, styles = {}, options, { prevNamespace } = {}) {
     if (typeof styles === 'function') {
       styles = styles(options);
     }
@@ -284,28 +282,23 @@ export default class Module extends React.Component {
         }
       }
 
-      if (typeof value === 'function') {
-        try {
+      // @TODO - revist this feature (and the correspnding docs)
+      // if (value instanceof Array) {
+      //   node = value[0], styles = value[1];
+
+      //   try {
+      //     return this.paint(node(), styles, options);
+      //   } catch(error) {
+      //     return error;
+      //   }
+      // }
+
+      if (window.getComputedStyle(node).getPropertyValue(key)) {
+        if (typeof value === 'function') {
           value = value(node.style[key]);
-        } catch(error) {
-          return error;
         }
-      }
 
-      if (value instanceof Array) {
-        node = value[0], styles = value[1];
-
-        try {
-          return this.paint(node(), styles, options);
-        } catch(error) {
-          return error;
-        }
-      }
-
-      try {
         node.style[key] = value;
-      } catch(error) {
-        return error;
       }
     });
   

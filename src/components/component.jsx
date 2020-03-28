@@ -25,13 +25,16 @@ export default class Component extends Module {
     let before, after;
 
     if (this.StyleStatesApplied) {
-      this.STYLES = this.getStyles(this.DATA, this.stylesConfig({ theme: this.context.THEME, config: this.context.CONFIG }));
+      this.STYLES = this.getStyles(this.DATA, this.stylesConfig({ 
+        theme: this.context.THEME, 
+        config: this.context.CONFIG
+      }));
       
       before = this.STYLES[':before'];
       after = this.STYLES[':after'];
     }
 
-    const { props } = this;
+    const props = { ...this.context[this.NAMESPACE], ...this.props };
     const { MODIFIERGLUE, COMPONENTGLUE } = this.context;
     const TAG = (props.href && 'a') || props.component || props.tag || 'div';
     const STRICT_NAMESPACE = (props.subComponent ? this.context.STRICT_NAMESPACE : this.context.NAMESPACE) + COMPONENTGLUE + this.NAMESPACE;
