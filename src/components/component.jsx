@@ -1,5 +1,6 @@
 import htmlVoidElements from 'html-void-elements';
 import getModifiersFromProps from '../utilities/getModifiersFromProps';
+import generateElementClasses from '../utilities/generateElementClasses';
 import Module, { ModuleContext } from './module.jsx';
 
 if (typeof React === 'undefined') {
@@ -35,7 +36,7 @@ export default class Component extends Module {
     }
 
     const props = { ...this.context[this.NAMESPACE], ...this.props };
-    const { MODIFIERGLUE, COMPONENTGLUE } = this.context;
+    const { MODIFIERGLUE, COMPONENTGLUE, SINGLECLASS } = this.context;
     const TAG = (props.href && 'a') || props.component || props.tag || 'div';
     const STRICT_NAMESPACE = (props.subComponent ? this.context.STRICT_NAMESPACE : this.context.NAMESPACE) + COMPONENTGLUE + this.NAMESPACE;
 
@@ -43,18 +44,12 @@ export default class Component extends Module {
     let [CLASSES, MODIFIERS] = [props.className ? props.className + ' ' : '', []];
     let SELECTOR = props.subComponent ? STRICT_NAMESPACE : this.context.NAMESPACE + COMPONENTGLUE + this.NAMESPACE;
 
-    MODIFIERS.push(props.modifiers);
+    props.modifiers && MODIFIERS.push(...props.modifiers);
     MODIFIERS = MODIFIERS.concat(getModifiersFromProps(props));
     MODIFIERS = MODIFIERS.filter((item, pos) => MODIFIERS.indexOf(item) === pos);
     MODIFIERS = MODIFIERS.filter(Boolean);
 
-    if (this.context.SINGLECLASS) {
-      SELECTOR += MODIFIERS.length ? MODIFIERGLUE + MODIFIERS.join(MODIFIERGLUE) : '';
-    } else {
-      MODIFIERS.forEach(MODIFIER => CLASSES += SELECTOR + MODIFIERGLUE + MODIFIER + ' ');
-    }
-
-    CLASSES += SELECTOR;
+    CLASSES += generateElementClasses({ NAMESPACE: SELECTOR, MODIFIERS, MODIFIERGLUE, SINGLECLASS });
 
     /** */
     const ATTRIBUTES = {

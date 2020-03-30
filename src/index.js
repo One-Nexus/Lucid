@@ -1,4 +1,4 @@
-import Module from './components/module';
+import Module from './components/moduleHOC';
 import Component, { SubComponent } from './components/component';
 import Wrapper, { Group } from './components/wrapper';
 import Provider from './components/provider';

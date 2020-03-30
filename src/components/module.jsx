@@ -4,6 +4,7 @@ import getModifiersFromProps from '../utilities/getModifiersFromProps';
 import mergeThemes from '../utilities/mergeThemes';
 import deepextend from '../utilities/deepMergeObjects';
 import generateElementClasses from '../utilities/generateElementClasses';
+import getNodeFromRef from '../utilities/getNodeFromRef';
 import { UIContext } from './provider';
 
 if (typeof React === 'undefined') {
@@ -40,7 +41,7 @@ export default class Module extends React.Component {
     this.CONFIG = deepextend(LUCIDDEFAULTS, PROPCONFIG, THEMECONFIG);
     this.ID = props.id || `module-${increment}`;
     this.NAMESPACE = props.name || this.CONFIG.name || props.tag || this.ID;
-    this.TAG = (props.href && 'a') || props.component || props.tag || 'div';
+    this.TAG = (props.href && 'a') || props.component || props.as || props.tag || 'div';
     this.MODIFIERGLUE = props.modifierGlue || this.CONFIG.modifierGlue || Synergy.modifierGlue || '--';
     this.COMPONENTGLUE = props.componentGlue || this.CONFIG.componentGlue || Synergy.componentGlue || '__';
 
@@ -136,8 +137,9 @@ export default class Module extends React.Component {
       state: { 
         ...this.state, 
         ...this.context[this.NAMESPACE], 
-        ...this.props, 
-        ...state 
+        ...this.props,
+        ...(this.props.modifiers?.length && Object.assign(...this.props.modifiers.map((prop) => ({ [prop]: true })))),
+        ...state
       },
       element: this.REF.current || document.createElement('span')
     }
@@ -312,10 +314,10 @@ export default class Module extends React.Component {
   setStyleStates(prevState = this.state) {
     if (!this.REF.current) return;
 
-    const [CURRENT, PARENT] = [this.REF.current, this.REF.current.parentNode];
+    const NODE = getNodeFromRef(this.REF);
 
-    const [prevIsFirstChild, isFirstChild] = [prevState.isFirstChild, CURRENT === PARENT.firstChild];
-    const [prevIsLastChild, isLastChild] = [prevState.isLastChild, CURRENT === PARENT.lastChild];
+    const [prevIsFirstChild, isFirstChild] = [prevState.isFirstChild, NODE === NODE.parentNode.firstChild];
+    const [prevIsLastChild, isLastChild] = [prevState.isLastChild, NODE === NODE.parentNode.lastChild];
 
     if (prevIsFirstChild !== isFirstChild) {
       this.setState({ isFirstChild });
@@ -358,18 +360,22 @@ export default class Module extends React.Component {
 
   /** Lifecycle Methods */
 
-  componentDidMount() {   
+  componentDidMount() {
     if (this.REF.current) {
       this.setStyleStates();
-    }
+    } 
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (!prevState.length && JSON.stringify(this.state) === JSON.stringify(prevState)) {
       this.setStyleStates(prevState);
     }
+  
+    const NODE = getNodeFromRef(this.REF);
 
-    this.paint(this.REF.current, this.DATA, this.stylesConfig());
+    if (!NODE) return;
+
+    this.paint(NODE, this.DATA, this.stylesConfig());
 
     Object.entries(this.ACTORMODULES).forEach(([NAMESPACE, state]) => {
       let { styles, config } = window[NAMESPACE]?.defaultProps;
@@ -382,7 +388,7 @@ export default class Module extends React.Component {
 
       config = (typeof config === 'function') ? config(this.THEME) : config;
 
-      this.paint(this.REF.current, styles, this.stylesConfig({ config, state }));
+      this.paint(NODE, styles, this.stylesConfig({ config, state }));
     });
   }
 
@@ -393,7 +399,7 @@ export default class Module extends React.Component {
     /** */
     let [CLASSES, SELECTOR, MODIFIERS] = [props.className ? props.className + ' ' : '', this.NAMESPACE, []];
 
-    MODIFIERS.push(props.modifiers);
+    props.modifiers && MODIFIERS.push(...props.modifiers);
     MODIFIERS = MODIFIERS.concat(getModifiersFromProps(props));
     MODIFIERS = MODIFIERS.filter((item, pos) => MODIFIERS.indexOf(item) === pos);
     MODIFIERS = MODIFIERS.filter(Boolean);
@@ -418,7 +424,12 @@ export default class Module extends React.Component {
       onBlur: this.handleBlur.bind(this),
 
       className: GENERATECLASSES ? CLASSES : null,
-      'data-module': GENERATEDATAATTRIBUTES ? this.NAMESPACE : null
+      'data-module': GENERATEDATAATTRIBUTES ? this.NAMESPACE : null,
+
+      ...(props.as && { 
+        name: props.as.name || props.as, 
+        modifiers: MODIFIERS
+      })
     }
 
     return (
@@ -457,7 +468,9 @@ export default class Module extends React.Component {
               ...props
             },
 
-            ...(!props.permeable && { NAMESPACE: this.NAMESPACE }),
+            ...(!props.permeable && { 
+              NAMESPACE: typeof props.as === 'string' ? this.CONTEXT.NAMESPACE : this.NAMESPACE 
+            }),
 
             SETWRAPPERSTYLES: this.props.setWrapperStyles
           }
