@@ -35,6 +35,11 @@ export default class Component extends Module {
       after = this.STYLES[':after'];
     }
 
+    this.apply[this.NAMESPACE] = this.apply[this.NAMESPACE] || {
+      styles: this.DATA,
+      config: this.stylesConfig()
+    };
+
     const props = { ...this.context[this.NAMESPACE], ...this.props };
     const { MODIFIERGLUE, COMPONENTGLUE, SINGLECLASS } = this.context;
     const TAG = (props.href && 'a') || props.component || props.tag || 'div';
