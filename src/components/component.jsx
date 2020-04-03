@@ -37,7 +37,7 @@ export default class Component extends Module {
 
     this.apply[this.NAMESPACE] = this.apply[this.NAMESPACE] || {
       styles: this.DATA,
-      config: this.stylesConfig()
+      config: this.CONFIG
     };
 
     const props = { ...this.context[this.NAMESPACE], ...this.props };
@@ -74,10 +74,8 @@ export default class Component extends Module {
     }
 
     /** */
-    const contextValues = { 
+    const contextValues = {
       ...this.context,
-      ...this.state,
-      ...props,
 
       [this.NAMESPACE]: {
         ...this.state,

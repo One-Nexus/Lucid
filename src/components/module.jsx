@@ -370,12 +370,7 @@ export default class Module extends React.Component {
       this.setStyleStates(prevState);
     }
 
-    if (!this.REF.current) {
-      return;
-    }
-
-    // console.log(this.NAMESPACE);
-    // this.paint(NODE, this.DATA, this.stylesConfig());
+    // console.log(this.REF.current, this.apply);
 
     Object.values(this.apply).forEach(({ styles, config }) => {
       this.paint(this.REF.current, styles, this.stylesConfig({ config }));
@@ -448,8 +443,7 @@ export default class Module extends React.Component {
           this.STYLES = this.getStyles(this.DATA, this.stylesConfig({ context: moduleContext }));
 
           this.apply[this.NAMESPACE] = this.apply[this.NAMESPACE] || {
-            styles: this.DATA,
-            config: this.CONFIG
+            styles: this.DATA, config: this.CONFIG
           };
 
           const before = this.STYLES[':before'];
@@ -496,18 +490,16 @@ export default class Module extends React.Component {
             });
           }
 
-          let TAG = this.TAG;
-
           return (
             <ModuleContext.Provider value={contextValues}>
               {htmlVoidElements.includes(props.tag) ? <this.TAG {...ATTRIBUTES} /> : (
-                <TAG {...ATTRIBUTES}>
+                <this.TAG {...ATTRIBUTES}>
                   {before && <Component name=':before' referer={this.NAMESPACE}>{before.content}</Component>}
 
                   {content}
 
                   {after && <Component name=':after' referer={this.NAMESPACE}>{after.content}</Component>}
-                </TAG>
+                </this.TAG>
               )}
             </ModuleContext.Provider>
           );

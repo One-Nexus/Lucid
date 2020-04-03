@@ -2,11 +2,13 @@ import deepextend from '../utilities/deepMergeObjects';
 import useTheme from './useTheme';
 
 export default (config = {}, theme = useTheme(), props) => {
+  let CONFIG = config;
+
   if (config.config && !props) {
-    config = config.config, props = config;
+    CONFIG = config.config, props = config;
   }
 
-  const evaluatedConfig = (typeof config === 'function') ? config(theme) : config;
+  const evaluatedConfig = (typeof CONFIG === 'function') ? CONFIG(theme) : CONFIG;
   const themeConfig = (theme.modules && theme.modules[evaluatedConfig.name]) || {};
 
   return deepextend(evaluatedConfig, themeConfig, props);
