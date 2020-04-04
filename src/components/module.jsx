@@ -290,17 +290,15 @@ export default class Module extends React.Component {
       //   }
       // }
 
-      if (window.getComputedStyle(node).getPropertyValue(key)) {
-        if (typeof value === 'function') {
-          try {
-            value = value(node.style[key]);
-          } catch(error) {
-            return error;
-          }
+      if (typeof value === 'function') {
+        try {
+          value = value(node.style[key]);
+        } catch(error) {
+          return error;
         }
-
-        node.style[key] = value;
       }
+
+      node.style[key] = value;
     });
   
     const WRAPPERSTYLES = this.STYLES.wrapper || this.STYLES.group;
@@ -369,8 +367,6 @@ export default class Module extends React.Component {
     if (!prevState.length && JSON.stringify(this.state) === JSON.stringify(prevState)) {
       this.setStyleStates(prevState);
     }
-
-    // console.log(this.REF.current, this.apply);
 
     Object.values(this.apply).forEach(({ styles, config }) => {
       this.paint(this.REF.current, styles, this.stylesConfig({ config }));
@@ -474,8 +470,8 @@ export default class Module extends React.Component {
             SETWRAPPERSTYLES: this.props.setWrapperStyles,
 
             [this.NAMESPACE]: {
-              ...this.state,
-              ...props
+              ...props,
+              ...this.state
             }
           }
 

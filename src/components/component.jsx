@@ -78,12 +78,12 @@ export default class Component extends Module {
       ...this.context,
 
       [this.NAMESPACE]: {
-        ...this.state,
         ...props,
+        ...this.state,
 
         state: {
-          ...this.state,
           ...props,
+          ...this.state
         },
 
         context: this.context
