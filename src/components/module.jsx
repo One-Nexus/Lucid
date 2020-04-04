@@ -408,7 +408,7 @@ export default class Module extends React.Component {
 
           if (this.REF.current && !props.apply) {
             // for some reason, componentDidUpdate() does not get called after this
-            // render, so we must apply the updated styles manually during render
+            // render, so we must apply the updated styles manually during the render
             this.paint(this.REF.current, this.DATA, this.stylesConfig());
           }
 

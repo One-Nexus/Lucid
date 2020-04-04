@@ -18,7 +18,7 @@ export default class Component extends Module {
     })) : {};
       
     const before = this.STYLES[':before'], after = this.STYLES[':after'];
-    const props = { ...this.context[this.NAMESPACE], ...this.props };
+    const props = { ...this.context[this.context.NAMESPACE][this.NAMESPACE], ...this.props };
     const { MODIFIERGLUE, COMPONENTGLUE, SINGLECLASS, GENERATECLASSES } = this.context;
     const TAG = (props.href && 'a') || props.component || props.tag || 'div';
     const STRICT_NAMESPACE = (props.subComponent ? this.context.STRICT_NAMESPACE : this.context.NAMESPACE) + COMPONENTGLUE + this.NAMESPACE;
