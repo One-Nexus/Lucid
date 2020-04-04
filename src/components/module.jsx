@@ -442,6 +442,10 @@ export default class Module extends React.Component {
             styles: this.DATA, config: this.CONFIG
           };
 
+          if (this.REF.current && !props.apply) {
+            this.paint(this.REF.current, this.DATA, this.stylesConfig());
+          }
+
           const before = this.STYLES[':before'];
           const after = this.STYLES[':after'];
 
