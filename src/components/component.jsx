@@ -1,5 +1,4 @@
 import htmlVoidElements from 'html-void-elements';
-import getModifiersFromProps from '../utilities/getModifiersFromProps';
 import generateElementClasses from '../utilities/generateElementClasses';
 import Module, { ModuleContext } from './module.jsx';
 
@@ -7,56 +6,24 @@ if (typeof React === 'undefined') {
   var React = require('react');
 }
 
-/**
- * Render a Synergy component
- */
+/** Render a Synergy component */
 export default class Component extends Module {
-  constructor(props) {
-    super(props);
-
-    this.REF = React.createRef();
-    this.NAMESPACE = props.name || props.tag;
-  }
-
   render() {
-    /** */
     this.DATA = this.context.STYLES[this.NAMESPACE];
     this.SETWRAPPERSTYLES = this.context.setWrapperStyles;
+    this.APPLY[this.NAMESPACE] = this.APPLY[this.NAMESPACE] || { styles: this.DATA, config: this.CONFIG }
 
-    let before, after;
-
-    if (this.StyleStatesApplied) {
-      this.STYLES = this.getStyles(this.DATA, this.stylesConfig({ 
-        theme: this.context.THEME, 
-        config: this.context.CONFIG
-      }));
+    this.STYLES = this.StyleStatesApplied ? this.getStyles(this.DATA, this.stylesConfig({ 
+      theme: this.context.THEME, config: this.context.CONFIG
+    })) : {};
       
-      before = this.STYLES[':before'];
-      after = this.STYLES[':after'];
-    }
-
-    this.apply[this.NAMESPACE] = this.apply[this.NAMESPACE] || {
-      styles: this.DATA,
-      config: this.CONFIG
-    };
-
+    const before = this.STYLES[':before'], after = this.STYLES[':after'];
     const props = { ...this.context[this.NAMESPACE], ...this.props };
-    const { MODIFIERGLUE, COMPONENTGLUE, SINGLECLASS } = this.context;
+    const { MODIFIERGLUE, COMPONENTGLUE, SINGLECLASS, GENERATECLASSES } = this.context;
     const TAG = (props.href && 'a') || props.component || props.tag || 'div';
     const STRICT_NAMESPACE = (props.subComponent ? this.context.STRICT_NAMESPACE : this.context.NAMESPACE) + COMPONENTGLUE + this.NAMESPACE;
+    const SELECTOR = props.subComponent ? STRICT_NAMESPACE : this.context.NAMESPACE + COMPONENTGLUE + this.NAMESPACE;
 
-    /** */
-    let [CLASSES, MODIFIERS] = [props.className ? props.className + ' ' : '', []];
-    let SELECTOR = props.subComponent ? STRICT_NAMESPACE : this.context.NAMESPACE + COMPONENTGLUE + this.NAMESPACE;
-
-    props.modifiers && MODIFIERS.push(...props.modifiers);
-    MODIFIERS = MODIFIERS.concat(getModifiersFromProps(props));
-    MODIFIERS = MODIFIERS.filter((item, pos) => MODIFIERS.indexOf(item) === pos);
-    MODIFIERS = MODIFIERS.filter(Boolean);
-
-    CLASSES += generateElementClasses({ NAMESPACE: SELECTOR, MODIFIERS, MODIFIERGLUE, SINGLECLASS });
-
-    /** */
     const ATTRIBUTES = {
       ...this.getDataAttributes(props),
       ...this.getEventHandlers(props),
@@ -67,13 +34,13 @@ export default class Component extends Module {
       onMouseLeave: this.handleMouseLeave.bind(this),
       onFocus: this.handleFocus.bind(this),
       onBlur: this.handleBlur.bind(this),
+      ref: this.REF,
 
-      className: this.context.GENERATECLASSES ? CLASSES : null,
-      'data-component': this.context.GENERATEDATAATTRIBUTES ? this.NAMESPACE : null,
-      'data-sub-component': this.context.GENERATEDATAATTRIBUTES ? props.subComponent : null
+      className: generateElementClasses(this.props, { NAMESPACE: SELECTOR, GENERATECLASSES, MODIFIERGLUE, SINGLECLASS }),
+      'data-component': this.context.GENERATEDATAATTRS ? this.NAMESPACE : null,
+      'data-sub-component': this.context.GENERATEDATAATTRS ? props.subComponent : null
     }
 
-    /** */
     const contextValues = {
       ...this.context,
 
@@ -99,8 +66,8 @@ export default class Component extends Module {
 
     return (
       <ModuleContext.Provider value={contextValues}>
-        {htmlVoidElements.includes(TAG) ? <TAG ref={this.REF} {...ATTRIBUTES} /> : (
-          <TAG ref={this.REF} {...ATTRIBUTES}>
+        {htmlVoidElements.includes(TAG) ? <TAG {...ATTRIBUTES} /> : (
+          <TAG {...ATTRIBUTES}>
             {before && <Component name=':before' referer={this.NAMESPACE}>{before.content}</Component>}
 
             {props.content || props.children}

@@ -1,15 +1,22 @@
-export default function generateElementClasses({ NAMESPACE, MODIFIERS, MODIFIERGLUE, SINGLECLASS }) {
-  let CLASSES = '';
+import getModifiersFromProps from './getModifiersFromProps';
 
-  if (MODIFIERS.constructor === Object) {
-    MODIFIERS = Object.keys(MODIFIERS).filter(key => typeof MODIFIERS[key] === 'boolean' && MODIFIERS[key]);
+export default function generateElementClasses(props, { NAMESPACE, GENERATECLASSES, MODIFIERGLUE, SINGLECLASS }) {
+  let CLASSES = props.className ? props.className + ' ' : '', MODIFIERS = [];
+
+  if (GENERATECLASSES) {
+    props.modifiers && MODIFIERS.push(...props.modifiers);
+    MODIFIERS = MODIFIERS.concat(getModifiersFromProps(props));
+    MODIFIERS = MODIFIERS.filter((item, pos) => MODIFIERS.indexOf(item) === pos);
+    MODIFIERS = MODIFIERS.filter(Boolean);
+
+    if (SINGLECLASS) {
+      NAMESPACE += MODIFIERS.length ? MODIFIERGLUE + MODIFIERS.join(MODIFIERGLUE) : '';
+    } else {
+      MODIFIERS.forEach(MODIFIER => CLASSES += NAMESPACE + MODIFIERGLUE + MODIFIER + ' ');
+    }
+  
+    CLASSES += NAMESPACE
   }
 
-  if (SINGLECLASS) {
-    NAMESPACE += MODIFIERS.length ? MODIFIERGLUE + MODIFIERS.join(MODIFIERGLUE) : '';
-  } else {
-    MODIFIERS.forEach(MODIFIER => CLASSES += NAMESPACE + MODIFIERGLUE + MODIFIER + ' ');
-  }
-
-  return CLASSES += NAMESPACE;
+  return CLASSES;
 }

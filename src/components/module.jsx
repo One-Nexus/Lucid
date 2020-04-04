@@ -1,9 +1,9 @@
 import htmlVoidElements from 'html-void-elements';
 import evalTheme from '../utilities/evalTheme';
-import getModifiersFromProps from '../utilities/getModifiersFromProps';
 import mergeThemes from '../utilities/mergeThemes';
 import deepextend from '../utilities/deepMergeObjects';
 import generateElementClasses from '../utilities/generateElementClasses';
+import removeLucidProps from '../utilities/removeLucidProps';
 import { UIContext } from './provider';
 
 if (typeof React === 'undefined') {
@@ -45,10 +45,10 @@ export default class Module extends React.Component {
     this.COMPONENTGLUE = props.componentGlue || this.CONFIG.componentGlue || Synergy.componentGlue || '__';
     this.SINGLECLASS = props.singleClass ?? this.THEME.singleClass ?? this.CONFIG.singleClass;
     this.GENERATECLASSES = props.generateClasses ?? this.THEME.generateClasses ?? this.CONFIG.generateClasses;
-    this.GENERATEDATAATTRIBUTES = props.generateDataAttributes ?? this.THEME.generateDataAttributes ?? this.CONFIG.generateDataAttributes;
+    this.GENERATEDATAATTRS = props.generateDataAttributes ?? this.THEME.generateDataAttributes ?? this.CONFIG.generateDataAttributes;
   
     this.state = {}
-    this.apply = { ...props.apply }
+    this.APPLY = { ...props.apply }
   }
 
   /** Get Attributes */
@@ -183,15 +183,11 @@ export default class Module extends React.Component {
       return styles.forEach(style => this.paint(node, style, options));
     }
   
-    /**
-     * Cell Query
-     */
+    /** Cell Query */
     Object.entries(styles).forEach(style => {
       const key = style[0]; let value = style[1];
 
-      /**
-       * Determine if current node is queried modifier/state
-       */
+      /** Determine if current node is queried modifier/state */
       if (key.indexOf('is-') === 0) {
         const CONTEXT = key.replace('is-', '');
 
@@ -206,9 +202,7 @@ export default class Module extends React.Component {
         return;
       }
 
-      /**
-       * Determine if parent module/block is queried modifier/state
-       */
+      /**  Determine if parent module/block is queried modifier/state */
       if (key.indexOf('$-is-') === 0 || key.indexOf('$:') === 0) {
         const MODULE = options.context.NAMESPACE;
         const CONTEXT = key.indexOf('$:') === 0 ? key.slice(1, key.length) : key.slice(5, key.length);
@@ -220,9 +214,7 @@ export default class Module extends React.Component {
         return;
       }
 
-      /**
-       * Determine if previously specified parent component is queried modifier/state
-       */
+      /** Determine if previously specified parent component is queried modifier/state */
       if (key.indexOf('and-is-') === 0 || key.indexOf('and:') === 0) {
         const CONTEXT = key.indexOf('and:') === 0 ? key.replace('and', '') : key.replace('and-is-', '');
 
@@ -233,9 +225,7 @@ export default class Module extends React.Component {
         return;
       }
 
-      /**
-       * Determine if specified parent component is queried modifier/state
-       */
+      /** Determine if specified parent component is queried modifier/state */
       if (key.indexOf('-is-') > -1 || key.indexOf(':') > 0) {
         const COMPONENT = key.indexOf(':') > 0 ? key.slice(0, key.indexOf(':')) : key.slice(0, key.indexOf('-is-'));
         const CONTEXT = key.indexOf(':') > 0 ? key.slice(key.indexOf(':'), key.length) : key.slice(key.indexOf('-is-') + 4, key.length);
@@ -249,9 +239,7 @@ export default class Module extends React.Component {
         return;
       }
 
-      /**
-       * Determine if current node is a child of the queried component/module
-       */
+      /** Determine if current node is a child of the queried component/module */
       if (key.indexOf('in-') === 0) {
         const COMPONENT = key.replace('in-', '');
 
@@ -264,9 +252,7 @@ export default class Module extends React.Component {
         return;
       }
 
-      /**
-       * Key defines pseudo-state
-       */
+      /** Key defines pseudo-state */
       if (key === 'hover') {
         if (options.state[':hover']) {
           return this.paint(node, value, options);
@@ -290,7 +276,7 @@ export default class Module extends React.Component {
       //   }
       // }
 
-      if (typeof value === 'function') {
+      if (typeof value === 'function' && window.getComputedStyle(node).getPropertyValue(key)) {
         try {
           value = value(node.style[key]);
         } catch(error) {
@@ -368,7 +354,7 @@ export default class Module extends React.Component {
       this.setStyleStates(prevState);
     }
 
-    Object.values(this.apply).forEach(({ styles, config }) => {
+    Object.values(this.APPLY).forEach(({ styles, config }) => {
       this.paint(this.REF.current, styles, this.stylesConfig({ config }));
     });
   }
@@ -383,27 +369,8 @@ export default class Module extends React.Component {
 
   render() {
     const { props } = this;
-    const { MODIFIERGLUE, COMPONENTGLUE, SINGLECLASS, GENERATECLASSES, GENERATEDATAATTRIBUTES } = this;
+    const { NAMESPACE, MODIFIERGLUE, COMPONENTGLUE, SINGLECLASS, GENERATECLASSES, GENERATEDATAATTRS } = this;
 
-    /** */
-    let [CLASSES, SELECTOR, MODIFIERS] = [props.className ? props.className + ' ' : '', this.NAMESPACE, []];
-
-    props.modifiers && MODIFIERS.push(...props.modifiers);
-    MODIFIERS = MODIFIERS.concat(getModifiersFromProps(props));
-    MODIFIERS = MODIFIERS.filter((item, pos) => MODIFIERS.indexOf(item) === pos);
-    MODIFIERS = MODIFIERS.filter(Boolean);
-
-    CLASSES += generateElementClasses({ NAMESPACE: SELECTOR, MODIFIERS, MODIFIERGLUE, SINGLECLASS });
-
-    const foo = { ...this.props };
-
-    delete foo.as;
-    delete foo.name;
-    delete foo.styles;
-    delete foo.config;
-    delete foo.component;
-
-    /** */
     const ATTRIBUTES = {
       ...this.getDataAttributes(props),
       ...this.getEventHandlers(props),
@@ -416,15 +383,15 @@ export default class Module extends React.Component {
       onBlur: this.handleBlur.bind(this),
 
       id: props.id ? this.ID : null,
-      className: GENERATECLASSES ? CLASSES : null,
-      'data-module': GENERATEDATAATTRIBUTES ? this.NAMESPACE : null,
+      className: generateElementClasses(props, { NAMESPACE, GENERATECLASSES, MODIFIERGLUE, SINGLECLASS }),
+      'data-module': GENERATEDATAATTRS ? this.NAMESPACE : null,
 
       ...(typeof this.TAG === 'function' || props.as ? {
         name: props.as.name || props.as,
-        apply: this.apply,
+        apply: this.APPLY,
         hostref: this.REF,
         
-        ...foo
+        ...removeLucidProps(this.props)
       } : {
         ref: this.REF
       })
@@ -437,17 +404,15 @@ export default class Module extends React.Component {
           this.SETWRAPPERSTYLES = moduleContext.setWrapperStyles;
           this.CONTEXT = moduleContext;
           this.STYLES = this.getStyles(this.DATA, this.stylesConfig({ context: moduleContext }));
-
-          this.apply[this.NAMESPACE] = this.apply[this.NAMESPACE] || {
-            styles: this.DATA, config: this.CONFIG
-          };
+          this.APPLY[this.NAMESPACE] = this.APPLY[this.NAMESPACE] || {  styles: this.DATA, config: this.CONFIG }
 
           if (this.REF.current && !props.apply) {
+            // for some reason, componentDidUpdate() does not get called after this
+            // render, so we must apply the updated styles manually during render
             this.paint(this.REF.current, this.DATA, this.stylesConfig());
           }
 
-          const before = this.STYLES[':before'];
-          const after = this.STYLES[':after'];
+          const before = this.STYLES[':before'], after = this.STYLES[':after'];
 
           /** */
           const contextValues = {
@@ -465,7 +430,7 @@ export default class Module extends React.Component {
             COMPONENTGLUE,
             SINGLECLASS,
             GENERATECLASSES,
-            GENERATEDATAATTRIBUTES,
+            GENERATEDATAATTRS,
 
             ...(!props.permeable && { 
               NAMESPACE: typeof props.as === 'string' ? this.CONTEXT.NAMESPACE : this.NAMESPACE 
@@ -479,16 +444,7 @@ export default class Module extends React.Component {
             }
           }
 
-          let content = (typeof props.content !== 'boolean' && props.content) || props.render || props.children;
-
-          if (typeof content === 'function') {
-            content = content({ 
-              theme: this.THEME,
-              utils: this.UTILS,
-              config: this.CONFIG, 
-              context: contextValues 
-            });
-          }
+          const CONTENT = (typeof props.content !== 'boolean' && props.content) || props.render || props.children;
 
           return (
             <ModuleContext.Provider value={contextValues}>
@@ -496,7 +452,12 @@ export default class Module extends React.Component {
                 <this.TAG {...ATTRIBUTES}>
                   {before && <Component name=':before' referer={this.NAMESPACE}>{before.content}</Component>}
 
-                  {content}
+                  {typeof CONTENT === 'function' ? CONTENT({ 
+                    theme: this.THEME,
+                    utils: this.UTILS,
+                    config: this.CONFIG, 
+                    context: contextValues 
+                  }) : CONTENT}
 
                   {after && <Component name=':after' referer={this.NAMESPACE}>{after.content}</Component>}
                 </this.TAG>
