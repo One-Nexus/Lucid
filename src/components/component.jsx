@@ -8,6 +8,14 @@ if (typeof React === 'undefined') {
 
 /** Render a Synergy component */
 export default class Component extends Module {
+  constructor(props) {
+    super(props);
+
+    this.state = { tag: this.TAG, setTag: this.setTag }
+  }
+
+  setTag = tag => this.setState({ tag });
+
   render() {
     this.DATA = this.context.STYLES[this.NAMESPACE];
     this.SETWRAPPERSTYLES = this.context.setWrapperStyles;
@@ -20,11 +28,10 @@ export default class Component extends Module {
     const before = this.STYLES[':before'], after = this.STYLES[':after'];
     const props = { ...this.context[this.context.NAMESPACE][this.NAMESPACE], ...this.props };
     const { MODIFIERGLUE, COMPONENTGLUE, SINGLECLASS, GENERATECLASSES } = this.context;
-    const TAG = (props.href && 'a') || props.component || props.tag || 'div';
     const STRICT_NAMESPACE = (props.subComponent ? this.context.STRICT_NAMESPACE : this.context.NAMESPACE) + COMPONENTGLUE + this.NAMESPACE;
     const SELECTOR = props.subComponent ? STRICT_NAMESPACE : this.context.NAMESPACE + COMPONENTGLUE + this.NAMESPACE;
 
-    const ATTRIBUTES = {
+    const ATTRIBUTES = this.NAMESPACE === 'body' && this.state.tag === React.Fragment ? {} : {
       ...this.getDataAttributes(props),
       ...this.getEventHandlers(props),
       ...this.getInputAttributes(props),
@@ -66,14 +73,14 @@ export default class Component extends Module {
 
     return (
       <ModuleContext.Provider value={contextValues}>
-        {htmlVoidElements.includes(TAG) ? <TAG {...ATTRIBUTES} /> : (
-          <TAG {...ATTRIBUTES}>
+        {htmlVoidElements.includes(props.TAG) ? <this.state.TAG {...ATTRIBUTES} /> : (
+          <this.state.tag {...ATTRIBUTES}>
             {before && <Component name=':before' referer={this.NAMESPACE}>{before.content}</Component>}
 
             {props.content || props.children}
 
             {after && <Component name=':after' referer={this.NAMESPACE}>{after.content}</Component>}
-          </TAG>
+          </this.state.tag>
         )}
       </ModuleContext.Provider>
     );

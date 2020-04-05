@@ -344,6 +344,12 @@ export default class Module extends React.Component {
   /** Lifecycle Methods */
 
   componentDidMount() {
+    if (this.NAMESPACE === 'body' && this.context.HOST) {
+      if (this.context.NAMESPACE === this.context[this.NAMESPACE]?.context.NAMESPACE) {
+        this.context[this.NAMESPACE].setTag(React.Fragment);
+      }
+    }
+
     if (this.REF.current) {
       this.setStyleStates();
     }
@@ -417,6 +423,8 @@ export default class Module extends React.Component {
           /** */
           const contextValues = {
             ...moduleContext,
+
+            ...(props.as && { HOST: props.as }),
 
             THEME: this.THEME,
             CONFIG: this.CONFIG,
