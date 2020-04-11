@@ -5,11 +5,12 @@ export default (config = {}, theme = useTheme(), props) => {
   let CONFIG = config;
 
   if (config.config && !props) {
-    CONFIG = config.config, props = config;
+    CONFIG = config.config, props = { ...config };
   }
 
-  // this prop causes an infinite loop in deepextend() for some reason
+  // these props causes an infinite loop in deepextend() for some reason
   delete props.hostref;
+  delete props.children;
 
   const evaluatedConfig = (typeof CONFIG === 'function') ? CONFIG(theme) : CONFIG;
   const themeConfig = (theme.modules && theme.modules[evaluatedConfig.name]) || {};

@@ -3,6 +3,7 @@ import evalTheme from '../utilities/evalTheme';
 import mergeThemes from '../utilities/mergeThemes';
 import deepextend from '../utilities/deepMergeObjects';
 import generateElementClasses from '../utilities/generateElementClasses';
+import getNodeFromRef from '../utilities/getNodeFromRef';
 import removeLucidProps from '../utilities/removeLucidProps';
 import { UIContext } from './provider';
 
@@ -28,7 +29,7 @@ export default class Module extends React.Component {
 
     var Synergy = window.Synergy || {};
 
-    this.REF = props.hostref || React.createRef();
+    this.REF = React.createRef();
     this.DATA = props.styles;
     this.THEME = evalTheme(mergeThemes(context.theme, window.theme, props.theme));
     this.UTILS = context.utils || window.utils;
@@ -46,9 +47,9 @@ export default class Module extends React.Component {
     this.SINGLECLASS = props.singleClass ?? this.THEME.singleClass ?? this.CONFIG.singleClass;
     this.GENERATECLASSES = props.generateClasses ?? this.THEME.generateClasses ?? this.CONFIG.generateClasses;
     this.GENERATEDATAATTRS = props.generateDataAttributes ?? this.THEME.generateDataAttributes ?? this.CONFIG.generateDataAttributes;
+    this.HASHOSTLUCIDMODULE = ['React.createElement(Module', 'function Component(props)'].some(str => this.TAG.toString().includes(str));
   
-    this.state = {}
-    this.APPLY = { ...props.apply }
+    this.state = {}, this.APPLY = { ...props.apply }
   }
 
   /** Get Attributes */
@@ -283,8 +284,8 @@ export default class Module extends React.Component {
           return error;
         }
       }
-
-      node.style[key] = value;
+  
+      node.style[key] = value; 
     });
   
     const WRAPPERSTYLES = this.STYLES.wrapper || this.STYLES.group;
@@ -295,12 +296,8 @@ export default class Module extends React.Component {
   }
 
   setStyleStates(prevState = this.state) {
-    if (!this.REF.current) return;
-
-    const NODE = this.REF.current;
-
-    const [prevIsFirstChild, isFirstChild] = [prevState.isFirstChild, NODE === NODE.parentNode.firstChild];
-    const [prevIsLastChild, isLastChild] = [prevState.isLastChild, NODE === NODE.parentNode.lastChild];
+    const [prevIsFirstChild, isFirstChild] = [prevState.isFirstChild, this.NODE === this.NODE.parentNode.firstChild];
+    const [prevIsLastChild, isLastChild] = [prevState.isLastChild, this.NODE === this.NODE.parentNode.lastChild];
 
     if (prevIsFirstChild !== isFirstChild) {
       this.setState({ isFirstChild });
@@ -318,58 +315,68 @@ export default class Module extends React.Component {
   /** Event Handlers */
 
   handleMouseEnter(event) {
-    this.props.onMouseEnter && this.props.onMouseEnter(event);
+    if (!this.NODE || this.NODE.disabled) {
+      return;
+    }
 
+    this.props.onMouseEnter && this.props.onMouseEnter(event);
     this.setState({ isHovered: true, ':hover': true });
   }
 
   handleMouseLeave(event) {
     this.props.onMouseLeave && this.props.onMouseLeave(event);
-
     this.setState({ isHovered: false, ':hover': false });
   }
 
   handleFocus(event) {
     this.props.onFocus && this.props.onFocus(event);
-
     this.setState({ isFocused: true, ':focus': true });
   }
 
   handleBlur(event) {
     this.props.onBlur && this.props.onBlur(event);
-
     this.setState({ isFocused: false, ':focus': false });
   }
 
   /** Lifecycle Methods */
 
   componentDidMount() {
+    this.NODE = getNodeFromRef(this.REF);
+
     if (this.NAMESPACE === 'body' && this.context.HOST) {
       if (this.context.NAMESPACE === this.context[this.NAMESPACE]?.context.NAMESPACE) {
         this.context[this.NAMESPACE].setTag(React.Fragment);
       }
     }
 
-    if (this.REF.current) {
+    if (this.NODE instanceof HTMLElement) {
+      this.NODE.classList.add('is-painting');
       this.setStyleStates();
     }
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (!prevState.length && JSON.stringify(this.state) === JSON.stringify(prevState)) {
-      this.setStyleStates(prevState);
-    }
+    this.NODE = getNodeFromRef(this.REF);
 
-    Object.values(this.APPLY).forEach(({ styles, config }) => {
-      this.paint(this.REF.current, styles, this.stylesConfig({ config }));
-    });
+    // console.log(ReactDOM.findDOMNode(this.REF.current));
+    console.log(this.REF.current);
+  
+    if (this.NODE instanceof HTMLElement) {
+      if (!prevState.length && JSON.stringify(this.state) === JSON.stringify(prevState)) {
+        this.setStyleStates(prevState);
+      }
+
+      Object.values(this.APPLY).forEach(({ styles, config }) => {
+        this.paint(this.NODE, styles, this.stylesConfig({ config }));
+      });
+    
+      if (this.NODE.classList.contains('is-painting')) {
+        this.NODE.classList.remove('is-painting');
+      }
+    }
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    if (this.props.as) {
-      return false;
-    }
-
     return true;
   }
 
@@ -391,11 +398,10 @@ export default class Module extends React.Component {
       id: props.id ? this.ID : null,
       className: generateElementClasses(props, { NAMESPACE, GENERATECLASSES, MODIFIERGLUE, SINGLECLASS }),
       'data-module': GENERATEDATAATTRS ? this.NAMESPACE : null,
-
-      ...(typeof this.TAG === 'function' || props.as ? {
+      
+      ...(this.HASHOSTLUCIDMODULE ? {
         name: props.as.name || props.as,
         apply: this.APPLY,
-        hostref: this.REF,
         
         ...removeLucidProps(this.props)
       } : {
@@ -415,6 +421,7 @@ export default class Module extends React.Component {
           if (this.REF.current && !props.apply) {
             // for some reason, componentDidUpdate() does not get called after this
             // render, so we must apply the updated styles manually during the render
+            // - used when painting elements based off a context change
             this.paint(this.REF.current, this.DATA, this.stylesConfig());
           }
 
@@ -423,8 +430,6 @@ export default class Module extends React.Component {
           /** */
           const contextValues = {
             ...moduleContext,
-
-            ...(props.as && { HOST: props.as }),
 
             THEME: this.THEME,
             CONFIG: this.CONFIG,
@@ -443,6 +448,8 @@ export default class Module extends React.Component {
             ...(!props.permeable && { 
               NAMESPACE: typeof props.as === 'string' ? this.CONTEXT.NAMESPACE : this.NAMESPACE 
             }),
+
+            ...(props.as && { HOST: props.as }),
 
             SETWRAPPERSTYLES: this.props.setWrapperStyles,
 

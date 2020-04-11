@@ -1,11 +1,17 @@
 export default function getNodeFromRef(ref) {
-  if (ref.current instanceof HTMLElement) {
-    return ref.current;
-  } 
-  else if (ref.current) {
-    return getNodeFromRef(ref.current.REF);
-  } 
-  else {
+  const { current } = ref;
+
+  if (!current) {
     return;
   }
+
+  if (current instanceof HTMLElement) {
+    return current;
+  }
+
+  if (current.instance) {
+    return current.instance._reactInternalFiber.child.stateNode;
+  }
+
+  return;
 }

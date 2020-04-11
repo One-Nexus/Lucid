@@ -42,6 +42,7 @@ export default class Component extends Module {
       onFocus: this.handleFocus.bind(this),
       onBlur: this.handleBlur.bind(this),
       ref: this.REF,
+      // ref: foo => ({ current: 'hi '}),
 
       className: generateElementClasses(this.props, { NAMESPACE: SELECTOR, GENERATECLASSES, MODIFIERGLUE, SINGLECLASS }),
       'data-component': this.context.GENERATEDATAATTRS ? this.NAMESPACE : null,
