@@ -3,7 +3,7 @@ import evalTheme from '../utilities/evalTheme';
 import mergeThemes from '../utilities/mergeThemes';
 import deepextend from '../utilities/deepMergeObjects';
 import generateElementClasses from '../utilities/generateElementClasses';
-import getNodeFromRef from '../utilities/getNodeFromRef';
+import camelCase from 'camelcase';
 import removeLucidProps from '../utilities/removeLucidProps';
 import { UIContext } from './provider';
 
@@ -48,8 +48,9 @@ export default class Module extends React.Component {
     this.GENERATECLASSES = props.generateClasses ?? this.THEME.generateClasses ?? this.CONFIG.generateClasses;
     this.GENERATEDATAATTRS = props.generateDataAttributes ?? this.THEME.generateDataAttributes ?? this.CONFIG.generateDataAttributes;
     this.HASHOSTLUCIDMODULE = ['React.createElement(Module', 'function Component(props)'].some(str => this.TAG.toString().includes(str));
-  
-    this.state = {}, this.APPLY = { ...props.apply }
+
+    this.FOO = {};
+    this.state = {};
   }
 
   /** Get Attributes */
@@ -139,40 +140,6 @@ export default class Module extends React.Component {
       },
       element: this.REF.current || document.createElement('span')
     }
-  }
-
-  getStyles(styles = {}, options) {
-    if (typeof styles === 'function') {
-      styles = styles(options);
-    }
-
-    if (styles instanceof Array) {
-      styles = this.flattenStyles(styles, options);
-    }
-  
-    return styles;
-  }
-
-  flattenStyles(styles, options) {
-    return styles.reduce((accumulator, item) => {
-      if (!item) return accumulator;
-
-      if (typeof item === 'function') {
-        item = item(options);
-      }
-
-      Object.entries(item).forEach(entry => {
-        const key = entry[0]; const val = entry[1];
-
-        if (accumulator.hasOwnProperty(key)) {
-          accumulator[key] = accumulator[key] instanceof Array ? accumulator[key].concat(val) : [accumulator[key], val];
-        } else {
-          accumulator[key] = val;
-        }
-      });
-
-      return accumulator;
-    }, {});
   }
 
   paint(node, styles = {}, options, { prevNamespace } = {}) {
@@ -267,57 +234,94 @@ export default class Module extends React.Component {
       }
 
       // @TODO - revist this feature (and the correspnding docs)
-      // if (value instanceof Array) {
-      //   node = value[0], styles = value[1];
+      if (value instanceof Array) {
+        // node = value[0], styles = value[1];
 
-      //   try {
-      //     return this.paint(node(), styles, options);
-      //   } catch(error) {
-      //     return error;
-      //   }
-      // }
+        // try {
+        //   return this.paint(node(), styles, options);
+        // } catch(error) {
+        //   return error;
+        // }
+      }
 
-      if (typeof value === 'function' && window.getComputedStyle(node).getPropertyValue(key)) {
+      const EVALUATEDKEY = /^[%*:$]/.test(key) ? key : camelCase(key);
+
+      if (typeof value === 'function' && window.getComputedStyle(document.body).getPropertyValue(key)) {
         try {
-          value = value(node.style[key]);
-        } catch(error) {
-          return error;
+          value = value(this.FOO[EVALUATEDKEY]);
+        } catch {
+          value = value;
+        }
+        // value = value(this.FOO[key]);
+      }
+
+      if (EVALUATEDKEY === 'children') {
+        return;
+      }
+
+      if (this.FOO.hasOwnProperty(EVALUATEDKEY) && ['object', 'function'].some($ => typeof value === $)) {
+        const PROP = this.FOO[EVALUATEDKEY];
+
+        if (PROP instanceof Array) {
+          if (typeof value === 'function') {
+            value = PROP.some($ => $.toString() === value.toString()) ? PROP : PROP.concat(value);
+          } else {
+            value = PROP.includes(value) ? PROP : PROP.concat(value);
+          }
+        } else if (PROP !== value) {
+          if (!(typeof value === 'function' && PROP.toString() === value.toString())) {
+            value = [PROP, value];
+          }
         }
       }
-  
-      node.style[key] = value; 
+
+      this.FOO = { ...this.FOO, [EVALUATEDKEY]: value };
     });
   
-    const WRAPPERSTYLES = this.STYLES.wrapper || this.STYLES.group;
+    // const WRAPPERSTYLES = this.STYLES.wrapper || this.STYLES.group;
 
-    if (WRAPPERSTYLES && this.SETWRAPPERSTYLES) {
-      this.SETWRAPPERSTYLES(WRAPPERSTYLES);
-    }
+    // if (WRAPPERSTYLES && this.SETWRAPPERSTYLES) {
+    //   this.SETWRAPPERSTYLES(WRAPPERSTYLES);
+    // }
   }
 
   setStyleStates(prevState = this.state) {
-    const [prevIsFirstChild, isFirstChild] = [prevState.isFirstChild, this.NODE === this.NODE.parentNode.firstChild];
-    const [prevIsLastChild, isLastChild] = [prevState.isLastChild, this.NODE === this.NODE.parentNode.lastChild];
+    const CONTEXT = { ...this.context, ...this.CONTEXT }
+    const PARENT = CONTEXT[CONTEXT.PARENT];
 
-    if (prevIsFirstChild !== isFirstChild) {
-      this.setState({ isFirstChild });
-    }
+    let INDEX;
 
-    if (prevIsLastChild !== isLastChild) {
-      this.setState({ isLastChild });
-    }
+    if (PARENT?.children) {
+      React.Children.forEach(PARENT.children, ($, i) => {
+        if (!$) {
+          return;
+        }
+        if (this.props.children === $.props.children) {
+          INDEX = i;
+        }
+        else if (this.props.styles && this.props.styles === $.props.styles) {
+          INDEX = i;
+        }
+      });
 
-    if (!this.StyleStatesApplied) {
-      this.StyleStatesApplied = true;
-    }
+      const [isFirstChild, isLastChild] = [INDEX === 0, INDEX === React.Children.count(PARENT.children) - 1];
+
+      if (prevState.isFirstChild !== isFirstChild) {
+        this.setState({ isFirstChild });
+      }
+
+      if (prevState.isLastChild !== isLastChild) {
+        this.setState({ isLastChild });
+      }
+    } 
   }
 
   /** Event Handlers */
 
   handleMouseEnter(event) {
-    if (!this.NODE || this.NODE.disabled) {
-      return;
-    }
+    // if (!this.NODE || this.NODE.disabled) {
+    //   return;
+    // }
 
     this.props.onMouseEnter && this.props.onMouseEnter(event);
     this.setState({ isHovered: true, ':hover': true });
@@ -341,38 +345,18 @@ export default class Module extends React.Component {
   /** Lifecycle Methods */
 
   componentDidMount() {
-    this.NODE = getNodeFromRef(this.REF);
-
     if (this.NAMESPACE === 'body' && this.context.HOST) {
       if (this.context.NAMESPACE === this.context[this.NAMESPACE]?.context.NAMESPACE) {
         this.context[this.NAMESPACE].setTag(React.Fragment);
       }
     }
 
-    if (this.NODE instanceof HTMLElement) {
-      this.NODE.classList.add('is-painting');
-      this.setStyleStates();
-    }
+    this.setStyleStates();
   }
 
   componentDidUpdate(prevProps, prevState) {
-    this.NODE = getNodeFromRef(this.REF);
-
-    // console.log(ReactDOM.findDOMNode(this.REF.current));
-    console.log(this.REF.current);
-  
-    if (this.NODE instanceof HTMLElement) {
-      if (!prevState.length && JSON.stringify(this.state) === JSON.stringify(prevState)) {
-        this.setStyleStates(prevState);
-      }
-
-      Object.values(this.APPLY).forEach(({ styles, config }) => {
-        this.paint(this.NODE, styles, this.stylesConfig({ config }));
-      });
-    
-      if (this.NODE.classList.contains('is-painting')) {
-        this.NODE.classList.remove('is-painting');
-      }
+    if (!prevState.length && JSON.stringify(this.state) === JSON.stringify(prevState)) {
+      this.setStyleStates(prevState);
     }
   }
 
@@ -384,48 +368,40 @@ export default class Module extends React.Component {
     const { props } = this;
     const { NAMESPACE, MODIFIERGLUE, COMPONENTGLUE, SINGLECLASS, GENERATECLASSES, GENERATEDATAATTRS } = this;
 
-    const ATTRIBUTES = {
-      ...this.getDataAttributes(props),
-      ...this.getEventHandlers(props),
-      ...this.getInputAttributes(props),
-      ...props.attributes,
-
-      onMouseEnter: this.handleMouseEnter.bind(this),
-      onMouseLeave: this.handleMouseLeave.bind(this),
-      onFocus: this.handleFocus.bind(this),
-      onBlur: this.handleBlur.bind(this),
-
-      id: props.id ? this.ID : null,
-      className: generateElementClasses(props, { NAMESPACE, GENERATECLASSES, MODIFIERGLUE, SINGLECLASS }),
-      'data-module': GENERATEDATAATTRS ? this.NAMESPACE : null,
-      
-      ...(this.HASHOSTLUCIDMODULE ? {
-        name: props.as.name || props.as,
-        apply: this.APPLY,
-        
-        ...removeLucidProps(this.props)
-      } : {
-        ref: this.REF
-      })
-    }
-
     return (
       <ModuleContext.Consumer>
         {moduleContext => {
           this.DATA = this.DATA || props.styles;
           this.SETWRAPPERSTYLES = moduleContext.setWrapperStyles;
           this.CONTEXT = moduleContext;
-          this.STYLES = this.getStyles(this.DATA, this.stylesConfig({ context: moduleContext }));
-          this.APPLY[this.NAMESPACE] = this.APPLY[this.NAMESPACE] || {  styles: this.DATA, config: this.CONFIG }
+  
+          this.paint(this.REF, this.DATA, this.stylesConfig());
+      
+          const ATTRIBUTES = {
+            ...this.getDataAttributes(props),
+            ...this.getEventHandlers(props),
+            ...this.getInputAttributes(props),
+            ...props.attributes,
+      
+            onMouseEnter: this.handleMouseEnter.bind(this),
+            onMouseLeave: this.handleMouseLeave.bind(this),
+            onFocus: this.handleFocus.bind(this),
+            onBlur: this.handleBlur.bind(this),
 
-          if (this.REF.current && !props.apply) {
-            // for some reason, componentDidUpdate() does not get called after this
-            // render, so we must apply the updated styles manually during the render
-            // - used when painting elements based off a context change
-            this.paint(this.REF.current, this.DATA, this.stylesConfig());
+            ref: this.ref,
+      
+            style: { ...props.style, ...this.FOO },
+            id: props.id ? this.ID : null,
+            className: generateElementClasses(props, { NAMESPACE, GENERATECLASSES, MODIFIERGLUE, SINGLECLASS }),
+            'data-module': GENERATEDATAATTRS ? this.NAMESPACE : null,
+            
+            ...(this.HASHOSTLUCIDMODULE && {
+              name: props.as.name || props.as,
+              ...removeLucidProps(this.props)
+            })
           }
 
-          const before = this.STYLES[':before'], after = this.STYLES[':after'];
+          const before = this.FOO[':before'], after = this.FOO[':after'];
 
           /** */
           const contextValues = {
@@ -436,7 +412,7 @@ export default class Module extends React.Component {
 
             STYLES: {
               ...moduleContext.STYLES,
-              ...this.STYLES
+              ...this.FOO
             },
 
             MODIFIERGLUE, 
@@ -452,6 +428,8 @@ export default class Module extends React.Component {
             ...(props.as && { HOST: props.as }),
 
             SETWRAPPERSTYLES: this.props.setWrapperStyles,
+
+            PARENT: this.NAMESPACE,
 
             [this.NAMESPACE]: {
               ...props,

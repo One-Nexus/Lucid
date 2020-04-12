@@ -19,13 +19,11 @@ export default class Component extends Module {
   render() {
     this.DATA = this.context.STYLES[this.NAMESPACE];
     this.SETWRAPPERSTYLES = this.context.setWrapperStyles;
-    this.APPLY[this.NAMESPACE] = this.APPLY[this.NAMESPACE] || { styles: this.DATA, config: this.CONFIG }
 
-    this.STYLES = this.StyleStatesApplied ? this.getStyles(this.DATA, this.stylesConfig({ 
-      theme: this.context.THEME, config: this.context.CONFIG
-    })) : {};
+    this.FOO = {};
+    this.paint(this.REF, this.DATA, this.stylesConfig());
       
-    const before = this.STYLES[':before'], after = this.STYLES[':after'];
+    const before = this.FOO[':before'], after = this.FOO[':after'];
     const props = { ...this.context[this.context.NAMESPACE][this.NAMESPACE], ...this.props };
     const { MODIFIERGLUE, COMPONENTGLUE, SINGLECLASS, GENERATECLASSES } = this.context;
     const STRICT_NAMESPACE = (props.subComponent ? this.context.STRICT_NAMESPACE : this.context.NAMESPACE) + COMPONENTGLUE + this.NAMESPACE;
@@ -41,9 +39,10 @@ export default class Component extends Module {
       onMouseLeave: this.handleMouseLeave.bind(this),
       onFocus: this.handleFocus.bind(this),
       onBlur: this.handleBlur.bind(this),
-      ref: this.REF,
-      // ref: foo => ({ current: 'hi '}),
 
+      ref: this.REF,
+
+      style: { ...props.style, ...this.FOO },
       className: generateElementClasses(this.props, { NAMESPACE: SELECTOR, GENERATECLASSES, MODIFIERGLUE, SINGLECLASS }),
       'data-component': this.context.GENERATEDATAATTRS ? this.NAMESPACE : null,
       'data-sub-component': this.context.GENERATEDATAATTRS ? props.subComponent : null
@@ -66,12 +65,14 @@ export default class Component extends Module {
 
       STYLES: { 
         ...this.context.STYLES, 
-        ...this.STYLES
+        ...this.FOO
       },
+
+      PARENT: this.NAMESPACE,
 
       STRICT_NAMESPACE
     }
-
+  
     return (
       <ModuleContext.Provider value={contextValues}>
         {htmlVoidElements.includes(props.TAG) ? <this.state.TAG {...ATTRIBUTES} /> : (
