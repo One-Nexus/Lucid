@@ -1,3 +1,4 @@
+import { findDOMNode } from 'react-dom';
 import htmlVoidElements from 'html-void-elements';
 import evalTheme from '../utilities/evalTheme';
 import mergeThemes from '../utilities/mergeThemes';
@@ -50,7 +51,13 @@ export default class Module extends React.Component {
     this.HASHOSTLUCIDMODULE = ['React.createElement(Module', 'function Component(props)'].some(str => this.TAG.toString().includes(str));
 
     this.FOO = {};
-    this.state = {};
+    this.state = { CHILDREN: [] };
+    this.CHILDREN = [];
+  }
+
+  setParentChild = child => {
+    this.CHILDREN = [...this.CHILDREN, child];
+    this.setState({ CHILDREN: this.CHILDREN });
   }
 
   /** Get Attributes */
@@ -122,36 +129,30 @@ export default class Module extends React.Component {
 
   /** Styling */
 
-  stylesConfig({ theme = this.THEME, config = this.CONFIG, context = this.CONTEXT, utils = this.UTILS, state } = {}) {
+  stylesConfig({ theme = this.THEME, config = this.CONFIG, context = this.CONTEXT, utils = this.UTILS } = {}) {
     return {
       theme,
       config,
       utils,
-      context: { 
-        ...this.context, 
-        ...context 
-      },
+      context,
       state: { 
         ...this.state, 
         ...this.context[this.NAMESPACE], 
         ...this.props,
         ...(this.props.modifiers?.length && Object.assign(...this.props.modifiers.map((prop) => ({ [prop]: true })))),
-        ...state
-      },
-      element: this.REF.current || document.createElement('span')
+      }
     }
   }
 
-  paint(node, styles = {}, options, { prevNamespace } = {}) {
+  paint(styles = {}, options, { prevNamespace } = {}) {
     if (typeof styles === 'function') {
       styles = styles(options);
     }
 
     if (styles instanceof Array) {
-      return styles.forEach(style => this.paint(node, style, options));
+      return styles.forEach(style => this.paint(style, options));
     }
   
-    /** Cell Query */
     Object.entries(styles).forEach(style => {
       const key = style[0]; let value = style[1];
 
@@ -164,19 +165,19 @@ export default class Module extends React.Component {
         }
 
         if (options[CONTEXT] || options.state[CONTEXT]) {
-          return this.paint(node, value, options);
+          return this.paint(value, options);
         }
 
         return;
       }
 
-      /**  Determine if parent module/block is queried modifier/state */
+      /** Determine if parent module/block is queried modifier/state */
       if (key.indexOf('$-is-') === 0 || key.indexOf('$:') === 0) {
         const MODULE = options.context.NAMESPACE;
         const CONTEXT = key.indexOf('$:') === 0 ? key.slice(1, key.length) : key.slice(5, key.length);
 
         if (options.context[MODULE][CONTEXT]) {
-          return this.paint(node, value, options);
+          return this.paint(value, options);
         }
 
         return;
@@ -187,7 +188,7 @@ export default class Module extends React.Component {
         const CONTEXT = key.indexOf('and:') === 0 ? key.replace('and', '') : key.replace('and-is-', '');
 
         if (options.context[prevNamespace][CONTEXT]) {
-          return this.paint(node, value, options, { prevNamespace });
+          return this.paint(value, options, { prevNamespace });
         }
 
         return;
@@ -199,9 +200,7 @@ export default class Module extends React.Component {
         const CONTEXT = key.indexOf(':') > 0 ? key.slice(key.indexOf(':'), key.length) : key.slice(key.indexOf('-is-') + 4, key.length);
 
         if (options.context[COMPONENT][CONTEXT]) {
-          return this.paint(node, value, options, { 
-            prevNamespace: COMPONENT
-          });
+          return this.paint(value, options, { prevNamespace: COMPONENT });
         }
 
         return;
@@ -212,36 +211,24 @@ export default class Module extends React.Component {
         const COMPONENT = key.replace('in-', '');
 
         if (options.context[COMPONENT]) {
-          return this.paint(node, value, options, {
-            prevNamespace: COMPONENT
-          });
+          return this.paint(value, options, { prevNamespace: COMPONENT });
         }
 
         return;
       }
 
-      /** Key defines pseudo-state */
+      /** Key defines hover pseudo-state */
       if (key === 'hover') {
         if (options.state[':hover']) {
-          return this.paint(node, value, options);
+          return this.paint(value, options);
         }
       }
 
+      /** Key defines pseudo-state */
       if (key.indexOf(':') === 0) {
         if (options.state[key]) {
-          return this.paint(node, value, options);
+          return this.paint(value, options);
         }
-      }
-
-      // @TODO - revist this feature (and the correspnding docs)
-      if (value instanceof Array) {
-        // node = value[0], styles = value[1];
-
-        // try {
-        //   return this.paint(node(), styles, options);
-        // } catch(error) {
-        //   return error;
-        // }
       }
 
       const EVALUATEDKEY = /^[%*:$]/.test(key) ? key : camelCase(key);
@@ -255,7 +242,7 @@ export default class Module extends React.Component {
         // value = value(this.FOO[key]);
       }
 
-      if (EVALUATEDKEY === 'children') {
+      if (typeof value === 'undefined' || value === null || EVALUATEDKEY === 'children') {
         return;
       }
 
@@ -277,43 +264,25 @@ export default class Module extends React.Component {
 
       this.FOO = { ...this.FOO, [EVALUATEDKEY]: value };
     });
-  
-    // const WRAPPERSTYLES = this.STYLES.wrapper || this.STYLES.group;
-
-    // if (WRAPPERSTYLES && this.SETWRAPPERSTYLES) {
-    //   this.SETWRAPPERSTYLES(WRAPPERSTYLES);
-    // }
   }
 
-  setStyleStates(prevState = this.state) {
-    const CONTEXT = { ...this.context, ...this.CONTEXT }
-    const PARENT = CONTEXT[CONTEXT.PARENT];
+  setStyleStates(siblings = this.CONTEXT.CHILDREN) {
+    console.log(siblings);
 
-    let INDEX;
+    const INDEX = ~siblings.indexOf(this.ID) ? siblings.indexOf(this.ID) : this.props.index;
+    const [isFirstChild, isLastChild] = [INDEX === 0, INDEX === siblings.length - 1];
 
-    if (PARENT?.children) {
-      React.Children.forEach(PARENT.children, ($, i) => {
-        if (!$) {
-          return;
-        }
-        if (this.props.children === $.props.children) {
-          INDEX = i;
-        }
-        else if (this.props.styles && this.props.styles === $.props.styles) {
-          INDEX = i;
-        }
-      });
+    if (this.state.isFirstChild !== isFirstChild) {
+      this.setState({ isFirstChild });
+    }
 
-      const [isFirstChild, isLastChild] = [INDEX === 0, INDEX === React.Children.count(PARENT.children) - 1];
+    if (this.state.isLastChild !== isLastChild) {
+      this.setState({ isLastChild });
+    }
 
-      if (prevState.isFirstChild !== isFirstChild) {
-        this.setState({ isFirstChild });
-      }
-
-      if (prevState.isLastChild !== isLastChild) {
-        this.setState({ isLastChild });
-      }
-    } 
+    if (this.state.index !== INDEX) {
+      this.setState({ index: INDEX });
+    }
   }
 
   /** Event Handlers */
@@ -322,7 +291,6 @@ export default class Module extends React.Component {
     // if (!this.NODE || this.NODE.disabled) {
     //   return;
     // }
-
     this.props.onMouseEnter && this.props.onMouseEnter(event);
     this.setState({ isHovered: true, ':hover': true });
   }
@@ -351,17 +319,27 @@ export default class Module extends React.Component {
       }
     }
 
-    this.setStyleStates();
-  }
+    this.CONTEXT.CHILDREN && this.setStyleStates();
 
-  componentDidUpdate(prevProps, prevState) {
-    if (!prevState.length && JSON.stringify(this.state) === JSON.stringify(prevState)) {
-      this.setStyleStates(prevState);
+    if (this.CONTEXT.CHILDREN && !this.CONTEXT.CHILDREN.includes(this.ID)) {
+      this.CONTEXT.setParentChild?.(this.ID);
     }
   }
 
   shouldComponentUpdate(nextProps, nextState) {
     return true;
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (!prevState.length && JSON.stringify(this.state) === JSON.stringify(prevState)) {
+      this.CONTEXT.CHILDREN && this.setStyleStates();
+    }
+
+    const WRAPPERSTYLES = this.FOO.wrapper || this.FOO.group;
+
+    if (WRAPPERSTYLES && this.SETWRAPPERSTYLES) {
+      this.SETWRAPPERSTYLES(WRAPPERSTYLES);
+    }
   }
 
   render() {
@@ -371,11 +349,13 @@ export default class Module extends React.Component {
     return (
       <ModuleContext.Consumer>
         {moduleContext => {
+          this.CONTEXT = { ...this.context, ...moduleContext };
           this.DATA = this.DATA || props.styles;
-          this.SETWRAPPERSTYLES = moduleContext.setWrapperStyles;
-          this.CONTEXT = moduleContext;
+          this.SETWRAPPERSTYLES = moduleContext.SETWRAPPERSTYLES;
   
-          this.paint(this.REF, this.DATA, this.stylesConfig());
+          this.paint(this.DATA, this.stylesConfig());
+
+          const before = this.FOO[':before'], after = this.FOO[':after'];
       
           const ATTRIBUTES = {
             ...this.getDataAttributes(props),
@@ -387,11 +367,9 @@ export default class Module extends React.Component {
             onMouseLeave: this.handleMouseLeave.bind(this),
             onFocus: this.handleFocus.bind(this),
             onBlur: this.handleBlur.bind(this),
-
-            ref: this.ref,
       
             style: { ...props.style, ...this.FOO },
-            id: props.id ? this.ID : null,
+            id: this.ID,
             className: generateElementClasses(props, { NAMESPACE, GENERATECLASSES, MODIFIERGLUE, SINGLECLASS }),
             'data-module': GENERATEDATAATTRS ? this.NAMESPACE : null,
             
@@ -401,19 +379,12 @@ export default class Module extends React.Component {
             })
           }
 
-          const before = this.FOO[':before'], after = this.FOO[':after'];
-
           /** */
           const contextValues = {
-            ...moduleContext,
+            ...this.CONTEXT,
 
             THEME: this.THEME,
             CONFIG: this.CONFIG,
-
-            STYLES: {
-              ...moduleContext.STYLES,
-              ...this.FOO
-            },
 
             MODIFIERGLUE, 
             COMPONENTGLUE,
@@ -421,23 +392,35 @@ export default class Module extends React.Component {
             GENERATECLASSES,
             GENERATEDATAATTRS,
 
-            ...(!props.permeable && { 
-              NAMESPACE: typeof props.as === 'string' ? this.CONTEXT.NAMESPACE : this.NAMESPACE 
-            }),
-
-            ...(props.as && { HOST: props.as }),
-
             SETWRAPPERSTYLES: this.props.setWrapperStyles,
+            setParentChild: this.setParentChild.bind(this),
+            CHILDREN: this.state.CHILDREN,
 
-            PARENT: this.NAMESPACE,
+            STYLES: {
+              ...this.CONTEXT.STYLES,
+              ...this.FOO
+            },
 
             [this.NAMESPACE]: {
               ...props,
               ...this.state
-            }
+            },
+
+            ...(!props.permeable && { 
+              NAMESPACE: typeof props.as === 'string' ? this.CONTEXT.NAMESPACE : this.NAMESPACE 
+            }),
+
+            ...(props.as && { HOST: props.as })
           }
 
-          const CONTENT = (typeof props.content !== 'boolean' && props.content) || props.render || props.children;
+          let CONTENT = (typeof props.content !== 'boolean' && props.content) || props.render || props.children;
+
+          // IDK WTF this is required to cause children (in some given context) to re-render...
+          // ...re-rendering should be triggered when the above contextValues changes and is
+          // passed to <ModuleContext.Provider>, given that the children subscribe to this context
+          if (props.children) CONTENT = React.Children.map(CONTENT, (child => {
+            return React.isValidElement(child) ? React.cloneElement(child) : child;
+          }));
 
           return (
             <ModuleContext.Provider value={contextValues}>

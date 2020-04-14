@@ -17,11 +17,11 @@ export default class Component extends Module {
   setTag = tag => this.setState({ tag });
 
   render() {
+    this.CONTEXT = this.context;
     this.DATA = this.context.STYLES[this.NAMESPACE];
     this.SETWRAPPERSTYLES = this.context.setWrapperStyles;
 
-    this.FOO = {};
-    this.paint(this.REF, this.DATA, this.stylesConfig());
+    this.paint(this.DATA, this.stylesConfig());
       
     const before = this.FOO[':before'], after = this.FOO[':after'];
     const props = { ...this.context[this.context.NAMESPACE][this.NAMESPACE], ...this.props };
@@ -39,8 +39,6 @@ export default class Component extends Module {
       onMouseLeave: this.handleMouseLeave.bind(this),
       onFocus: this.handleFocus.bind(this),
       onBlur: this.handleBlur.bind(this),
-
-      ref: this.REF,
 
       style: { ...props.style, ...this.FOO },
       className: generateElementClasses(this.props, { NAMESPACE: SELECTOR, GENERATECLASSES, MODIFIERGLUE, SINGLECLASS }),
@@ -68,7 +66,7 @@ export default class Component extends Module {
         ...this.FOO
       },
 
-      PARENT: this.NAMESPACE,
+      CHILDREN: this.state.CHILDREN,
 
       STRICT_NAMESPACE
     }

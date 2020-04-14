@@ -11,9 +11,9 @@ export default class Wrapper extends React.Component {
   }
 
   applyStyles(styles) {
-    // if (JSON.stringify(styles) !== JSON.stringify(this.state.styles)) {
+    if (JSON.stringify(styles) !== JSON.stringify(this.state.styles)) {
       this.setState({ styles });
-    // }
+    }
   }
 
   render() {
