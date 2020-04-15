@@ -48,7 +48,7 @@ export default class Module extends React.Component {
     this.SINGLECLASS = props.singleClass ?? this.THEME.singleClass ?? this.CONFIG.singleClass;
     this.GENERATECLASSES = props.generateClasses ?? this.THEME.generateClasses ?? this.CONFIG.generateClasses;
     this.GENERATEDATAATTRS = props.generateDataAttributes ?? this.THEME.generateDataAttributes ?? this.CONFIG.generateDataAttributes;
-    this.HASHOSTLUCIDMODULE = ['React.createElement(Module', 'function Component(props)'].some(str => this.TAG.toString().includes(str));
+    this.HOSTISLUCIDELEMENT = ['React.createElement(Module', 'function Component(props)'].some(str => this.TAG.toString().includes(str));
 
     this.FOO = {};
     this.state = { CHILDREN: [] };
@@ -144,133 +144,149 @@ export default class Module extends React.Component {
     }
   }
 
-  paint(styles = {}, options, { prevNamespace } = {}) {
+  paint(styles = {}, options, { prevNamespace } = {}, accumulator = {}) {
     if (typeof styles === 'function') {
       styles = styles(options);
     }
 
     if (styles instanceof Array) {
-      return styles.forEach(style => this.paint(style, options));
+      return styles.forEach(style => this.paint(style, options, {}, accumulator));
     }
   
-    Object.entries(styles).forEach(style => {
-      const key = style[0]; let value = style[1];
+    accumulator = {
+      ...accumulator,
+  
+      ...Object.entries(styles).reduce((accumulator = accumulator, style) => {
+        const key = style[0]; let value = style[1];
 
-      /** Determine if current node is queried modifier/state */
-      if (key.indexOf('is-') === 0) {
-        const CONTEXT = key.replace('is-', '');
+        /** Determine if current node is queried modifier/state */
+        if (key.indexOf('is-') === 0) {
+          const CONTEXT = key.replace('is-', '');
 
-        if (options.state.name === ':before' || options.state.name === ':after') {
-          options = options.context[options.state.referer];
-        }
-
-        if (options[CONTEXT] || options.state[CONTEXT]) {
-          return this.paint(value, options);
-        }
-
-        return;
-      }
-
-      /** Determine if parent module/block is queried modifier/state */
-      if (key.indexOf('$-is-') === 0 || key.indexOf('$:') === 0) {
-        const MODULE = options.context.NAMESPACE;
-        const CONTEXT = key.indexOf('$:') === 0 ? key.slice(1, key.length) : key.slice(5, key.length);
-
-        if (options.context[MODULE][CONTEXT]) {
-          return this.paint(value, options);
-        }
-
-        return;
-      }
-
-      /** Determine if previously specified parent component is queried modifier/state */
-      if (key.indexOf('and-is-') === 0 || key.indexOf('and:') === 0) {
-        const CONTEXT = key.indexOf('and:') === 0 ? key.replace('and', '') : key.replace('and-is-', '');
-
-        if (options.context[prevNamespace][CONTEXT]) {
-          return this.paint(value, options, { prevNamespace });
-        }
-
-        return;
-      }
-
-      /** Determine if specified parent component is queried modifier/state */
-      if (key.indexOf('-is-') > -1 || key.indexOf(':') > 0) {
-        const COMPONENT = key.indexOf(':') > 0 ? key.slice(0, key.indexOf(':')) : key.slice(0, key.indexOf('-is-'));
-        const CONTEXT = key.indexOf(':') > 0 ? key.slice(key.indexOf(':'), key.length) : key.slice(key.indexOf('-is-') + 4, key.length);
-
-        if (options.context[COMPONENT][CONTEXT]) {
-          return this.paint(value, options, { prevNamespace: COMPONENT });
-        }
-
-        return;
-      }
-
-      /** Determine if current node is a child of the queried component/module */
-      if (key.indexOf('in-') === 0) {
-        const COMPONENT = key.replace('in-', '');
-
-        if (options.context[COMPONENT]) {
-          return this.paint(value, options, { prevNamespace: COMPONENT });
-        }
-
-        return;
-      }
-
-      /** Key defines hover pseudo-state */
-      if (key === 'hover') {
-        if (options.state[':hover']) {
-          return this.paint(value, options);
-        }
-      }
-
-      /** Key defines pseudo-state */
-      if (key.indexOf(':') === 0) {
-        if (options.state[key]) {
-          return this.paint(value, options);
-        }
-      }
-
-      const EVALUATEDKEY = /^[%*:$]/.test(key) ? key : camelCase(key);
-
-      if (typeof value === 'function' && window.getComputedStyle(document.body).getPropertyValue(key)) {
-        try {
-          value = value(this.FOO[EVALUATEDKEY]);
-        } catch {
-          value = value;
-        }
-        // value = value(this.FOO[key]);
-      }
-
-      if (typeof value === 'undefined' || value === null || EVALUATEDKEY === 'children') {
-        return;
-      }
-
-      if (this.FOO.hasOwnProperty(EVALUATEDKEY) && ['object', 'function'].some($ => typeof value === $)) {
-        const PROP = this.FOO[EVALUATEDKEY];
-
-        if (PROP instanceof Array) {
-          if (typeof value === 'function') {
-            value = PROP.some($ => $.toString() === value.toString()) ? PROP : PROP.concat(value);
-          } else {
-            value = PROP.includes(value) ? PROP : PROP.concat(value);
+          if (options.state.name === ':before' || options.state.name === ':after') {
+            options = options.context[options.state.referer];
           }
-        } else if (PROP !== value) {
-          if (!(typeof value === 'function' && PROP.toString() === value.toString())) {
-            value = [PROP, value];
+
+          if (options[CONTEXT] || options.state[CONTEXT]) {
+            return this.paint(value, options, {}, accumulator);
+          }
+
+          return;
+        }
+
+        /** Determine if parent module/block is queried modifier/state */
+        if (key.indexOf('$-is-') === 0 || key.indexOf('$:') === 0) {
+          const MODULE = options.context.NAMESPACE;
+          const CONTEXT = key.indexOf('$:') === 0 ? key.slice(1, key.length) : key.slice(5, key.length);
+
+          if (options.context[MODULE][CONTEXT]) {
+            return this.paint(value, options, {}, accumulator);
+          }
+
+          return;
+        }
+
+        /** Determine if previously specified parent component is queried modifier/state */
+        if (key.indexOf('and-is-') === 0 || key.indexOf('and:') === 0) {
+          const CONTEXT = key.indexOf('and:') === 0 ? key.replace('and', '') : key.replace('and-is-', '');
+
+          if (options.context[prevNamespace][CONTEXT]) {
+            return this.paint(value, options, { prevNamespace }, accumulator);
+          }
+
+          return;
+        }
+
+        /** Determine if specified parent component is queried modifier/state */
+        if (key.indexOf('-is-') > -1 || key.indexOf(':') > 0) {
+          const COMPONENT = key.indexOf(':') > 0 ? key.slice(0, key.indexOf(':')) : key.slice(0, key.indexOf('-is-'));
+          const CONTEXT = key.indexOf(':') > 0 ? key.slice(key.indexOf(':'), key.length) : key.slice(key.indexOf('-is-') + 4, key.length);
+
+          if (options.context[COMPONENT][CONTEXT]) {
+            return this.paint(value, options, { prevNamespace: COMPONENT }, accumulator);
+          }
+
+          return;
+        }
+
+        /** Determine if current node is a child of the queried component/module */
+        if (key.indexOf('in-') === 0) {
+          const COMPONENT = key.replace('in-', '');
+
+          if (options.context[COMPONENT]) {
+            return this.paint(value, options, { prevNamespace: COMPONENT }, accumulator);
+          }
+
+          return;
+        }
+
+        /** Key defines hover pseudo-state */
+        if (key === 'hover') {
+          if (options.state[':hover']) {
+            return this.paint(value, options, {}, accumulator);
           }
         }
-      }
 
-      this.FOO = { ...this.FOO, [EVALUATEDKEY]: value };
-    });
+        /** Key defines pseudo-state */
+        if (key.indexOf(':') === 0) {
+          if (options.state[key]) {
+            return this.paint(value, options, {}, accumulator);
+          }
+        }
+
+        const EVALUATEDKEY = /^[%*:$]/.test(key) ? key : camelCase(key);
+
+        if (typeof value === 'function' && window.getComputedStyle(document.body).getPropertyValue(key)) {
+          try {
+            value = value(this.FOO[EVALUATEDKEY]);
+          } catch {
+            value = value;
+          }
+          // value = value(this.FOO[key]);
+        }
+
+        if (typeof value === 'undefined' || value === null || EVALUATEDKEY === 'children') {
+          return;
+        }
+
+        if (this.FOO.hasOwnProperty(EVALUATEDKEY) && ['object', 'function'].some($ => typeof value === $)) {
+          const PROP = this.FOO[EVALUATEDKEY];
+
+          if (PROP instanceof Array) {
+            if (typeof value === 'function') {
+              value = PROP.some($ => $.toString() === value.toString()) ? PROP : PROP.concat(value);
+            } else {
+              value = PROP.includes(value) ? PROP : PROP.concat(value);
+            }
+          } else if (PROP !== value) {
+            if (!(typeof value === 'function' && PROP.toString() === value.toString())) {
+              value = [PROP, value];
+            }
+          }
+        }
+
+        this.FOO = { ...this.FOO, [EVALUATEDKEY]: value };
+
+        accumulator = { ...accumulator, [EVALUATEDKEY]: value };
+
+        return accumulator;
+      }, accumulator)
+    };
+
+    console.log(this.NAMESPACE, this.FOO, accumulator);
+
+    return accumulator;
   }
 
   setStyleStates(siblings = this.CONTEXT.CHILDREN) {
-    console.log(siblings);
+    let target = this.ID;
 
-    const INDEX = ~siblings.indexOf(this.ID) ? siblings.indexOf(this.ID) : this.props.index;
-    const [isFirstChild, isLastChild] = [INDEX === 0, INDEX === siblings.length - 1];
+    if (this.REF.current instanceof HTMLElement) {
+      target = this.REF.current, siblings = [...target.parentNode.childNodes];
+    }
+
+    const index = this.props.index ?? siblings.indexOf(target);
+    const [isFirstChild, isLastChild] = [index === 0, index === siblings.length - 1];
 
     if (this.state.isFirstChild !== isFirstChild) {
       this.setState({ isFirstChild });
@@ -280,8 +296,8 @@ export default class Module extends React.Component {
       this.setState({ isLastChild });
     }
 
-    if (this.state.index !== INDEX) {
-      this.setState({ index: INDEX });
+    if (this.state.index !== index) {
+      this.setState({ index });
     }
   }
 
@@ -313,27 +329,26 @@ export default class Module extends React.Component {
   /** Lifecycle Methods */
 
   componentDidMount() {
+    this.setStyleStates();
+  
     if (this.NAMESPACE === 'body' && this.context.HOST) {
       if (this.context.NAMESPACE === this.context[this.NAMESPACE]?.context.NAMESPACE) {
         this.context[this.NAMESPACE].setTag(React.Fragment);
       }
     }
 
-    this.CONTEXT.CHILDREN && this.setStyleStates();
-
     if (this.CONTEXT.CHILDREN && !this.CONTEXT.CHILDREN.includes(this.ID)) {
-      this.CONTEXT.setParentChild?.(this.ID);
+      this.CONTEXT.SETPARENTCHILD?.(this.ID);
     }
   }
 
   shouldComponentUpdate(nextProps, nextState) {
+    // one day my friend, you will be useful
     return true;
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (!prevState.length && JSON.stringify(this.state) === JSON.stringify(prevState)) {
-      this.CONTEXT.CHILDREN && this.setStyleStates();
-    }
+    this.setStyleStates();
 
     const WRAPPERSTYLES = this.FOO.wrapper || this.FOO.group;
 
@@ -369,17 +384,17 @@ export default class Module extends React.Component {
             onBlur: this.handleBlur.bind(this),
       
             style: { ...props.style, ...this.FOO },
-            id: this.ID,
+            id: props.id ? props.ID : null,
             className: generateElementClasses(props, { NAMESPACE, GENERATECLASSES, MODIFIERGLUE, SINGLECLASS }),
             'data-module': GENERATEDATAATTRS ? this.NAMESPACE : null,
             
-            ...(this.HASHOSTLUCIDMODULE && {
+            ...(this.HOSTISLUCIDELEMENT ? {
               name: props.as.name || props.as,
+
               ...removeLucidProps(this.props)
-            })
+            } : { ref: this.REF }),
           }
 
-          /** */
           const contextValues = {
             ...this.CONTEXT,
 
@@ -393,7 +408,7 @@ export default class Module extends React.Component {
             GENERATEDATAATTRS,
 
             SETWRAPPERSTYLES: this.props.setWrapperStyles,
-            setParentChild: this.setParentChild.bind(this),
+            SETPARENTCHILD: this.setParentChild,
             CHILDREN: this.state.CHILDREN,
 
             STYLES: {
@@ -415,13 +430,6 @@ export default class Module extends React.Component {
 
           let CONTENT = (typeof props.content !== 'boolean' && props.content) || props.render || props.children;
 
-          // IDK WTF this is required to cause children (in some given context) to re-render...
-          // ...re-rendering should be triggered when the above contextValues changes and is
-          // passed to <ModuleContext.Provider>, given that the children subscribe to this context
-          if (props.children) CONTENT = React.Children.map(CONTENT, (child => {
-            return React.isValidElement(child) ? React.cloneElement(child) : child;
-          }));
-
           return (
             <ModuleContext.Provider value={contextValues}>
               {htmlVoidElements.includes(props.tag) ? <this.TAG {...ATTRIBUTES} /> : (
@@ -432,7 +440,7 @@ export default class Module extends React.Component {
                     theme: this.THEME,
                     utils: this.UTILS,
                     config: this.CONFIG, 
-                    context: contextValues 
+                    context: this.CONTEXT 
                   }) : CONTENT}
 
                   {after && <Component name=':after' referer={this.NAMESPACE}>{after.content}</Component>}

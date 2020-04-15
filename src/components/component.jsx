@@ -11,7 +11,7 @@ export default class Component extends Module {
   constructor(props) {
     super(props);
 
-    this.state = { tag: this.TAG, setTag: this.setTag }
+    this.state = { CHILDREN: [], tag: this.TAG, setTag: this.setTag }
   }
 
   setTag = tag => this.setState({ tag });
@@ -41,9 +41,12 @@ export default class Component extends Module {
       onBlur: this.handleBlur.bind(this),
 
       style: { ...props.style, ...this.FOO },
+      id: props.id ? props.id : null,
       className: generateElementClasses(this.props, { NAMESPACE: SELECTOR, GENERATECLASSES, MODIFIERGLUE, SINGLECLASS }),
       'data-component': this.context.GENERATEDATAATTRS ? this.NAMESPACE : null,
-      'data-sub-component': this.context.GENERATEDATAATTRS ? props.subComponent : null
+      'data-sub-component': this.context.GENERATEDATAATTRS ? props.subComponent : null,
+
+      ...(!this.HOSTISLUCIDELEMENT && { ref: this.REF }),
     }
 
     const contextValues = {
@@ -66,6 +69,7 @@ export default class Component extends Module {
         ...this.FOO
       },
 
+      SETPARENTCHILD: this.setParentChild,
       CHILDREN: this.state.CHILDREN,
 
       STRICT_NAMESPACE
