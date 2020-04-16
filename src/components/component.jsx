@@ -20,10 +20,9 @@ export default class Component extends Module {
     this.CONTEXT = this.context;
     this.DATA = this.context.STYLES[this.NAMESPACE];
     this.SETWRAPPERSTYLES = this.context.setWrapperStyles;
-
-    this.paint(this.DATA, this.stylesConfig());
+    this.STYLES = this.paint(this.DATA, this.stylesConfig());
       
-    const before = this.FOO[':before'], after = this.FOO[':after'];
+    const before = this.STYLES[':before'], after = this.STYLES[':after'];
     const props = { ...this.context[this.context.NAMESPACE][this.NAMESPACE], ...this.props };
     const { MODIFIERGLUE, COMPONENTGLUE, SINGLECLASS, GENERATECLASSES } = this.context;
     const STRICT_NAMESPACE = (props.subComponent ? this.context.STRICT_NAMESPACE : this.context.NAMESPACE) + COMPONENTGLUE + this.NAMESPACE;
@@ -40,7 +39,7 @@ export default class Component extends Module {
       onFocus: this.handleFocus.bind(this),
       onBlur: this.handleBlur.bind(this),
 
-      style: { ...props.style, ...this.FOO },
+      style: { ...props.style, ...this.STYLES },
       id: props.id ? props.id : null,
       className: generateElementClasses(this.props, { NAMESPACE: SELECTOR, GENERATECLASSES, MODIFIERGLUE, SINGLECLASS }),
       'data-component': this.context.GENERATEDATAATTRS ? this.NAMESPACE : null,
@@ -66,7 +65,7 @@ export default class Component extends Module {
 
       STYLES: { 
         ...this.context.STYLES, 
-        ...this.FOO
+        ...this.STYLES
       },
 
       SETPARENTCHILD: this.setParentChild,

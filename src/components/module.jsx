@@ -1,4 +1,3 @@
-import { findDOMNode } from 'react-dom';
 import htmlVoidElements from 'html-void-elements';
 import evalTheme from '../utilities/evalTheme';
 import mergeThemes from '../utilities/mergeThemes';
@@ -12,7 +11,7 @@ if (typeof React === 'undefined') {
   var React = require('react');
 }
 
-/** spoof env process to assist bundle size */
+/** spoof env process to ultimately assist bundle size */
 if (typeof process === 'undefined') window.process = { env: {} }
 
 /** Used for generating unique module ID's */
@@ -49,16 +48,12 @@ export default class Module extends React.Component {
     this.GENERATECLASSES = props.generateClasses ?? this.THEME.generateClasses ?? this.CONFIG.generateClasses;
     this.GENERATEDATAATTRS = props.generateDataAttributes ?? this.THEME.generateDataAttributes ?? this.CONFIG.generateDataAttributes;
     this.HOSTISLUCIDELEMENT = ['React.createElement(Module', 'function Component(props)'].some(str => this.TAG.toString().includes(str));
+    this.STYLES = {};
 
-    this.FOO = {};
     this.state = { CHILDREN: [] };
-    this.CHILDREN = [];
   }
 
-  setParentChild = child => {
-    this.CHILDREN = [...this.CHILDREN, child];
-    this.setState({ CHILDREN: this.CHILDREN });
-  }
+  setParentChild = child => this.setState(({ CHILDREN }) => ({ CHILDREN: [...CHILDREN, child] }));
 
   /** Get Attributes */
 
@@ -144,141 +139,132 @@ export default class Module extends React.Component {
     }
   }
 
-  paint(styles = {}, options, { prevNamespace } = {}, accumulator = {}) {
+  paint(styles = {}, options, accumulator = {}, { prevNamespace } = {}) {
     if (typeof styles === 'function') {
       styles = styles(options);
     }
 
     if (styles instanceof Array) {
-      return styles.forEach(style => this.paint(style, options, {}, accumulator));
+      return styles.reduce((accumulator, style) => this.paint(style, options, accumulator), accumulator);
     }
   
-    accumulator = {
-      ...accumulator,
-  
-      ...Object.entries(styles).reduce((accumulator = accumulator, style) => {
-        const key = style[0]; let value = style[1];
+    return Object.entries(styles).reduce((accumulator, style) => {
+      const key = style[0]; let value = style[1];
 
-        /** Determine if current node is queried modifier/state */
-        if (key.indexOf('is-') === 0) {
-          const CONTEXT = key.replace('is-', '');
+      /** Determine if current node is queried modifier/state */
+      if (key.indexOf('is-') === 0) {
+        const CONTEXT = key.replace('is-', '');
 
-          if (options.state.name === ':before' || options.state.name === ':after') {
-            options = options.context[options.state.referer];
-          }
-
-          if (options[CONTEXT] || options.state[CONTEXT]) {
-            return this.paint(value, options, {}, accumulator);
-          }
-
-          return;
+        if (options.state.name === ':before' || options.state.name === ':after') {
+          options = options.context[options.state.referer];
         }
 
-        /** Determine if parent module/block is queried modifier/state */
-        if (key.indexOf('$-is-') === 0 || key.indexOf('$:') === 0) {
-          const MODULE = options.context.NAMESPACE;
-          const CONTEXT = key.indexOf('$:') === 0 ? key.slice(1, key.length) : key.slice(5, key.length);
-
-          if (options.context[MODULE][CONTEXT]) {
-            return this.paint(value, options, {}, accumulator);
-          }
-
-          return;
+        if (options[CONTEXT] || options.state[CONTEXT]) {
+          return this.paint(value, options, accumulator);
         }
-
-        /** Determine if previously specified parent component is queried modifier/state */
-        if (key.indexOf('and-is-') === 0 || key.indexOf('and:') === 0) {
-          const CONTEXT = key.indexOf('and:') === 0 ? key.replace('and', '') : key.replace('and-is-', '');
-
-          if (options.context[prevNamespace][CONTEXT]) {
-            return this.paint(value, options, { prevNamespace }, accumulator);
-          }
-
-          return;
-        }
-
-        /** Determine if specified parent component is queried modifier/state */
-        if (key.indexOf('-is-') > -1 || key.indexOf(':') > 0) {
-          const COMPONENT = key.indexOf(':') > 0 ? key.slice(0, key.indexOf(':')) : key.slice(0, key.indexOf('-is-'));
-          const CONTEXT = key.indexOf(':') > 0 ? key.slice(key.indexOf(':'), key.length) : key.slice(key.indexOf('-is-') + 4, key.length);
-
-          if (options.context[COMPONENT][CONTEXT]) {
-            return this.paint(value, options, { prevNamespace: COMPONENT }, accumulator);
-          }
-
-          return;
-        }
-
-        /** Determine if current node is a child of the queried component/module */
-        if (key.indexOf('in-') === 0) {
-          const COMPONENT = key.replace('in-', '');
-
-          if (options.context[COMPONENT]) {
-            return this.paint(value, options, { prevNamespace: COMPONENT }, accumulator);
-          }
-
-          return;
-        }
-
-        /** Key defines hover pseudo-state */
-        if (key === 'hover') {
-          if (options.state[':hover']) {
-            return this.paint(value, options, {}, accumulator);
-          }
-        }
-
-        /** Key defines pseudo-state */
-        if (key.indexOf(':') === 0) {
-          if (options.state[key]) {
-            return this.paint(value, options, {}, accumulator);
-          }
-        }
-
-        const EVALUATEDKEY = /^[%*:$]/.test(key) ? key : camelCase(key);
-
-        if (typeof value === 'function' && window.getComputedStyle(document.body).getPropertyValue(key)) {
-          try {
-            value = value(this.FOO[EVALUATEDKEY]);
-          } catch {
-            value = value;
-          }
-          // value = value(this.FOO[key]);
-        }
-
-        if (typeof value === 'undefined' || value === null || EVALUATEDKEY === 'children') {
-          return;
-        }
-
-        if (this.FOO.hasOwnProperty(EVALUATEDKEY) && ['object', 'function'].some($ => typeof value === $)) {
-          const PROP = this.FOO[EVALUATEDKEY];
-
-          if (PROP instanceof Array) {
-            if (typeof value === 'function') {
-              value = PROP.some($ => $.toString() === value.toString()) ? PROP : PROP.concat(value);
-            } else {
-              value = PROP.includes(value) ? PROP : PROP.concat(value);
-            }
-          } else if (PROP !== value) {
-            if (!(typeof value === 'function' && PROP.toString() === value.toString())) {
-              value = [PROP, value];
-            }
-          }
-        }
-
-        this.FOO = { ...this.FOO, [EVALUATEDKEY]: value };
-
-        accumulator = { ...accumulator, [EVALUATEDKEY]: value };
 
         return accumulator;
-      }, accumulator)
-    };
+      }
 
-    console.log(this.NAMESPACE, this.FOO, accumulator);
+      /** Determine if parent module/block is queried modifier/state */
+      if (key.indexOf('$-is-') === 0 || key.indexOf('$:') === 0) {
+        const MODULE = options.context.NAMESPACE;
+        const CONTEXT = key.indexOf('$:') === 0 ? key.slice(1, key.length) : key.slice(5, key.length);
 
-    return accumulator;
+        if (options.context[MODULE][CONTEXT]) {
+          return this.paint(value, options, accumulator);
+        }
+
+        return accumulator;
+      }
+
+      /** Determine if previously specified parent component is queried modifier/state */
+      if (key.indexOf('and-is-') === 0 || key.indexOf('and:') === 0) {
+        const CONTEXT = key.indexOf('and:') === 0 ? key.replace('and', '') : key.replace('and-is-', '');
+
+        if (options.context[prevNamespace][CONTEXT]) {
+          return this.paint(value, options, accumulator, { prevNamespace });
+        }
+
+        return accumulator;
+      }
+
+      /** Determine if specified parent component is queried modifier/state */
+      if (key.indexOf('-is-') > -1 || key.indexOf(':') > 0) {
+        const COMPONENT = key.indexOf(':') > 0 ? key.slice(0, key.indexOf(':')) : key.slice(0, key.indexOf('-is-'));
+        const CONTEXT = key.indexOf(':') > 0 ? key.slice(key.indexOf(':'), key.length) : key.slice(key.indexOf('-is-') + 4, key.length);
+
+        if (options.context[COMPONENT][CONTEXT]) {
+          return this.paint(value, options, accumulator, { prevNamespace: COMPONENT });
+        }
+
+        return accumulator;
+      }
+
+      /** Determine if current node is a child of the queried component/module */
+      if (key.indexOf('in-') === 0) {
+        const COMPONENT = key.replace('in-', '');
+
+        if (options.context[COMPONENT]) {
+          return this.paint(value, options, accumulator, { prevNamespace: COMPONENT });
+        }
+
+        return accumulator;
+      }
+
+      /** Key defines hover pseudo-state */
+      if (key === 'hover') {
+        if (options.state[':hover']) {
+          return this.paint(value, options, accumulator);
+        }
+
+        return accumulator
+      }
+
+      /** Key defines pseudo-state */
+      if (key.indexOf(':') === 0) {
+        if (options.state[key]) {
+          return this.paint(value, options, accumulator);
+        }
+
+        return accumulator;
+      }
+
+      const EVALUATEDKEY = /^[%*:$]/.test(key) ? key : camelCase(key);
+
+      if (typeof value === 'function' && window.getComputedStyle(document.body).getPropertyValue(key)) {
+        try {
+          value = value(accumulator[EVALUATEDKEY]);
+        } catch {
+          value = value;
+        }
+      }
+
+      if (typeof value === 'undefined' || value === null || EVALUATEDKEY === 'children') {
+        return accumulator;
+      }
+
+      if (accumulator.hasOwnProperty(EVALUATEDKEY) && ['object', 'function'].some($ => typeof value === $)) {
+        const PROP = accumulator[EVALUATEDKEY];
+
+        if (PROP instanceof Array) {
+          if (typeof value === 'function') {
+            value = PROP.some($ => $.toString() === value.toString()) ? PROP : PROP.concat(value);
+          } else {
+            value = PROP.includes(value) ? PROP : PROP.concat(value);
+          }
+        } else if (PROP !== value) {
+          if (!(typeof value === 'function' && PROP.toString() === value.toString())) {
+            value = [PROP, value];
+          }
+        }
+      }
+
+      return Object.assign(accumulator, { [EVALUATEDKEY]: value });
+    }, accumulator);
   }
 
-  setStyleStates(siblings = this.CONTEXT.CHILDREN) {
+  setStyleStates(siblings = this.CONTEXT.CHILDREN || []) {
     let target = this.ID;
 
     if (this.REF.current instanceof HTMLElement) {
@@ -350,7 +336,7 @@ export default class Module extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     this.setStyleStates();
 
-    const WRAPPERSTYLES = this.FOO.wrapper || this.FOO.group;
+    const WRAPPERSTYLES = this.STYLES.wrapper || this.STYLES.group;
 
     if (WRAPPERSTYLES && this.SETWRAPPERSTYLES) {
       this.SETWRAPPERSTYLES(WRAPPERSTYLES);
@@ -367,10 +353,9 @@ export default class Module extends React.Component {
           this.CONTEXT = { ...this.context, ...moduleContext };
           this.DATA = this.DATA || props.styles;
           this.SETWRAPPERSTYLES = moduleContext.SETWRAPPERSTYLES;
-  
-          this.paint(this.DATA, this.stylesConfig());
+          this.STYLES = this.paint(this.DATA, this.stylesConfig());
 
-          const before = this.FOO[':before'], after = this.FOO[':after'];
+          const before = this.STYLES[':before'], after = this.STYLES[':after'];
       
           const ATTRIBUTES = {
             ...this.getDataAttributes(props),
@@ -383,7 +368,7 @@ export default class Module extends React.Component {
             onFocus: this.handleFocus.bind(this),
             onBlur: this.handleBlur.bind(this),
       
-            style: { ...props.style, ...this.FOO },
+            style: { ...props.style, ...this.STYLES },
             id: props.id ? props.ID : null,
             className: generateElementClasses(props, { NAMESPACE, GENERATECLASSES, MODIFIERGLUE, SINGLECLASS }),
             'data-module': GENERATEDATAATTRS ? this.NAMESPACE : null,
@@ -413,7 +398,7 @@ export default class Module extends React.Component {
 
             STYLES: {
               ...this.CONTEXT.STYLES,
-              ...this.FOO
+              ...this.STYLES
             },
 
             [this.NAMESPACE]: {
