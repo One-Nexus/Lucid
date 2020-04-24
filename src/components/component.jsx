@@ -1,5 +1,6 @@
 import htmlVoidElements from 'html-void-elements';
 import generateElementClasses from '../utilities/generateElementClasses';
+import removeLucidProps from '../utilities/removeLucidProps';
 import Module, { ModuleContext } from './module.jsx';
 
 if (typeof React === 'undefined') {
@@ -13,6 +14,8 @@ export default class Component extends Module {
 
     this.state = { CHILDREN: [], tag: this.TAG, setTag: this.setTag }
   }
+
+  static contextType = ModuleContext;
 
   setTag = tag => this.setState({ tag });
 
@@ -46,6 +49,8 @@ export default class Component extends Module {
       'data-sub-component': this.context.GENERATEDATAATTRS ? props.subComponent : null,
 
       ...(!this.HOSTISLUCIDELEMENT && { ref: this.REF }),
+
+      ...((props.as || props.component) && removeLucidProps(this.props))
     }
 
     const contextValues = {
@@ -88,8 +93,6 @@ export default class Component extends Module {
       </ModuleContext.Provider>
     );
   }
-
-  static contextType = ModuleContext;
 }
 
 export const SubComponent = (props) => (

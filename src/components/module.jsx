@@ -29,7 +29,7 @@ export default class Module extends React.Component {
 
     var Synergy = window.Synergy || {};
 
-    this.REF = React.createRef();
+    this.REF = props.host || React.createRef();
     this.DATA = props.styles;
     this.THEME = evalTheme(mergeThemes(context.theme, window.theme, props.theme));
     this.UTILS = context.utils || window.utils;
@@ -52,6 +52,8 @@ export default class Module extends React.Component {
 
     this.state = { CHILDREN: [] };
   }
+
+  static contextType = UIContext;
 
   setParentChild = child => this.setState(({ CHILDREN }) => ({ CHILDREN: [...CHILDREN, child] }));
 
@@ -267,12 +269,17 @@ export default class Module extends React.Component {
   setStyleStates(siblings = this.CONTEXT.CHILDREN || []) {
     let target = this.ID;
 
-    if (this.REF.current instanceof HTMLElement) {
-      target = this.REF.current, siblings = [...target.parentNode.childNodes];
+    if (this.NODE instanceof HTMLElement && document.body.contains(this.NODE)) {
+      target = this.NODE, siblings = [...target.parentNode.childNodes];
     }
 
     const index = this.props.index ?? siblings.indexOf(target);
     const [isFirstChild, isLastChild] = [index === 0, index === siblings.length - 1];
+    const isDisabled = this.props.disabled || target.disabled;
+
+    if (this.state.index !== index) {
+      this.setState({ index });
+    }
 
     if (this.state.isFirstChild !== isFirstChild) {
       this.setState({ isFirstChild });
@@ -282,39 +289,58 @@ export default class Module extends React.Component {
       this.setState({ isLastChild });
     }
 
-    if (this.state.index !== index) {
-      this.setState({ index });
+    if (this.state.isDisabled !== isDisabled) {
+      this.setState({ isDisabled, ':disabled': isDisabled });
     }
   }
 
   /** Event Handlers */
 
   handleMouseEnter(event) {
-    // if (!this.NODE || this.NODE.disabled) {
-    //   return;
-    // }
     this.props.onMouseEnter && this.props.onMouseEnter(event);
-    this.setState({ isHovered: true, ':hover': true });
+  
+    if (!this.state.isDisabled) {
+      this.setState({ isHovered: true, ':hover': true });
+    }
   }
 
   handleMouseLeave(event) {
     this.props.onMouseLeave && this.props.onMouseLeave(event);
+  
     this.setState({ isHovered: false, ':hover': false });
   }
 
   handleFocus(event) {
     this.props.onFocus && this.props.onFocus(event);
+
     this.setState({ isFocused: true, ':focus': true });
+
+    const target = event.target;
+
+    const handleManualBlur = event => !target.contains(event.target) && target.blur();
+
+    document.addEventListener('mousedown', handleManualBlur);
+  
+    return () => document.removeEventListener('mousedown', handleManualBlur);
   }
 
   handleBlur(event) {
     this.props.onBlur && this.props.onBlur(event);
+  
     this.setState({ isFocused: false, ':focus': false });
   }
 
   /** Lifecycle Methods */
 
   componentDidMount() {
+    if (this.REF.current instanceof HTMLElement) {
+      this.NODE = this.REF.current;
+    }
+    // Last ditch effort to get underlying DOM node
+    if (!this.NODE) {
+      this.NODE = ReactDOM.findDOMNode(this.REF.current);
+    }
+
     this.setStyleStates();
   
     if (this.NAMESPACE === 'body' && this.context.HOST) {
@@ -326,6 +352,21 @@ export default class Module extends React.Component {
     if (this.CONTEXT.CHILDREN && !this.CONTEXT.CHILDREN.includes(this.ID)) {
       this.CONTEXT.SETPARENTCHILD?.(this.ID);
     }
+
+    this.NODE && new MutationObserver(mutations => mutations.forEach(({ type, target }) => {
+      if (type === 'attributes') {
+        if (this.state.isDisabled !== target.disabled) {
+          this.setState({ isDisabled: target.disabled, ':disabled': target.disabled });
+        }
+
+        if (target.disabled) {
+          this.setState({
+            isHovered: false, ':hover': false, 
+            isFocused: false, ':focus': false 
+          });
+        }
+      }
+    })).observe(this.NODE, { attributes: true });
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -373,11 +414,9 @@ export default class Module extends React.Component {
             className: generateElementClasses(props, { NAMESPACE, GENERATECLASSES, MODIFIERGLUE, SINGLECLASS }),
             'data-module': GENERATEDATAATTRS ? this.NAMESPACE : null,
             
-            ...(this.HOSTISLUCIDELEMENT ? {
-              name: props.as.name || props.as,
+            ...(this.HOSTISLUCIDELEMENT ? { name: props.as.name || props.as } : { ref: this.REF }),
 
-              ...removeLucidProps(this.props)
-            } : { ref: this.REF }),
+            ...((props.as || props.component) && removeLucidProps(this.props))
           }
 
           const contextValues = {
@@ -437,8 +476,4 @@ export default class Module extends React.Component {
       </ModuleContext.Consumer>
     )
   }
-
-  /** Static Methods/Properties */
-
-  static contextType = UIContext;
 }
