@@ -315,13 +315,7 @@ export default class Module extends React.Component {
 
     this.setState({ isFocused: true, ':focus': true });
 
-    const target = event.target;
-
-    const handleManualBlur = event => !target.contains(event.target) && target.blur();
-
-    document.addEventListener('mousedown', handleManualBlur);
-  
-    return () => document.removeEventListener('mousedown', handleManualBlur);
+    document.addEventListener('mousedown', () => event.target.blur(), { once: true });
   }
 
   handleBlur(event) {
