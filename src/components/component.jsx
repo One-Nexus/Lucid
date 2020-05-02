@@ -40,7 +40,6 @@ export default class Component extends Module {
       onMouseEnter: this.handleMouseEnter.bind(this),
       onMouseLeave: this.handleMouseLeave.bind(this),
       onFocus: this.handleFocus.bind(this),
-      onBlur: this.handleBlur.bind(this),
 
       style: { ...props.style, ...this.STYLES },
       id: props.id ? props.id : null,

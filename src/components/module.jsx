@@ -311,17 +311,26 @@ export default class Module extends React.Component {
   }
 
   handleFocus(event) {
+    event.persist();
+
     this.props.onFocus && this.props.onFocus(event);
 
     this.setState({ isFocused: true, ':focus': true });
 
-    document.addEventListener('mousedown', () => event.target.blur(), { once: true });
-  }
+    const handleBlur = () => {
+      this.setState({ isFocused: false, ':focus': false });
 
-  handleBlur(event) {
-    this.props.onBlur && this.props.onBlur(event);
+      event.target.blur();
   
-    this.setState({ isFocused: false, ':focus': false });
+      document.removeEventListener('keydown', handleKeydown);
+      document.removeEventListener('mousedown', handleMousedown);
+    }
+
+    const handleKeydown = ({ keyCode }) => keyCode === 9 && handleBlur();
+    const handleMousedown = () => handleBlur();
+
+    document.addEventListener('keydown', handleKeydown);
+    document.addEventListener('mousedown', handleMousedown);
   }
 
   /** Lifecycle Methods */
@@ -401,7 +410,6 @@ export default class Module extends React.Component {
             onMouseEnter: this.handleMouseEnter.bind(this),
             onMouseLeave: this.handleMouseLeave.bind(this),
             onFocus: this.handleFocus.bind(this),
-            onBlur: this.handleBlur.bind(this),
       
             style: { ...props.style, ...this.STYLES },
             id: props.id ? props.ID : null,
