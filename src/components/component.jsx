@@ -80,7 +80,7 @@ export default class Component extends Module {
   
     return (
       <ModuleContext.Provider value={contextValues}>
-        {htmlVoidElements.includes(props.TAG) ? <this.state.TAG {...ATTRIBUTES} /> : (
+        {htmlVoidElements.includes(props.tag) ? <this.state.tag {...ATTRIBUTES} /> : (
           <this.state.tag {...ATTRIBUTES}>
             {before && <Component name=':before' referer={this.NAMESPACE}>{before.content}</Component>}
 

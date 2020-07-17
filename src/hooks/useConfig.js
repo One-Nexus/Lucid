@@ -9,7 +9,9 @@ export default (config = {}, theme = useTheme(), props) => {
   }
 
   // these props cause an infinite loop in deepextend() for some reason
-  delete props.children;
+  if (props) {
+    delete props.children;
+  }
 
   const evaluatedConfig = (typeof CONFIG === 'function') ? CONFIG(theme) : CONFIG;
   const themeConfig = (theme.modules && theme.modules[evaluatedConfig.name]) || {};
