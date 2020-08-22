@@ -107,6 +107,9 @@ export default class Module extends React.Component {
       if (whitelist.includes(prop)) {
         inputAttributes[prop] = properties[prop];
       }
+      if (prop === 'group') {
+        inputAttributes.name = properties[prop];
+      }
     }
 
     return inputAttributes;

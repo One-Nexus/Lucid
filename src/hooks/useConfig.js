@@ -8,7 +8,6 @@ export default (config = {}, theme = useTheme(), props) => {
     CONFIG = config.config, props = { ...config };
   }
 
-  // these props cause an infinite loop in deepextend() for some reason
   if (props) {
     delete props.children;
   }
