@@ -8,6 +8,8 @@ import useConfig from './hooks/useConfig';
 import useUtils from './hooks/useUtils';
 import evalTheme from './utilities/evalTheme';
 
+import FOO, { FOOComponent } from './components/Module.new';
+
 export {
   Module,
   Wrapper,
@@ -19,5 +21,7 @@ export {
   useTheme,
   useConfig,
   useUtils,
-  evalTheme
+  evalTheme,
+  FOO,
+  FOOComponent
 }

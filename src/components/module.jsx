@@ -19,6 +19,7 @@ let increment = 1;
 
 /** Create a context object */
 export const ModuleContext = React.createContext({});
+export const MODULEContext = React.createContext({});
 
 /** Render a Synergy module */
 export default class Module extends React.Component {
@@ -457,7 +458,7 @@ export default class Module extends React.Component {
             ...(props.as && { HOST: props.as })
           }
 
-          let CONTENT = (typeof props.content !== 'boolean' && props.content) || props.render || props.children;
+          const CONTENT = (typeof props.content !== 'boolean' && props.content) || props.render || props.children;
 
           return (
             <ModuleContext.Provider value={contextValues}>
