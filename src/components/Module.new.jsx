@@ -1,3 +1,6 @@
+
+import camelCase from 'camelcase';
+
 import useTheme from '../hooks/useTheme';
 import useUtils from '../hooks/useUtils';
 
@@ -13,10 +16,14 @@ const Module = (props) => {
   const [hovered, setHovered] = React.useState(false);
   const [focused, setFocused] = React.useState(false);
   const [disabled, setDisabled] = React.useState(false);
+  const [isFirstChild, setIsFirstChild] = React.useState(false);
+  const [isLastChild, setIsLastChild] = React.useState(false);
+  const [index, setIndex] = React.useState();
   
   const Tag = 'div';
   const namespace = name;
-  const styleSignature = prevContext.styles?.[namespace] || styles;
+
+  const styleSignature = prevContext.styles?.[namespace] || styles || {};
 
   /**
    * 
@@ -25,7 +32,18 @@ const Module = (props) => {
   const THEME  = prevContext.theme || useTheme();
   const UTILS  = prevContext.utils || useUtils();
   const CONFIG = config?.(THEME);
-  const STATE  = { hovered, focused, disabled, ...rest };
+
+  const STATE  = { 
+    ':hover': hovered, 
+    ':focus': focused, 
+    ':disabled': disabled,
+    ':first-child': isFirstChild,
+    ':last-child': isLastChild,
+
+    hovered, focused, disabled, isFirstChild, isLastChild, index,
+
+    ...rest 
+  };
 
   const [appliedStyles, setAppliedStyles] = React.useState(parseStyles(styleSignature, { 
     theme: THEME, 
@@ -75,12 +93,28 @@ const Module = (props) => {
     styles: { ...prevContext.styles, ...appliedStyles },
     theme: THEME,
     state: STATE,
-    [namespace]: STATE
+    [namespace]: STATE,
   }
 
   /**
    * 
    */
+
+  React.useEffect(() => {
+    const node = ref.current;
+    const siblings = [...node.parentNode.childNodes];
+    const index = siblings.indexOf(node);
+
+    setIndex(index);
+
+    if (index === 0) {
+      setIsFirstChild(true);
+    }
+
+    if (index === siblings.length - 1) {
+      setIsLastChild(true);
+    }
+  }, []);
 
   React.useEffect(() => {
     const newStyles = parseStyles(styleSignature, { 
@@ -99,7 +133,6 @@ const Module = (props) => {
   /**
    * 
    */
-
   return (
     <ModuleContext.Provider value={nextContext}>
       <Tag {...ATTRIBUTES}>
@@ -109,36 +142,42 @@ const Module = (props) => {
   );
 }
 
-const FOOComponent = (props) => {
+Module.modifiers = props => ([...Object.keys(props), ...(props.modifiers || [])]);
+
+const Component = props => {
   return (
     <Module component {...props} />
   );
 }
 
-export default Module;
+const SubComponent = props => {
+  return (
+    <Module component {...props} />
+  );
+}
 
-export { FOOComponent };
+export default Module; export { Component, SubComponent };
 
 /**
  * 
  */
-function parseStyles(signature, options) {
-  let evaluatedsignature = signature;
+function parseStyles(styles, options) {
+  let evaluatedStyles = styles;
 
-  if (typeof signature === 'function') {
-    evaluatedsignature = signature(options);
+  if (typeof styles === 'function') {
+    evaluatedStyles = styles(options);
   }
 
-  if (evaluatedsignature instanceof Array) {
+  if (evaluatedStyles instanceof Array) {
     const mergedSet = {};
 
-    evaluatedsignature.forEach(set => {
+    evaluatedStyles.forEach(set => {
       const evaluatedSet = parseStyles(set, options);
 
       Object.entries(evaluatedSet).forEach(([key, value]) => {
         const existingEntry = mergedSet[key];
 
-        if (existingEntry) {
+        if (existingEntry && ['object', 'function'].some($ => typeof value === $)) {
           mergedSet[key] = existingEntry instanceof Array ? existingEntry.concat(value) : [existingEntry, value];
         } else {
           mergedSet[key] = value;
@@ -146,26 +185,23 @@ function parseStyles(signature, options) {
       });
     });
 
-    evaluatedsignature = mergedSet;
-
-  // if (typeof evaluatedsignature !== 'object') {
-  //   console.warn(evaluatedsignature);
-  // }
+    evaluatedStyles = mergedSet;
   }
 
-  ['focused', 'disabled', 'hovered'].forEach(key => delete evaluatedsignature[key]);
+  ['focused', 'disabled', 'hovered', ':first-child', ':last-child'].forEach(key => delete evaluatedStyles[key]);
 
-  return parseCQ(evaluatedsignature, options);
+  return parseCQ(evaluatedStyles, options);
 }
 
 /**
  * 
  */
-function parseCQ(object, options) {
+function parseCQ(object, options, prevNamespace) {
   const { state, context } = options;
+  const newStyles = Object.assign({}, object);
 
-  Object.entries(object).forEach(([key, value]) => {
-    if (typeof value === 'object') {
+  Object.entries(newStyles).forEach(([key, value]) => {
+    if (typeof value === 'object' && !(value instanceof Array)) {
       /** Determine if element is queried modifier/state */
       if (key.indexOf('is-') === 0) {
         const CONTEXT = key.replace('is-', '');
@@ -189,7 +225,12 @@ function parseCQ(object, options) {
       if (key.indexOf('-is-') > -1 || key.indexOf(':') > 0) {
         const COMPONENT = key.indexOf(':') > 0 ? key.slice(0, key.indexOf(':')) : key.slice(0, key.indexOf('-is-'));
         const CONTEXT = key.indexOf(':') > 0 ? key.slice(key.indexOf(':'), key.length) : key.slice(key.indexOf('-is-') + 4, key.length);
-        // console.log(key);
+
+        if (context[COMPONENT][CONTEXT]) {
+          Object.assign(newStyles, parseCQ(value, options, COMPONENT));
+        }
+
+        delete newStyles[key];
       }
 
       /** Determine if element is a child of the queried component/module */
@@ -198,19 +239,28 @@ function parseCQ(object, options) {
         // console.log(key);
       }
 
-      /** Key defines hover pseudo-state */
-      if (key === 'hover') {
-        // console.log(key);
-      }
-
       /** Key defines pseudo-state */
       if (key.indexOf(':') === 0) {
-        // console.log(key);
+        if (state[key]) {
+          Object.assign(newStyles, parseCQ(value, options));
+        }
+
+        delete newStyles[key];
       }
     }
   });
 
-  return object;
+  // Convert keys to camelCase
+  Object.keys(newStyles).forEach(key => {
+    const EVALUATEDKEY = /^[%*:$]/.test(key) ? key : camelCase(key);
+
+    if (key !== EVALUATEDKEY) {
+      newStyles[EVALUATEDKEY] = newStyles[key];
+      delete newStyles[key];
+    }
+  });
+
+  return newStyles;
 }
 
 /**

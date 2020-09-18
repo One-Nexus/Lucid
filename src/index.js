@@ -1,5 +1,5 @@
-import Module from './components/moduleHOC';
-import Component, { SubComponent } from './components/component';
+// import Module from './components/moduleHOC';
+// import Component, { SubComponent } from './components/component';
 import Wrapper, { Group } from './components/wrapper';
 import Provider from './components/provider';
 import styled from './components/styled';
@@ -8,7 +8,7 @@ import useConfig from './hooks/useConfig';
 import useUtils from './hooks/useUtils';
 import evalTheme from './utilities/evalTheme';
 
-import FOO, { FOOComponent } from './components/Module.new';
+import Module, { Component, SubComponent } from './components/Module.new';
 
 export {
   Module,
@@ -22,6 +22,4 @@ export {
   useConfig,
   useUtils,
   evalTheme,
-  FOO,
-  FOOComponent
 }
