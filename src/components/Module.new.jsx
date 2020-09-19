@@ -8,10 +8,11 @@ import { MODULEContext as ModuleContext } from './module';
 // const ModuleContext = React.createContext({});
 
 const Module = (props) => {
-  const { children, name, styles, config, render, onMouseEnter, onMouseLeave, component, attributes, ...rest } = props;
+  const { children, name, styles, config, render, onMouseEnter, onMouseLeave, attributes, ...rest } = props;
+  const { isComponent, host, className } = rest;
 
   const prevContext = React.useContext(ModuleContext);
-  const ref = React.useRef();
+  const ref = host || React.useRef();
 
   const [hovered, setHovered] = React.useState(false);
   const [focused, setFocused] = React.useState(false);
@@ -20,9 +21,8 @@ const Module = (props) => {
   const [isLastChild, setIsLastChild] = React.useState(false);
   const [index, setIndex] = React.useState();
   
-  const Tag = 'div';
+  const Tag = props.component || (typeof props.as === 'string' && !isComponent) ? Component : 'div';
   const namespace = name;
-
   const styleSignature = prevContext.styles?.[namespace] || styles || {};
 
   /**
@@ -79,16 +79,21 @@ const Module = (props) => {
     ...getEventHandlers(rest),
 
     style: appliedStyles,
-    className: `${namespace}`,
+    className: className ? `${className} ${namespace}` : `${namespace}`,
     onMouseEnter: handleMouseEnter,
     onMouseLeave: handleMouseLeave,
-    ref: ref
+
+    ...(Tag.name === 'Component' && props.as ? { 
+      name: props.as.name || props.as,
+
+      ...rest,
+    } : { ref })
   }
 
   const nextContext = {
     ...prevContext,
 
-    ...(!component && { namespace }),
+    ...(!isComponent && { namespace }),
 
     styles: { ...prevContext.styles, ...appliedStyles },
     theme: THEME,
@@ -102,10 +107,16 @@ const Module = (props) => {
 
   React.useEffect(() => {
     const node = ref.current;
+    if (!node) {
+      // console.log(namespace, Tag.name, props.component, props.as, isComponent);
+      return;
+    }
     const siblings = [...node.parentNode.childNodes];
     const index = siblings.indexOf(node);
 
-    setIndex(index);
+    {
+      setIndex(index);
+    }
 
     if (index === 0) {
       setIsFirstChild(true);
@@ -144,15 +155,21 @@ const Module = (props) => {
 
 Module.modifiers = props => ([...Object.keys(props), ...(props.modifiers || [])]);
 
+/**
+ * 
+ */
 const Component = props => {
   return (
-    <Module component {...props} />
+    <Module isComponent {...props} />
   );
 }
 
+/**
+ * 
+ */
 const SubComponent = props => {
   return (
-    <Module component {...props} />
+    <Module isComponent {...props} />
   );
 }
 
@@ -179,7 +196,7 @@ function parseStyles(styles, options) {
 
         if (existingEntry && ['object', 'function'].some($ => typeof value === $)) {
           mergedSet[key] = existingEntry instanceof Array ? existingEntry.concat(value) : [existingEntry, value];
-        } else {
+        } else if (value) {
           mergedSet[key] = value;
         }
       });
