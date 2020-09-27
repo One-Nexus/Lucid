@@ -1,6 +1,7 @@
 
 import camelCase from 'camelcase';
 
+import deepextend from '../utilities/deepMergeObjects';
 import useTheme from '../hooks/useTheme';
 import useUtils from '../hooks/useUtils';
 
@@ -8,8 +9,8 @@ import { MODULEContext as ModuleContext } from './module';
 // const ModuleContext = React.createContext({});
 
 const Module = (props) => {
-  const { children, name, styles, config, render, onMouseEnter, onMouseLeave, attributes, ...rest } = props;
-  const { isComponent, host, className } = rest;
+  const { children, name, styles, config, render, onMouseEnter, onMouseLeave, attributes, ...meta } = props;
+  const { isComponent, host, className, style, ...rest } = meta;
 
   const prevContext = React.useContext(ModuleContext);
   const ref = host || React.useRef();
@@ -21,7 +22,7 @@ const Module = (props) => {
   const [isLastChild, setIsLastChild] = React.useState(false);
   const [index, setIndex] = React.useState();
   
-  const Tag = props.component || (typeof props.as === 'string' && !isComponent) ? Component : 'div';
+  const Tag = getTag(props);
   const namespace = name;
   const styleSignature = prevContext.styles?.[namespace] || styles || {};
 
@@ -30,10 +31,14 @@ const Module = (props) => {
    */
 
   const THEME  = prevContext.theme || useTheme();
+  const THEMECONFIG = THEME.modules?.[name];
+  const PROPCONFIG = config?.(THEME) || {};
   const UTILS  = prevContext.utils || useUtils();
-  const CONFIG = config?.(THEME);
+  const CONFIG = deepextend(PROPCONFIG, THEMECONFIG);
 
-  const STATE  = { 
+  const STATE  = {
+    ...(prevContext.isFusion && prevContext.state),
+
     ':hover': hovered, 
     ':focus': focused, 
     ':disabled': disabled,
@@ -78,27 +83,41 @@ const Module = (props) => {
 
     ...getEventHandlers(rest),
 
-    style: appliedStyles,
-    className: className ? `${className} ${namespace}` : `${namespace}`,
-    onMouseEnter: handleMouseEnter,
-    onMouseLeave: handleMouseLeave,
+    ...(!isFunctionComponent(Tag) && { ref }),
 
-    ...(Tag.name === 'Component' && props.as ? { 
+    ...(Tag.name === 'Component' && props.as && { 
       name: props.as.name || props.as,
 
       ...rest,
-    } : { ref })
+    }),
+
+    style: { ...style, ...appliedStyles },
+    className: className ? `${className} ${namespace}` : `${namespace}`,
+    onMouseEnter: handleMouseEnter,
+    onMouseLeave: handleMouseLeave,
   }
+
+  
+  console.log(name, prevContext.styles);
 
   const nextContext = {
     ...prevContext,
 
     ...(!isComponent && { namespace }),
 
-    styles: { ...prevContext.styles, ...appliedStyles },
+    styles: mergeStyles([prevContext.styles, appliedStyles], { 
+      config: CONFIG, 
+      theme: THEME, 
+      state: STATE, 
+      utils: UTILS, 
+      context: prevContext 
+    }),
+
     theme: THEME,
     state: STATE,
     [namespace]: STATE,
+
+    isFusion: isFunctionComponent(props.as) && !isComponent
   }
 
   /**
@@ -107,10 +126,9 @@ const Module = (props) => {
 
   React.useEffect(() => {
     const node = ref.current;
-    if (!node) {
-      // console.log(namespace, Tag.name, props.component, props.as, isComponent);
-      return;
-    }
+
+    if (!node) { return };
+
     const siblings = [...node.parentNode.childNodes];
     const index = siblings.indexOf(node);
 
@@ -178,7 +196,7 @@ export default Module; export { Component, SubComponent };
 /**
  * 
  */
-function parseStyles(styles, options) {
+function mergeStyles(styles, options) {
   let evaluatedStyles = styles;
 
   if (typeof styles === 'function') {
@@ -189,13 +207,13 @@ function parseStyles(styles, options) {
     const mergedSet = {};
 
     evaluatedStyles.forEach(set => {
-      const evaluatedSet = parseStyles(set, options);
+      const evaluatedSet = mergeStyles(set, options);
 
       Object.entries(evaluatedSet).forEach(([key, value]) => {
-        const existingEntry = mergedSet[key];
+        const duplicate = mergedSet[key];
 
-        if (existingEntry && ['object', 'function'].some($ => typeof value === $)) {
-          mergedSet[key] = existingEntry instanceof Array ? existingEntry.concat(value) : [existingEntry, value];
+        if (duplicate && ['object', 'function'].some($ => typeof value === $)) {
+          mergedSet[key] = duplicate instanceof Array ? duplicate.concat(value) : [duplicate, value];
         } else if (value) {
           mergedSet[key] = value;
         }
@@ -205,9 +223,7 @@ function parseStyles(styles, options) {
     evaluatedStyles = mergedSet;
   }
 
-  ['focused', 'disabled', 'hovered', ':first-child', ':last-child'].forEach(key => delete evaluatedStyles[key]);
-
-  return parseCQ(evaluatedStyles, options);
+  return evaluatedStyles;
 }
 
 /**
@@ -222,7 +238,12 @@ function parseCQ(object, options, prevNamespace) {
       /** Determine if element is queried modifier/state */
       if (key.indexOf('is-') === 0) {
         const CONTEXT = key.replace('is-', '');
-        // console.log(key);
+
+        if (state[CONTEXT]) {
+          Object.assign(newStyles, parseCQ(value, options));
+        }
+
+        delete newStyles[key];
       }
 
       /** Determine if parent module/block is queried modifier/state */
@@ -283,17 +304,41 @@ function parseCQ(object, options, prevNamespace) {
 /**
  * 
  */
-function isEventHandler(key) {
-  return key.startsWith('on') && key[2] === key[2].toUpperCase();
+function parseStyles(styles, options) {
+  let evaluatedStyles = mergeStyles(styles, options);
+
+  ['focused', 'disabled', 'hovered', ':first-child', ':last-child'].forEach(key => delete evaluatedStyles[key]);
+
+  return parseCQ(evaluatedStyles, options);
 }
 
 /**
  * 
  */
 function getEventHandlers(props) {
+  const isEventHandler = key => key.startsWith('on') && key[2] === key[2].toUpperCase();
+
   return Object.keys(props).filter(key => isEventHandler(key)).reduce((accumulator, key) => {
     accumulator[key] = props[key]
     
     return accumulator;
   }, {})
+}
+
+/**
+ * 
+ */
+function getTag(props) {
+  if (typeof props.as === 'function' && props.as.name[0] === props.as.name[0].toUpperCase()) {
+    return props.as;
+  }
+
+  return props.component || (typeof props.as === 'string' && !props.isComponent) ? Component : 'div';
+}
+
+/**
+ * 
+ */
+function isFunctionComponent(component) {
+  return typeof component === 'function' && component.name[0] === component.name[0].toUpperCase();
 }
