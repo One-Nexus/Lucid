@@ -8,6 +8,8 @@ import useUtils from '../hooks/useUtils';
 import { MODULEContext as ModuleContext } from './module';
 // const ModuleContext = React.createContext({});
 
+const LUCID_STATES = ['focused', 'disabled', 'hovered', ':first-child', ':last-child'];
+
 const Module = (props) => {
   const { children, name, styles, config, render, onMouseEnter, onMouseLeave, attributes, ...meta } = props;
   const { isComponent, host, className, style, ...rest } = meta;
@@ -97,9 +99,6 @@ const Module = (props) => {
     onMouseLeave: handleMouseLeave,
   }
 
-  
-  console.log(name, prevContext.styles);
-
   const nextContext = {
     ...prevContext,
 
@@ -173,6 +172,8 @@ const Module = (props) => {
 
 Module.modifiers = props => ([...Object.keys(props), ...(props.modifiers || [])]);
 
+export default Module; 
+
 /**
  * 
  */
@@ -191,12 +192,22 @@ const SubComponent = props => {
   );
 }
 
-export default Module; export { Component, SubComponent };
+export { Component, SubComponent };
 
 /**
  * 
  */
-function mergeStyles(styles, options) {
+function parseStyles(styles, options) {
+  const mergedStyles = mergeStyles(styles, options);
+  const evaluatedStyles = parseCQ(mergedStyles, options);
+
+  return evaluatedStyles;
+}
+
+/**
+ * 
+ */
+function mergeStyles(styles, options, accumulator = {}) {
   let evaluatedStyles = styles;
 
   if (typeof styles === 'function') {
@@ -223,18 +234,31 @@ function mergeStyles(styles, options) {
     evaluatedStyles = mergedSet;
   }
 
+  Object.entries(evaluatedStyles).forEach(([key, value]) => {
+  });
+
   return evaluatedStyles;
 }
 
 /**
  * 
  */
-function parseCQ(object, options, prevNamespace) {
+function parseCQ(object, options, { prevNamespace } = {}) {
   const { state, context } = options;
+
+  if (object instanceof Array) {
+    // @TODO - this doesn't convert keys to camel case
+    return mergeStyles(object, options);
+  }
+
   const newStyles = Object.assign({}, object);
 
-  Object.entries(newStyles).forEach(([key, value]) => {
-    if (typeof value === 'object' && !(value instanceof Array)) {
+  for (let [key, value] of Object.entries(newStyles)) {
+    if (typeof value === 'function' || value instanceof Array) {
+      try { newStyles[key] = evaluateValue(value) } catch(error) { null };
+    }
+
+    if (typeof value === 'object') {
       /** Determine if element is queried modifier/state */
       if (key.indexOf('is-') === 0) {
         const CONTEXT = key.replace('is-', '');
@@ -250,13 +274,11 @@ function parseCQ(object, options, prevNamespace) {
       if (key.indexOf('$-is-') === 0 || key.indexOf('$:') === 0) {
         const MODULE = context.namespace;
         const CONTEXT = key.indexOf('$:') === 0 ? key.slice(1, key.length) : key.slice(5, key.length);
-        // console.log(key);
       }
 
       /** Determine if previously specified parent component is queried modifier/state */
       if (key.indexOf('and-is-') === 0 || key.indexOf('and:') === 0) {
         const CONTEXT = key.indexOf('and:') === 0 ? key.replace('and', '') : key.replace('and-is-', '');
-        // console.log(key);
       }
 
       /** Determine if specified parent component is queried modifier/state */
@@ -265,7 +287,7 @@ function parseCQ(object, options, prevNamespace) {
         const CONTEXT = key.indexOf(':') > 0 ? key.slice(key.indexOf(':'), key.length) : key.slice(key.indexOf('-is-') + 4, key.length);
 
         if (context[COMPONENT][CONTEXT]) {
-          Object.assign(newStyles, parseCQ(value, options, COMPONENT));
+          Object.assign(newStyles, parseCQ(value, options));
         }
 
         delete newStyles[key];
@@ -274,7 +296,6 @@ function parseCQ(object, options, prevNamespace) {
       /** Determine if element is a child of the queried component/module */
       if (key.indexOf('in-') === 0) {
         const COMPONENT = key.replace('in-', '');
-        // console.log(key);
       }
 
       /** Key defines pseudo-state */
@@ -285,18 +306,26 @@ function parseCQ(object, options, prevNamespace) {
 
         delete newStyles[key];
       }
-    }
-  });
 
-  // Convert keys to camelCase
-  Object.keys(newStyles).forEach(key => {
+      /** Key defines hover pseudo-state */
+      if (key === 'hovered') {
+        console.log(value, parseCQ(value, options))
+        if (state.hovered) {
+          Object.assign(newStyles, parseCQ(value, options));
+        }
+
+        delete newStyles[key];
+      }
+    }
+
     const EVALUATEDKEY = /^[%*:$]/.test(key) ? key : camelCase(key);
 
     if (key !== EVALUATEDKEY) {
-      newStyles[EVALUATEDKEY] = newStyles[key];
-      delete newStyles[key];
+      newStyles[EVALUATEDKEY] = newStyles[key], delete newStyles[key];
     }
-  });
+  }
+
+  //   const isCSSProp = window.getComputedStyle(document.body).getPropertyValue(key);
 
   return newStyles;
 }
@@ -304,12 +333,18 @@ function parseCQ(object, options, prevNamespace) {
 /**
  * 
  */
-function parseStyles(styles, options) {
-  let evaluatedStyles = mergeStyles(styles, options);
+function evaluateValue(values) {
+  if (typeof values === 'function') {
+    return values();
+  }
 
-  ['focused', 'disabled', 'hovered', ':first-child', ':last-child'].forEach(key => delete evaluatedStyles[key]);
+  let value;
 
-  return parseCQ(evaluatedStyles, options);
+  values.forEach(previous => {
+    value = (typeof previous === 'function') ? previous(value) : previous;
+  });
+
+  return value;
 }
 
 /**
