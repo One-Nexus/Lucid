@@ -52,13 +52,15 @@ const Module = (props) => {
     ...rest 
   };
 
-  const [appliedStyles, setAppliedStyles] = React.useState(parseStyles(styleSignature, { 
+  const OPTIONS = {
     theme: THEME, 
     config: CONFIG, 
     state: STATE, 
     utils: UTILS, 
     context: prevContext 
-  }));
+  }
+
+  const [appliedStyles, setAppliedStyles] = React.useState(parseStyles(styleSignature, OPTIONS));
 
   /**
    * 
@@ -104,13 +106,7 @@ const Module = (props) => {
 
     ...(!isComponent && { namespace }),
 
-    styles: mergeStyles([prevContext.styles, appliedStyles], { 
-      config: CONFIG, 
-      theme: THEME, 
-      state: STATE, 
-      utils: UTILS, 
-      context: prevContext 
-    }),
+    styles: mergeStyles([prevContext.styles, appliedStyles], OPTIONS),
 
     theme: THEME,
     state: STATE,
@@ -207,34 +203,31 @@ function parseStyles(styles, options) {
 /**
  * 
  */
-function mergeStyles(styles, options, accumulator = {}) {
-  let evaluatedStyles = styles;
-
+function mergeStyles(styles, options, accumulator) {
   if (typeof styles === 'function') {
-    evaluatedStyles = styles(options);
+    styles = styles(options);
   }
 
-  if (evaluatedStyles instanceof Array) {
-    const mergedSet = {};
+  if (styles instanceof Array) {
+    styles = styles.reduce(($, set) => {
+      $ = { ...$, ...mergeStyles(set, options, $) };
 
-    evaluatedStyles.forEach(set => {
-      const evaluatedSet = mergeStyles(set, options);
-
-      Object.entries(evaluatedSet).forEach(([key, value]) => {
-        const duplicate = mergedSet[key];
-
-        if (duplicate && ['object', 'function'].some($ => typeof value === $)) {
-          mergedSet[key] = duplicate instanceof Array ? duplicate.concat(value) : [duplicate, value];
-        } else if (value) {
-          mergedSet[key] = value;
-        }
-      });
-    });
-
-    evaluatedStyles = mergedSet;
+      return $;
+    }, accumulator);
   }
 
-  Object.entries(evaluatedStyles).forEach(([key, value]) => {
+  const evaluatedStyles = {};
+
+  Object.entries(styles).forEach(([key, value]) => {
+    evaluatedStyles[key] = value;
+
+    if (accumulator) {
+      const duplicate = accumulator[key];
+
+      if (duplicate && ['object', 'function'].some($ => typeof value === $)) {
+        evaluatedStyles[key] = duplicate instanceof Array ? duplicate.concat(value) : [duplicate, value];
+      }
+    }
   });
 
   return evaluatedStyles;
@@ -247,8 +240,7 @@ function parseCQ(object, options, { prevNamespace } = {}) {
   const { state, context } = options;
 
   if (object instanceof Array) {
-    // @TODO - this doesn't convert keys to camel case
-    return mergeStyles(object, options);
+    object = mergeStyles(object, options);
   }
 
   const newStyles = Object.assign({}, object);
@@ -309,7 +301,6 @@ function parseCQ(object, options, { prevNamespace } = {}) {
 
       /** Key defines hover pseudo-state */
       if (key === 'hovered') {
-        console.log(value, parseCQ(value, options))
         if (state.hovered) {
           Object.assign(newStyles, parseCQ(value, options));
         }
@@ -318,14 +309,18 @@ function parseCQ(object, options, { prevNamespace } = {}) {
       }
     }
 
+    const kebabCaseKey = key.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2').toLowerCase();
+    const isCSSProp = Boolean(window.getComputedStyle(document.body).getPropertyValue(kebabCaseKey));
     const EVALUATEDKEY = /^[%*:$]/.test(key) ? key : camelCase(key);
 
-    if (key !== EVALUATEDKEY) {
-      newStyles[EVALUATEDKEY] = newStyles[key], delete newStyles[key];
+    if (isCSSProp && key !== EVALUATEDKEY) {
+      if (value) {
+        newStyles[EVALUATEDKEY] = newStyles[key];
+      }
+      
+      delete newStyles[key];
     }
   }
-
-  //   const isCSSProp = window.getComputedStyle(document.body).getPropertyValue(key);
 
   return newStyles;
 }
@@ -340,9 +335,7 @@ function evaluateValue(values) {
 
   let value;
 
-  values.forEach(previous => {
-    value = (typeof previous === 'function') ? previous(value) : previous;
-  });
+  values.forEach(previous => value = (typeof previous === 'function') ? previous(value) : previous);
 
   return value;
 }
