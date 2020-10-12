@@ -23,10 +23,10 @@ const Module = (props) => {
   const [isFirstChild, setIsFirstChild] = React.useState(false);
   const [isLastChild, setIsLastChild] = React.useState(false);
   const [index, setIndex] = React.useState();
+  const [appliedStyles, setAppliedStyles] = React.useState({});
   
   const Tag = getTag(props);
   const namespace = name;
-  const styleSignature = prevContext.styles?.[namespace] || styles || {};
 
   /**
    * 
@@ -52,31 +52,19 @@ const Module = (props) => {
     ...rest 
   };
 
-  const OPTIONS = {
-    theme: THEME, 
-    config: CONFIG, 
-    state: STATE, 
-    utils: UTILS, 
-    context: prevContext 
-  }
+  const [foo, setFoo] = React.useState();
 
-  const [appliedStyles, setAppliedStyles] = React.useState(parseStyles(styleSignature, OPTIONS));
-
-  /**
-   * 
-   */
-
-  const handleMouseEnter = (event) => {
-    onMouseEnter?.(event);
+  const CONTEXT_STATE = { ...STATE, ...{
+    ':hover': foo && hovered,
   
-    if (!disabled) {
-      setHovered(true);
-    }
-  }
+    hovered: (styles) => {
+      if (!foo) {
+        return setFoo(namespace);
+      }
 
-  const handleMouseLeave = (event) => {
-    onMouseLeave?.(event), setHovered(false);
-  }
+      return STATE.hovered && styles;
+    }
+  }};
 
   /**
    * 
@@ -97,8 +85,8 @@ const Module = (props) => {
 
     style: { ...style, ...appliedStyles },
     className: className ? `${className} ${namespace}` : `${namespace}`,
-    onMouseEnter: handleMouseEnter,
-    onMouseLeave: handleMouseLeave,
+    onMouseEnter: event => handleMouseEnter(event, onMouseEnter, setHovered, disabled),
+    onMouseLeave: event => handleMouseLeave(event, onMouseLeave, setHovered)
   }
 
   const nextContext = {
@@ -106,12 +94,19 @@ const Module = (props) => {
 
     ...(!isComponent && { namespace }),
 
-    styles: mergeStyles([prevContext.styles, appliedStyles], OPTIONS),
+    styles: prevContext.styles ? mergeStyles([prevContext.styles, appliedStyles], {
+      theme: THEME, 
+      config: CONFIG, 
+      state: STATE, 
+      utils: UTILS, 
+      context: prevContext 
+    }) : appliedStyles,
 
     theme: THEME,
     state: STATE,
-    [namespace]: STATE,
+    [namespace]: CONTEXT_STATE,
 
+    foo,
     isFusion: isFunctionComponent(props.as) && !isComponent
   }
 
@@ -140,7 +135,19 @@ const Module = (props) => {
     }
   }, []);
 
+  const FIZZ = Object.assign({}, nextContext);
+  delete FIZZ.styles;
+  const prevAmount = usePreviousContext(FIZZ);
+
   React.useEffect(() => {
+    if (JSON.stringify(prevAmount) === JSON.stringify(FIZZ)) {
+      return;
+    }
+
+    // console.log(namespace, nextContext.foo);
+
+    const styleSignature = prevContext.styles?.[namespace] || styles || {};
+
     const newStyles = parseStyles(styleSignature, { 
       config: CONFIG, 
       theme: THEME, 
@@ -149,9 +156,7 @@ const Module = (props) => {
       context: nextContext 
     });
 
-    if (JSON.stringify(appliedStyles) !== JSON.stringify(newStyles)) {
-      setAppliedStyles(newStyles);
-    }
+    setAppliedStyles(newStyles);
   }, [nextContext]);
 
   /**
@@ -209,11 +214,7 @@ function mergeStyles(styles, options, accumulator) {
   }
 
   if (styles instanceof Array) {
-    styles = styles.reduce(($, set) => {
-      $ = { ...$, ...mergeStyles(set, options, $) };
-
-      return $;
-    }, accumulator);
+    styles = styles.reduce(($, set) => Object.assign($, mergeStyles(set, options, $)), accumulator || {});
   }
 
   const evaluatedStyles = {};
@@ -369,4 +370,37 @@ function getTag(props) {
  */
 function isFunctionComponent(component) {
   return typeof component === 'function' && component.name[0] === component.name[0].toUpperCase();
+}
+
+/**
+ * 
+ */
+function usePreviousContext(value) {
+  const ref = React.useRef();
+
+  React.useEffect(() => {
+    delete value.styles;
+
+    ref.current = value;
+  });
+
+  return ref.current;
+}
+
+/**
+ * 
+ */
+function handleMouseEnter(event, onMouseEnter, setHovered, disabled) {
+  onMouseEnter?.(event);
+
+  if (!disabled) {
+    setHovered(true);
+  }
+}
+
+/**
+ * 
+ */
+function handleMouseLeave(event, onMouseLeave, setHovered) {
+  onMouseLeave?.(event), setHovered(false);
 }
