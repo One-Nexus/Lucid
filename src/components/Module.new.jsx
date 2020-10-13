@@ -24,6 +24,7 @@ const Module = (props) => {
   const [isLastChild, setIsLastChild] = React.useState(false);
   const [index, setIndex] = React.useState();
   const [appliedStyles, setAppliedStyles] = React.useState({});
+  const [foo, setFoo] = React.useState(false);
   
   const Tag = getTag(props);
   const namespace = name;
@@ -52,24 +53,6 @@ const Module = (props) => {
     ...rest 
   };
 
-  const [foo, setFoo] = React.useState();
-
-  const CONTEXT_STATE = { ...STATE, ...{
-    ':hover': foo && hovered,
-  
-    hovered: (styles) => {
-      if (!foo) {
-        return setFoo(namespace);
-      }
-
-      return STATE.hovered && styles;
-    }
-  }};
-
-  /**
-   * 
-   */
-
   const ATTRIBUTES = {
     ...attributes,
 
@@ -89,6 +72,10 @@ const Module = (props) => {
     onMouseLeave: event => handleMouseLeave(event, onMouseLeave, setHovered)
   }
 
+  /**
+   * 
+   */
+
   const nextContext = {
     ...prevContext,
 
@@ -104,11 +91,17 @@ const Module = (props) => {
 
     theme: THEME,
     state: STATE,
-    [namespace]: CONTEXT_STATE,
 
-    foo,
+    [namespace]: { ...STATE, ...{
+      ':hover': foo && hovered,
+      hovered: styles => !foo ? setFoo(namespace) : STATE.hovered && styles
+    }},
+
     isFusion: isFunctionComponent(props.as) && !isComponent
   }
+
+  const FIZZ = Object.assign({}, nextContext, { styles: undefined });
+  const prevAmount = usePreviousContext(FIZZ);
 
   /**
    * 
@@ -135,16 +128,12 @@ const Module = (props) => {
     }
   }, []);
 
-  const FIZZ = Object.assign({}, nextContext);
-  delete FIZZ.styles;
-  const prevAmount = usePreviousContext(FIZZ);
-
   React.useEffect(() => {
     if (JSON.stringify(prevAmount) === JSON.stringify(FIZZ)) {
       return;
     }
 
-    // console.log(namespace, nextContext.foo);
+    // console.log(namespace);
 
     const styleSignature = prevContext.styles?.[namespace] || styles || {};
 
@@ -220,7 +209,9 @@ function mergeStyles(styles, options, accumulator) {
   const evaluatedStyles = {};
 
   Object.entries(styles).forEach(([key, value]) => {
-    evaluatedStyles[key] = value;
+    if (value) {
+      evaluatedStyles[key] = value;
+    }
 
     if (accumulator) {
       const duplicate = accumulator[key];
@@ -248,7 +239,7 @@ function parseCQ(object, options, { prevNamespace } = {}) {
 
   for (let [key, value] of Object.entries(newStyles)) {
     if (typeof value === 'function' || value instanceof Array) {
-      try { newStyles[key] = evaluateValue(value) } catch(error) { null };
+      try { newStyles[key] = evaluateValue(value, key) } catch(error) { null };
     }
 
     if (typeof value === 'object') {
@@ -329,9 +320,13 @@ function parseCQ(object, options, { prevNamespace } = {}) {
 /**
  * 
  */
-function evaluateValue(values) {
+function evaluateValue(values, key) {
   if (typeof values === 'function') {
-    return values();
+    if (!isEventHandler(key)) {
+      return values();
+    }
+
+    return values;
   }
 
   let value;
@@ -345,13 +340,18 @@ function evaluateValue(values) {
  * 
  */
 function getEventHandlers(props) {
-  const isEventHandler = key => key.startsWith('on') && key[2] === key[2].toUpperCase();
-
   return Object.keys(props).filter(key => isEventHandler(key)).reduce((accumulator, key) => {
     accumulator[key] = props[key]
     
     return accumulator;
   }, {})
+}
+
+/**
+ * 
+ */
+function isEventHandler(key) {
+  return key.startsWith('on') && key[2] === key[2].toUpperCase();
 }
 
 /**
@@ -379,8 +379,6 @@ function usePreviousContext(value) {
   const ref = React.useRef();
 
   React.useEffect(() => {
-    delete value.styles;
-
     ref.current = value;
   });
 
