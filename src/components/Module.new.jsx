@@ -26,8 +26,8 @@ const Module = (props) => {
   const [appliedStyles, setAppliedStyles] = React.useState({});
   const [foo, setFoo] = React.useState(false);
   
-  const Tag = getTag(props);
   const namespace = name;
+  const Tag = getTag(props, prevContext, namespace);
 
   /**
    * 
@@ -38,6 +38,15 @@ const Module = (props) => {
   const PROPCONFIG = config?.(THEME) || {};
   const UTILS  = prevContext.utils || useUtils();
   const CONFIG = deepextend(PROPCONFIG, THEMECONFIG);
+  const BLUEPRINTS = prevContext.styles?.blueprints;
+
+  const STYLES = BLUEPRINTS ? mergeStyles([BLUEPRINTS, appliedStyles], {
+    theme: THEME, 
+    config: CONFIG, 
+    state: STATE, 
+    utils: UTILS, 
+    context: prevContext 
+  }) : appliedStyles;
 
   const STATE  = {
     ...(prevContext.isFusion && prevContext.state),
@@ -50,10 +59,10 @@ const Module = (props) => {
 
     hovered, focused, disabled, isFirstChild, isLastChild, index,
 
-    ...rest 
+    ...rest
   };
 
-  const ATTRIBUTES = {
+  const ATTRIBUTES = Tag !== React.Fragment && {
     ...attributes,
 
     ...getEventHandlers(rest),
@@ -81,16 +90,11 @@ const Module = (props) => {
 
     ...(!isComponent && { namespace }),
 
-    styles: prevContext.styles ? mergeStyles([prevContext.styles, appliedStyles], {
-      theme: THEME, 
-      config: CONFIG, 
-      state: STATE, 
-      utils: UTILS, 
-      context: prevContext 
-    }) : appliedStyles,
-
+    styles: STYLES,
     theme: THEME,
     state: STATE,
+
+    namespace,
 
     [namespace]: { ...STATE, ...{
       ':hover': foo && hovered,
@@ -132,8 +136,6 @@ const Module = (props) => {
     if (JSON.stringify(prevAmount) === JSON.stringify(FIZZ)) {
       return;
     }
-
-    // console.log(namespace);
 
     const styleSignature = prevContext.styles?.[namespace] || styles || {};
 
@@ -189,7 +191,7 @@ export { Component, SubComponent };
  */
 function parseStyles(styles, options) {
   const mergedStyles = mergeStyles(styles, options);
-  const evaluatedStyles = parseCQ(mergedStyles, options);
+  const evaluatedStyles = parseCQ(mergedStyles, options, { isPainting: true });
 
   return evaluatedStyles;
 }
@@ -228,18 +230,28 @@ function mergeStyles(styles, options, accumulator) {
 /**
  * 
  */
-function parseCQ(object, options, { prevNamespace } = {}) {
+function parseCQ(object, options, { isPainting } = {}) {
   const { state, context } = options;
 
   if (object instanceof Array) {
     object = mergeStyles(object, options);
   }
 
-  const newStyles = Object.assign({}, object);
+  const newStyles = Object.assign({ blueprints: {} }, object);
 
   for (let [key, value] of Object.entries(newStyles)) {
+    const kebabCaseKey = key.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2').toLowerCase();
+    const isCSSProp = Boolean(window.getComputedStyle(document.body).getPropertyValue(kebabCaseKey));
+    const EVALUATEDKEY = /^[%*:$]/.test(key) ? key : camelCase(key);
+
     if (typeof value === 'function' || value instanceof Array) {
-      try { newStyles[key] = evaluateValue(value, key) } catch(error) { null };
+      try { 
+        newStyles[key] = evaluateValue(value, key) 
+      } catch(error) { 
+        null;
+      };
+
+      console.log(key, value);
     }
 
     if (typeof value === 'object') {
@@ -301,15 +313,17 @@ function parseCQ(object, options, { prevNamespace } = {}) {
       }
     }
 
-    const kebabCaseKey = key.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2').toLowerCase();
-    const isCSSProp = Boolean(window.getComputedStyle(document.body).getPropertyValue(kebabCaseKey));
-    const EVALUATEDKEY = /^[%*:$]/.test(key) ? key : camelCase(key);
-
     if (isCSSProp && key !== EVALUATEDKEY) {
       if (value) {
         newStyles[EVALUATEDKEY] = newStyles[key];
       }
       
+      delete newStyles[key];
+    }
+
+    if (key !== 'blueprints' && (typeof value === 'boolean' || typeof value === 'object') && isPainting) {
+      newStyles.blueprints[key] = value;
+
       delete newStyles[key];
     }
   }
@@ -322,11 +336,7 @@ function parseCQ(object, options, { prevNamespace } = {}) {
  */
 function evaluateValue(values, key) {
   if (typeof values === 'function') {
-    if (!isEventHandler(key)) {
-      return values();
-    }
-
-    return values;
+    return isEventHandler(key) ? values : values()
   }
 
   let value;
@@ -357,7 +367,11 @@ function isEventHandler(key) {
 /**
  * 
  */
-function getTag(props) {
+function getTag(props, prevContext, namespace) {
+  if (prevContext.namespace === namespace && props.isComponent) {
+    return React.Fragment;
+  }
+
   if (typeof props.as === 'function' && props.as.name[0] === props.as.name[0].toUpperCase()) {
     return props.as;
   }
