@@ -12,7 +12,7 @@ const LUCID_STATES = ['focused', 'disabled', 'hovered', ':first-child', ':last-c
 
 const Module = (props) => {
   const { children, name, styles, config, render, onMouseEnter, onMouseLeave, attributes, ...meta } = props;
-  const { isComponent, host, className, style, ...rest } = meta;
+  const { isComponent, host, className, style, as, ...rest } = meta;
 
   const prevContext = React.useContext(ModuleContext);
   const ref = host || React.useRef();
@@ -23,8 +23,9 @@ const Module = (props) => {
   const [isFirstChild, setIsFirstChild] = React.useState(false);
   const [isLastChild, setIsLastChild] = React.useState(false);
   const [index, setIndex] = React.useState();
-  const [appliedStyles, setAppliedStyles] = React.useState({});
-  const [foo, setFoo] = React.useState(false);
+  const [shouldDispatchHover, setShouldDispatchHover] = React.useState(false);
+
+  const [{ appliedStyles, blueprints }, setAppliedStyles] = React.useState({});
   
   const namespace = name;
   const Tag = getTag(props, prevContext, namespace);
@@ -38,15 +39,6 @@ const Module = (props) => {
   const PROPCONFIG = config?.(THEME) || {};
   const UTILS  = prevContext.utils || useUtils();
   const CONFIG = deepextend(PROPCONFIG, THEMECONFIG);
-  const BLUEPRINTS = prevContext.styles?.blueprints;
-
-  const STYLES = BLUEPRINTS ? mergeStyles([BLUEPRINTS, appliedStyles], {
-    theme: THEME, 
-    config: CONFIG, 
-    state: STATE, 
-    utils: UTILS, 
-    context: prevContext 
-  }) : appliedStyles;
 
   const STATE  = {
     ...(prevContext.isFusion && prevContext.state),
@@ -60,7 +52,7 @@ const Module = (props) => {
     hovered, focused, disabled, isFirstChild, isLastChild, index,
 
     ...rest
-  };
+  }
 
   const ATTRIBUTES = Tag !== React.Fragment && {
     ...attributes,
@@ -90,31 +82,38 @@ const Module = (props) => {
 
     ...(!isComponent && { namespace }),
 
-    styles: STYLES,
     theme: THEME,
     state: STATE,
 
     namespace,
 
     [namespace]: { ...STATE, ...{
-      ':hover': foo && hovered,
-      hovered: styles => !foo ? setFoo(namespace) : STATE.hovered && styles
+      ':hover': shouldDispatchHover && hovered,
+      hovered: styles => !shouldDispatchHover ? setShouldDispatchHover(namespace) : STATE.hovered && styles
     }},
 
-    isFusion: isFunctionComponent(props.as) && !isComponent
+    isFusion: isFunctionComponent(props.as) && !isComponent,
+    blueprints: { ...prevContext.blueprints, ...blueprints },
   }
 
-  const FIZZ = Object.assign({}, nextContext, { styles: undefined });
-  const prevAmount = usePreviousContext(FIZZ);
+  const watchedContext = Object.assign({}, nextContext, { blueprints: undefined });
+  const previousContext = usePreviousContext(watchedContext);
 
   /**
    * 
    */
 
   React.useEffect(() => {
-    const node = ref.current;
+    let node = ref.current;
 
-    if (!node) { return };
+    if (!node) { 
+      return;
+    }
+
+    // Last ditch effort to get underlying DOM node
+    if (!(node instanceof HTMLElement)) {
+      node = ReactDOM.findDOMNode(node);
+    }
 
     const siblings = [...node.parentNode.childNodes];
     const index = siblings.indexOf(node);
@@ -133,11 +132,11 @@ const Module = (props) => {
   }, []);
 
   React.useEffect(() => {
-    if (JSON.stringify(prevAmount) === JSON.stringify(FIZZ)) {
+    if (JSON.stringify(previousContext) === JSON.stringify(watchedContext)) {
       return;
     }
 
-    const styleSignature = prevContext.styles?.[namespace] || styles || {};
+    const styleSignature = prevContext.blueprints?.[namespace] || styles || {};
 
     const newStyles = parseStyles(styleSignature, { 
       config: CONFIG, 
@@ -145,7 +144,7 @@ const Module = (props) => {
       state: STATE, 
       utils: UTILS, 
       context: nextContext 
-    });
+    }, namespace);
 
     setAppliedStyles(newStyles);
   }, [nextContext]);
@@ -189,9 +188,9 @@ export { Component, SubComponent };
 /**
  * 
  */
-function parseStyles(styles, options) {
+function parseStyles(styles, options, namespace) {
   const mergedStyles = mergeStyles(styles, options);
-  const evaluatedStyles = parseCQ(mergedStyles, options, { isPainting: true });
+  const evaluatedStyles = parseCQ(mergedStyles, options, { isPainting: true }, namespace);
 
   return evaluatedStyles;
 }
@@ -230,29 +229,19 @@ function mergeStyles(styles, options, accumulator) {
 /**
  * 
  */
-function parseCQ(object, options, { isPainting } = {}) {
+function parseCQ(object, options, { isPainting } = {}, namespace) {
   const { state, context } = options;
 
   if (object instanceof Array) {
     object = mergeStyles(object, options);
   }
 
-  const newStyles = Object.assign({ blueprints: {} }, object);
+  const [appliedStyles, blueprints] = [{}, {}];
 
-  for (let [key, value] of Object.entries(newStyles)) {
+  for (let [key, value] of Object.entries(object)) {
     const kebabCaseKey = key.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2').toLowerCase();
     const isCSSProp = Boolean(window.getComputedStyle(document.body).getPropertyValue(kebabCaseKey));
     const EVALUATEDKEY = /^[%*:$]/.test(key) ? key : camelCase(key);
-
-    if (typeof value === 'function' || value instanceof Array) {
-      try { 
-        newStyles[key] = evaluateValue(value, key) 
-      } catch(error) { 
-        null;
-      };
-
-      console.log(key, value);
-    }
 
     if (typeof value === 'object') {
       /** Determine if element is queried modifier/state */
@@ -260,10 +249,8 @@ function parseCQ(object, options, { isPainting } = {}) {
         const CONTEXT = key.replace('is-', '');
 
         if (state[CONTEXT]) {
-          Object.assign(newStyles, parseCQ(value, options));
+          Object.assign(appliedStyles, parseCQ(value, options).appliedStyles);
         }
-
-        delete newStyles[key];
       }
 
       /** Determine if parent module/block is queried modifier/state */
@@ -283,10 +270,8 @@ function parseCQ(object, options, { isPainting } = {}) {
         const CONTEXT = key.indexOf(':') > 0 ? key.slice(key.indexOf(':'), key.length) : key.slice(key.indexOf('-is-') + 4, key.length);
 
         if (context[COMPONENT][CONTEXT]) {
-          Object.assign(newStyles, parseCQ(value, options));
+          Object.assign(appliedStyles, parseCQ(value, options).appliedStyles);
         }
-
-        delete newStyles[key];
       }
 
       /** Determine if element is a child of the queried component/module */
@@ -297,38 +282,36 @@ function parseCQ(object, options, { isPainting } = {}) {
       /** Key defines pseudo-state */
       if (key.indexOf(':') === 0) {
         if (state[key]) {
-          Object.assign(newStyles, parseCQ(value, options));
+          Object.assign(appliedStyles, parseCQ(value, options).appliedStyles);
         }
-
-        delete newStyles[key];
       }
 
       /** Key defines hover pseudo-state */
       if (key === 'hovered') {
         if (state.hovered) {
-          Object.assign(newStyles, parseCQ(value, options));
+          Object.assign(appliedStyles, parseCQ(value, options).appliedStyles);
         }
-
-        delete newStyles[key];
       }
     }
 
-    if (isCSSProp && key !== EVALUATEDKEY) {
-      if (value) {
-        newStyles[EVALUATEDKEY] = newStyles[key];
+    if (isCSSProp && (typeof value === 'function' || value instanceof Array)) {
+      try { 
+        value = evaluateValue(value, key) 
+      } catch(error) { 
+        null;
       }
-      
-      delete newStyles[key];
     }
 
-    if (key !== 'blueprints' && (typeof value === 'boolean' || typeof value === 'object') && isPainting) {
-      newStyles.blueprints[key] = value;
+    const isBlueprintType = (typeof value === 'boolean' || typeof value === 'object' || typeof value === 'function');
 
-      delete newStyles[key];
+    if (isBlueprintType) {
+      blueprints[key] = value;
+    } else {
+      appliedStyles[EVALUATEDKEY] = value;
     }
   }
 
-  return newStyles;
+  return { blueprints, appliedStyles };
 }
 
 /**
@@ -373,6 +356,10 @@ function getTag(props, prevContext, namespace) {
   }
 
   if (typeof props.as === 'function' && props.as.name[0] === props.as.name[0].toUpperCase()) {
+    return props.as;
+  }
+
+  if (typeof props.as === 'function' && props.as?.prototype?.isReactComponent) {
     return props.as;
   }
 
