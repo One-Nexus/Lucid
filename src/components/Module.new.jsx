@@ -24,7 +24,6 @@ const Module = (props) => {
   const [isLastChild, setIsLastChild] = React.useState(false);
   const [index, setIndex] = React.useState();
   const [shouldDispatchHover, setShouldDispatchHover] = React.useState(false);
-
   const [{ appliedStyles, blueprints }, setAppliedStyles] = React.useState({});
   
   const namespace = name;
@@ -81,11 +80,10 @@ const Module = (props) => {
     ...prevContext,
 
     ...(!isComponent && { namespace }),
+    namespace,
 
     theme: THEME,
     state: STATE,
-
-    namespace,
 
     [namespace]: { ...STATE, ...{
       ':hover': shouldDispatchHover && hovered,
@@ -93,7 +91,15 @@ const Module = (props) => {
     }},
 
     isFusion: isFunctionComponent(props.as) && !isComponent,
-    blueprints: { ...prevContext.blueprints, ...blueprints },
+
+    // blueprints: { ...prevContext.blueprints, ...blueprints },
+    blueprints: blueprints ? mergeStyles([prevContext.blueprints, blueprints], { 
+      config: CONFIG, 
+      theme: THEME, 
+      state: STATE, 
+      utils: UTILS, 
+      context: prevContext 
+    }) : prevContext.blueprints
   }
 
   const watchedContext = Object.assign({}, nextContext, { blueprints: undefined });
@@ -144,7 +150,7 @@ const Module = (props) => {
       state: STATE, 
       utils: UTILS, 
       context: nextContext 
-    }, namespace);
+    });
 
     setAppliedStyles(newStyles);
   }, [nextContext]);
@@ -169,18 +175,14 @@ export default Module;
  * 
  */
 const Component = props => {
-  return (
-    <Module isComponent {...props} />
-  );
+  return <Module isComponent {...props} />;
 }
 
 /**
  * 
  */
 const SubComponent = props => {
-  return (
-    <Module isComponent {...props} />
-  );
+  return <Module isComponent {...props} />;
 }
 
 export { Component, SubComponent };
@@ -188,9 +190,9 @@ export { Component, SubComponent };
 /**
  * 
  */
-function parseStyles(styles, options, namespace) {
+function parseStyles(styles, options) {
   const mergedStyles = mergeStyles(styles, options);
-  const evaluatedStyles = parseCQ(mergedStyles, options, { isPainting: true }, namespace);
+  const evaluatedStyles = parseCQ(mergedStyles, options, { isPainting: true });
 
   return evaluatedStyles;
 }
@@ -229,7 +231,7 @@ function mergeStyles(styles, options, accumulator) {
 /**
  * 
  */
-function parseCQ(object, options, { isPainting } = {}, namespace) {
+function parseCQ(object, options, { isPainting } = {}) {
   const { state, context } = options;
 
   if (object instanceof Array) {
@@ -239,10 +241,6 @@ function parseCQ(object, options, { isPainting } = {}, namespace) {
   const [appliedStyles, blueprints] = [{}, {}];
 
   for (let [key, value] of Object.entries(object)) {
-    const kebabCaseKey = key.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2').toLowerCase();
-    const isCSSProp = Boolean(window.getComputedStyle(document.body).getPropertyValue(kebabCaseKey));
-    const EVALUATEDKEY = /^[%*:$]/.test(key) ? key : camelCase(key);
-
     if (typeof value === 'object') {
       /** Determine if element is queried modifier/state */
       if (key.indexOf('is-') === 0) {
@@ -294,6 +292,9 @@ function parseCQ(object, options, { isPainting } = {}, namespace) {
       }
     }
 
+    const kebabCaseKey = key.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2').toLowerCase();
+    const isCSSProp = Boolean(window.getComputedStyle(document.body).getPropertyValue(kebabCaseKey));
+
     if (isCSSProp && (typeof value === 'function' || value instanceof Array)) {
       try { 
         value = evaluateValue(value, key) 
@@ -307,11 +308,11 @@ function parseCQ(object, options, { isPainting } = {}, namespace) {
     if (isBlueprintType) {
       blueprints[key] = value;
     } else {
-      appliedStyles[EVALUATEDKEY] = value;
+      appliedStyles[camelCase(key)] = value;
     }
   }
 
-  return { blueprints, appliedStyles };
+  return { appliedStyles, blueprints };
 }
 
 /**

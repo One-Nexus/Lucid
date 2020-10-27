@@ -19,7 +19,7 @@ let increment = 1;
 
 /** Create a context object */
 export const ModuleContext = React.createContext({});
-export const MODULEContext = React.createContext({ styles: {} });
+export const MODULEContext = React.createContext({ styles: {}, blueprints: {} });
 
 /** Render a Synergy module */
 export default class Module extends React.Component {
