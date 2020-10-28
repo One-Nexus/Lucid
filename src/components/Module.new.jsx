@@ -14,7 +14,7 @@ const Module = (props) => {
   const { children, name, styles, config, render, onMouseEnter, onMouseLeave, attributes, ...meta } = props;
   const { isComponent, host, className, style, as, ...rest } = meta;
 
-  const prevContext = React.useContext(ModuleContext);
+  const { context: prevContext, blueprints: prevBlueprints } = React.useContext(ModuleContext);
   const ref = host || React.useRef();
 
   const [hovered, setHovered] = React.useState(false);
@@ -91,19 +91,17 @@ const Module = (props) => {
     }},
 
     isFusion: isFunctionComponent(props.as) && !isComponent,
-
-    // blueprints: { ...prevContext.blueprints, ...blueprints },
-    blueprints: blueprints ? mergeStyles([prevContext.blueprints, blueprints], { 
-      config: CONFIG, 
-      theme: THEME, 
-      state: STATE, 
-      utils: UTILS, 
-      context: prevContext 
-    }) : prevContext.blueprints
   }
 
-  const watchedContext = Object.assign({}, nextContext, { blueprints: undefined });
-  const previousContext = usePreviousContext(watchedContext);
+  const options = { 
+    config: CONFIG, 
+    theme: THEME, 
+    state: STATE, 
+    utils: UTILS, 
+    context: nextContext 
+  }
+
+  const nextBlueprints = blueprints ? mergeStyles([prevBlueprints, blueprints], options) : prevBlueprints;
 
   /**
    * 
@@ -138,28 +136,18 @@ const Module = (props) => {
   }, []);
 
   React.useEffect(() => {
-    if (JSON.stringify(previousContext) === JSON.stringify(watchedContext)) {
-      return;
-    }
-
-    const styleSignature = prevContext.blueprints?.[namespace] || styles || {};
-
-    const newStyles = parseStyles(styleSignature, { 
-      config: CONFIG, 
-      theme: THEME, 
-      state: STATE, 
-      utils: UTILS, 
-      context: nextContext 
-    });
+    console.log(nextContext)
+    const styleSignature = prevBlueprints?.[namespace] || styles || {};
+    const newStyles = parseStyles(styleSignature, options);
 
     setAppliedStyles(newStyles);
-  }, [nextContext]);
+  }, [JSON.stringify(nextContext)]);
 
   /**
    * 
    */
   return (
-    <ModuleContext.Provider value={nextContext}>
+    <ModuleContext.Provider value={{ context: nextContext, blueprints: nextBlueprints }}>
       <Tag {...ATTRIBUTES}>
         {render || children}
       </Tag>
