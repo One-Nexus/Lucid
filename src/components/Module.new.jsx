@@ -11,8 +11,8 @@ import { MODULEContext as ModuleContext } from './module';
 const LUCID_STATES = ['focused', 'disabled', 'hovered', ':first-child', ':last-child'];
 
 const Module = (props) => {
-  const { children, name, styles, config, render, onMouseEnter, onMouseLeave, attributes, ...meta } = props;
-  const { isComponent, host, className, style, as, ...rest } = meta;
+  const { children, name, styles, config, render, onMouseEnter, onMouseLeave, onFocus, attributes, ...meta } = props;
+  const { isComponent, host, className, style, as, tag, ...rest } = meta;
 
   const { context: prevContext, blueprints: prevBlueprints } = React.useContext(ModuleContext);
   const ref = host || React.useRef();
@@ -69,12 +69,21 @@ const Module = (props) => {
     style: { ...style, ...appliedStyles },
     className: className ? `${className} ${namespace}` : `${namespace}`,
     onMouseEnter: event => handleMouseEnter(event, onMouseEnter, setHovered, disabled),
-    onMouseLeave: event => handleMouseLeave(event, onMouseLeave, setHovered)
+    onMouseLeave: event => handleMouseLeave(event, onMouseLeave, setHovered),
+    onFocus: event => handleFocus(event, onFocus, setFocused)
   }
 
   /**
    * 
    */
+
+  const options = context => ({ 
+    config: CONFIG, 
+    theme: THEME, 
+    state: STATE, 
+    utils: UTILS, 
+    context: context 
+  });
 
   const nextContext = {
     ...prevContext,
@@ -93,15 +102,7 @@ const Module = (props) => {
     isFusion: isFunctionComponent(props.as) && !isComponent,
   }
 
-  const options = { 
-    config: CONFIG, 
-    theme: THEME, 
-    state: STATE, 
-    utils: UTILS, 
-    context: nextContext 
-  }
-
-  const nextBlueprints = blueprints ? mergeStyles([prevBlueprints, blueprints], options) : prevBlueprints;
+  const nextBlueprints = blueprints ? mergeStyles([prevBlueprints, blueprints], options(nextContext)) : prevBlueprints;
 
   /**
    * 
@@ -133,12 +134,26 @@ const Module = (props) => {
     if (index === siblings.length - 1) {
       setIsLastChild(true);
     }
+
+    // if (disabled !== (props.disabled || node.disabled)) {
+    //   setDisabled(node.disabled);
+    // }
+
+    // focus/blur handling
+    node && new MutationObserver(mutations => mutations.forEach(({ type, target }) => {
+      if (type === 'attributes') {
+        setDisabled(target.disabled);
+
+        if (target.disabled) {
+          setHovered(false);
+          setFocused(false);
+        }
+      }
+    })).observe(node, { attributes: true });
   }, []);
 
   React.useEffect(() => {
-    console.log(nextContext)
-    const styleSignature = prevBlueprints?.[namespace] || styles || {};
-    const newStyles = parseStyles(styleSignature, options);
+    const newStyles = parseStyles(nextBlueprints?.[namespace] || styles || {}, options(prevContext));
 
     setAppliedStyles(newStyles);
   }, [JSON.stringify(nextContext)]);
@@ -352,7 +367,15 @@ function getTag(props, prevContext, namespace) {
     return props.as;
   }
 
-  return props.component || (typeof props.as === 'string' && !props.isComponent) ? Component : 'div';
+  if (props.component) {
+    return props.tag;
+  }
+
+  if (props.tag) {
+    return props.tag;
+  }
+
+  return (typeof props.as === 'string' && !props.isComponent) ? Component : 'div';
 }
 
 /**
@@ -360,19 +383,6 @@ function getTag(props, prevContext, namespace) {
  */
 function isFunctionComponent(component) {
   return typeof component === 'function' && component.name[0] === component.name[0].toUpperCase();
-}
-
-/**
- * 
- */
-function usePreviousContext(value) {
-  const ref = React.useRef();
-
-  React.useEffect(() => {
-    ref.current = value;
-  });
-
-  return ref.current;
 }
 
 /**
@@ -391,4 +401,30 @@ function handleMouseEnter(event, onMouseEnter, setHovered, disabled) {
  */
 function handleMouseLeave(event, onMouseLeave, setHovered) {
   onMouseLeave?.(event), setHovered(false);
+}
+
+/**
+ * 
+ */
+function handleFocus(event, onFocus, setFocused) {
+  event.persist();
+
+  onFocus && onFocus(event);
+
+  setFocused(true);
+
+  const handleBlur = () => {
+    setFocused(false);
+
+    event.target.blur();
+
+    document.removeEventListener('keydown', handleKeydown);
+    document.removeEventListener('mousedown', handleMousedown);
+  }
+
+  const handleKeydown = ({ keyCode }) => keyCode === 9 && handleBlur();
+  const handleMousedown = () => handleBlur();
+
+  document.addEventListener('keydown', handleKeydown);
+  document.addEventListener('mousedown', handleMousedown);
 }
