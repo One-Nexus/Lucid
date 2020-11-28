@@ -5,7 +5,7 @@
 
 > No nonsense JavaScript styling for React DOM projects
 
-<img src="http://www.onenexus.io/lucid/images/banner.png" /><br>
+<img src="https://edmundreed.com/projects/lucid/banner.png" /><br>
 
 * [Overview](#overview)
 * [Installation/Setup](#installationsetup)

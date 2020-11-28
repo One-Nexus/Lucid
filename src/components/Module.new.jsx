@@ -26,7 +26,7 @@ const Module = (props) => {
   const [shouldDispatchHover, setShouldDispatchHover] = React.useState(false);
   const [{ appliedStyles, blueprints }, setAppliedStyles] = React.useState({});
   
-  const namespace = name;
+  const namespace = name || tag;
   const Tag = getTag(props, prevContext, namespace);
 
   /**
@@ -57,7 +57,9 @@ const Module = (props) => {
     ...attributes,
 
     ...getEventHandlers(rest),
+    ...getInputAttributes(rest),
 
+    // @TOTO ref not received when host (e.g. form checkbox)
     ...(!isFunctionComponent(Tag) && { ref }),
 
     ...(Tag.name === 'Component' && props.as && { 
@@ -89,15 +91,16 @@ const Module = (props) => {
     ...prevContext,
 
     ...(!isComponent && { namespace }),
-    namespace,
+    // namespace, // @TODO
 
     theme: THEME,
     state: STATE,
 
-    [namespace]: { ...STATE, ...{
+    [namespace]: { 
+      ...STATE, 
       ':hover': shouldDispatchHover && hovered,
       hovered: styles => !shouldDispatchHover ? setShouldDispatchHover(namespace) : STATE.hovered && styles
-    }},
+    },
 
     isFusion: isFunctionComponent(props.as) && !isComponent,
   }
@@ -145,8 +148,7 @@ const Module = (props) => {
         setDisabled(target.disabled);
 
         if (target.disabled) {
-          setHovered(false);
-          setFocused(false);
+          setHovered(false), setFocused(false);
         }
       }
     })).observe(node, { attributes: true });
@@ -347,6 +349,43 @@ function getEventHandlers(props) {
 /**
  * 
  */
+function getInputAttributes(props) {
+  let inputAttributes = {}
+
+  const whitelist = [
+    'type',
+    'value',
+    'readonly',
+    'disabled',
+    'size',
+    'maxlength',
+    'autocomplete',
+    'autofocus',
+    'min',
+    'max',
+    'multiple',
+    'pattern',
+    'placeholder',
+    'selected',
+    'required',
+    'step'
+  ];
+
+  for (let prop in props) {
+    if (whitelist.includes(prop)) {
+      inputAttributes[prop] = props[prop];
+    }
+    if (prop === 'group') {
+      inputAttributes.name = props[prop];
+    }
+  }
+
+  return inputAttributes;
+}
+
+/**
+ * 
+ */
 function isEventHandler(key) {
   return key.startsWith('on') && key[2] === key[2].toUpperCase();
 }
@@ -400,7 +439,8 @@ function handleMouseEnter(event, onMouseEnter, setHovered, disabled) {
  * 
  */
 function handleMouseLeave(event, onMouseLeave, setHovered) {
-  onMouseLeave?.(event), setHovered(false);
+  onMouseLeave?.(event);
+  setHovered(false);
 }
 
 /**
