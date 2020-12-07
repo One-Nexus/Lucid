@@ -59,7 +59,6 @@ const Module = (props) => {
     ...getEventHandlers(rest),
     ...getInputAttributes(rest),
 
-    // @TOTO ref not received when host (e.g. form checkbox)
     ...(!isFunctionComponent(Tag) && { ref }),
 
     ...(Tag.name === 'Component' && props.as && { 
@@ -91,16 +90,17 @@ const Module = (props) => {
   const nextContext = {
     ...prevContext,
 
-    ...(!isComponent && { namespace }),
-    // namespace, // @TODO
-
     theme: THEME,
     state: STATE,
 
+    // ...(!isComponent && { namespace }),
+    namespace, // @TODO
+
     [namespace]: { 
       ...STATE,
+
       ':hover': shouldDispatchHover && hovered,
-      hovered: styles => !shouldDispatchHover ? setShouldDispatchHover(namespace) : STATE.hovered && styles
+      'hovered': styles => !shouldDispatchHover ? setShouldDispatchHover(namespace) : STATE.hovered && styles
     },
 
     ...(roles && Object.fromEntries(roles.map(key => [key, STATE]))),
@@ -413,7 +413,11 @@ function isEventHandler(key) {
  * 
  */
 function getTag(props, prevContext, namespace) {
-  if (prevContext.namespace === namespace && props.isComponent) {
+  if (namespace === 'body') {
+    console.log(isComponent, prevContext.namespace, prevContext[prevContext.namespace]);
+  }
+
+  if (props.isComponent && prevContext.namespace === namespace) {
     return React.Fragment;
   }
 
