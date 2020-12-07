@@ -12,7 +12,7 @@ const LUCID_STATES = ['focused', 'disabled', 'hovered', ':first-child', ':last-c
 
 const Module = (props) => {
   const { children, name, styles, config, render, onMouseEnter, onMouseLeave, onFocus, attributes, ...meta } = props;
-  const { isComponent, host, className, style, as, tag, ...rest } = meta;
+  const { isComponent, host, className, style, as, roles, tag, ...rest } = meta;
 
   const { context: prevContext, blueprints: prevBlueprints } = React.useContext(ModuleContext);
   const ref = host || React.useRef();
@@ -64,6 +64,7 @@ const Module = (props) => {
 
     ...(Tag.name === 'Component' && props.as && { 
       name: props.as.name || props.as,
+      roles,
 
       ...rest,
     }),
@@ -97,10 +98,12 @@ const Module = (props) => {
     state: STATE,
 
     [namespace]: { 
-      ...STATE, 
+      ...STATE,
       ':hover': shouldDispatchHover && hovered,
       hovered: styles => !shouldDispatchHover ? setShouldDispatchHover(namespace) : STATE.hovered && styles
     },
+
+    ...(roles && Object.fromEntries(roles.map(key => [key, STATE]))),
 
     isFusion: isFunctionComponent(props.as) && !isComponent,
   }
@@ -156,6 +159,22 @@ const Module = (props) => {
 
   React.useEffect(() => {
     const newStyles = parseStyles(nextBlueprints?.[namespace] || styles || {}, options(prevContext));
+
+    if (roles) {
+      const aliasStyles = roles.reduce(($, alias) => {
+        const styles = nextBlueprints?.[alias];
+
+        if (styles) {
+          Object.assign($, parseStyles(styles, options(prevContext)).appliedStyles);
+        }
+
+        return $;
+      }, {});
+
+      if (Object.keys(aliasStyles).length > 0) {
+        Object.assign(newStyles.appliedStyles, aliasStyles);
+      }
+    }
 
     setAppliedStyles(newStyles);
   }, [JSON.stringify(nextContext)]);
@@ -407,7 +426,7 @@ function getTag(props, prevContext, namespace) {
   }
 
   if (props.component) {
-    return props.tag;
+    return props.component;
   }
 
   if (props.tag) {
