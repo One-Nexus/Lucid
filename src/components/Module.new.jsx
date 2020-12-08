@@ -14,6 +14,8 @@ const Module = (props) => {
   const { children, name, styles, config, render, onMouseEnter, onMouseLeave, onFocus, attributes, ...meta } = props;
   const { isComponent, host, className, style, as, roles, tag, ...rest } = meta;
 
+  const namespace = name || tag;
+
   const { context: prevContext, blueprints: prevBlueprints } = React.useContext(ModuleContext);
   const ref = host || React.useRef();
 
@@ -25,9 +27,7 @@ const Module = (props) => {
   const [index, setIndex] = React.useState();
   const [shouldDispatchHover, setShouldDispatchHover] = React.useState(false);
   const [{ appliedStyles, blueprints }, setAppliedStyles] = React.useState({});
-  
-  const namespace = name || tag;
-  const Tag = getTag(props, prevContext, namespace);
+  const [{ Tag }, setTag] = React.useState({ Tag: getTag(props) });
 
   /**
    * 
@@ -93,11 +93,14 @@ const Module = (props) => {
     theme: THEME,
     state: STATE,
 
-    // ...(!isComponent && { namespace }),
-    namespace, // @TODO
+    namespace,
+
+    ...((!isComponent && props.as) && { owner: namespace }),
 
     [namespace]: { 
       ...STATE,
+
+      setTag,
 
       ':hover': shouldDispatchHover && hovered,
       'hovered': styles => !shouldDispatchHover ? setShouldDispatchHover(namespace) : STATE.hovered && styles
@@ -124,6 +127,10 @@ const Module = (props) => {
     // Last ditch effort to get underlying DOM node
     if (!(node instanceof HTMLElement)) {
       node = ReactDOM.findDOMNode(node);
+    }
+
+    if (props.isComponent && prevContext.namespace === namespace && prevContext.owner) {
+      prevContext[namespace].setTag({ Tag: React.Fragment });
     }
 
     const siblings = [...node.parentNode.childNodes];
@@ -412,15 +419,7 @@ function isEventHandler(key) {
 /**
  * 
  */
-function getTag(props, prevContext, namespace) {
-  if (namespace === 'body') {
-    console.log(isComponent, prevContext.namespace, prevContext[prevContext.namespace]);
-  }
-
-  if (props.isComponent && prevContext.namespace === namespace) {
-    return React.Fragment;
-  }
-
+function getTag(props) {
   if (typeof props.as === 'function' && props.as.name[0] === props.as.name[0].toUpperCase()) {
     return props.as;
   }
