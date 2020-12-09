@@ -55,7 +55,6 @@ const Module = (props) => {
 
   const ATTRIBUTES = Tag !== React.Fragment && {
     ...attributes,
-
     ...getEventHandlers(rest),
     ...getInputAttributes(rest),
 
@@ -64,7 +63,6 @@ const Module = (props) => {
     ...(Tag.name === 'Component' && props.as && { 
       name: props.as.name || props.as,
       roles,
-
       ...rest,
     }),
 
@@ -111,7 +109,8 @@ const Module = (props) => {
     isFusion: isFunctionComponent(props.as) && !isComponent,
   }
 
-  const nextBlueprints = blueprints ? mergeStyles([prevBlueprints, blueprints], options(nextContext)) : prevBlueprints;
+  const flushedBlueprints = (!isComponent && !props.as) ? {} : prevBlueprints;
+  const nextBlueprints = blueprints ? mergeStyles([flushedBlueprints, blueprints], options(nextContext)) : flushedBlueprints;
 
   /**
    * 
