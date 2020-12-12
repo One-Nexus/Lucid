@@ -1,198 +1,299 @@
-import htmlVoidElements from 'html-void-elements';
-import evalTheme from '../utilities/evalTheme';
-import mergeThemes from '../utilities/mergeThemes';
-import deepextend from '../utilities/deepMergeObjects';
-import generateElementClasses from '../utilities/generateElementClasses';
-import camelCase from 'camelcase';
-import removeLucidProps from '../utilities/removeLucidProps';
-import { UIContext } from './provider';
 
-if (typeof React === 'undefined') {
-  var React = require('react');
+import camelCase from 'camelcase';
+
+import deepextend from '../utilities/deepMergeObjects';
+import useTheme from '../hooks/useTheme';
+import useUtils from '../hooks/useUtils';
+
+import ModuleContext from './context';
+
+const Module = (props) => {
+  const { children, name, styles, config, render, onMouseEnter, onMouseLeave, onFocus, attributes, ...meta } = props;
+  const { isComponent, host, className, style, as, roles, tag, setWrapperStyles, ...rest } = meta;
+
+  const namespace = name || tag;
+
+  const { context: prevContext, blueprints: prevBlueprints } = React.useContext(ModuleContext);
+  const ref = host || React.useRef();
+
+  const [hovered, setHovered] = React.useState(false);
+  const [focused, setFocused] = React.useState(false);
+  const [disabled, setDisabled] = React.useState(false);
+  const [isFirstChild, setIsFirstChild] = React.useState(false);
+  const [isLastChild, setIsLastChild] = React.useState(false);
+  const [index, setIndex] = React.useState();
+  const [shouldDispatchHover, setShouldDispatchHover] = React.useState(false);
+  const [{ appliedStyles, blueprints }, setAppliedStyles] = React.useState({});
+  const [{ Tag }, setTag] = React.useState({ Tag: getTag(props) });
+
+  /**
+   * 
+   */
+
+  const THEME  = prevContext.theme || useTheme();
+  const THEMECONFIG = THEME.modules?.[name];
+  const PROPCONFIG = config?.(THEME) || {};
+  const UTILS  = prevContext.utils || useUtils();
+  const CONFIG = deepextend(PROPCONFIG, THEMECONFIG);
+
+  const STATE  = {
+    ...(prevContext.isFusion && prevContext.state),
+
+    ':hover': hovered, 
+    ':focus': focused, 
+    ':disabled': disabled,
+    ':first-child': isFirstChild,
+    ':last-child': isLastChild,
+
+    hovered, focused, disabled, isFirstChild, isLastChild, index,
+
+    ...rest
+  }
+
+  const ATTRIBUTES = Tag !== React.Fragment && {
+    ...attributes,
+    ...getEventHandlers(rest),
+    ...getInputAttributes(rest),
+
+    ...(!isFunctionComponent(Tag) && { ref }),
+
+    ...(Tag.name === 'Component' && props.as && { 
+      name: props.as.name || props.as,
+      roles,
+      ...rest,
+    }),
+
+    style: { ...style, ...appliedStyles },
+    className: className ? `${className} ${namespace}` : `${namespace}`,
+    onMouseEnter: event => handleMouseEnter(event, onMouseEnter, setHovered, disabled),
+    onMouseLeave: event => handleMouseLeave(event, onMouseLeave, setHovered),
+    onFocus: event => handleFocus(event, onFocus, setFocused)
+  }
+
+  /**
+   * 
+   */
+
+  const options = context => ({ 
+    config: CONFIG, 
+    theme: THEME, 
+    state: STATE, 
+    utils: UTILS, 
+    context: context 
+  });
+
+  const nextContext = {
+    ...prevContext,
+
+    theme: THEME,
+    state: STATE,
+
+    namespace,
+    setWrapperStyles,
+
+    ...((!isComponent && props.as) && { owner: namespace }),
+
+    [namespace]: { 
+      ...STATE,
+
+      setTag,
+
+      ':hover': shouldDispatchHover && hovered,
+      'hovered': styles => !shouldDispatchHover ? setShouldDispatchHover(namespace) : STATE.hovered && styles
+    },
+
+    ...(roles && Object.fromEntries(roles.map(key => [key, STATE]))),
+
+    isFusion: isFunctionComponent(props.as) && !isComponent,
+  }
+
+  const flushedBlueprints = (!isComponent && !props.as) ? {} : prevBlueprints;
+  const nextBlueprints = blueprints ? mergeStyles([flushedBlueprints, blueprints], options(nextContext)) : flushedBlueprints;
+
+  /**
+   * 
+   */
+
+  React.useEffect(() => {
+    let node = ref.current;
+
+    if (!node) { 
+      return;
+    }
+
+    // Last ditch effort to get underlying DOM node
+    if (!(node instanceof HTMLElement)) {
+      node = ReactDOM.findDOMNode(node);
+    }
+
+    if (props.isComponent && prevContext.namespace === namespace && prevContext.owner) {
+      prevContext[namespace].setTag({ Tag: React.Fragment });
+    }
+
+    const siblings = [...node.parentNode.childNodes];
+    const index = siblings.indexOf(node);
+
+    {
+      setIndex(index);
+    }
+
+    if (index === 0) {
+      setIsFirstChild(true);
+    }
+
+    if (index === siblings.length - 1) {
+      setIsLastChild(true);
+    }
+
+    // if (disabled !== (props.disabled || node.disabled)) {
+    //   setDisabled(node.disabled);
+    // }
+
+    // focus/blur handling
+    node && new MutationObserver(mutations => mutations.forEach(({ type, target }) => {
+      if (type === 'attributes') {
+        setDisabled(target.disabled);
+
+        if (target.disabled) {
+          setHovered(false), setFocused(false);
+        }
+      }
+    })).observe(node, { attributes: true });
+  }, []);
+
+  React.useEffect(() => {
+    const newStyles = parseStyles(nextBlueprints?.[namespace] || styles || {}, options(prevContext));
+
+    if (roles) {
+      const aliasStyles = roles.reduce(($, alias) => {
+        const styles = nextBlueprints?.[alias];
+
+        if (styles) {
+          Object.assign($, parseStyles(styles, options(prevContext)).appliedStyles);
+        }
+
+        return $;
+      }, {});
+
+      if (Object.keys(aliasStyles).length > 0) {
+        Object.assign(newStyles.appliedStyles, aliasStyles);
+      }
+    }
+
+    setAppliedStyles(newStyles);
+
+    {
+      const wrapperStyles = newStyles.blueprints.wrapper || newStyles.blueprints.group;
+    
+      if (wrapperStyles && prevContext.setWrapperStyles) {
+        prevContext.setWrapperStyles(wrapperStyles)
+      }
+    }
+  }, [JSON.stringify(nextContext)]);
+
+  /**
+   * 
+   */
+  return (
+    <ModuleContext.Provider value={{ context: nextContext, blueprints: nextBlueprints }}>
+      <Tag {...ATTRIBUTES}>
+        {render || children}
+      </Tag>
+    </ModuleContext.Provider>
+  );
 }
 
-/** spoof env process to ultimately assist bundle size */
-if (typeof process === 'undefined') window.process = { env: {} }
+Module.modifiers = props => ([...Object.keys(props), ...(props.modifiers || [])]);
 
-/** Used for generating unique module ID's */
-let increment = 1;
+export default Module; 
 
-/** Create a context object */
-export const ModuleContext = React.createContext({});
-export const MODULEContext = React.createContext({ context: {}, blueprints: {} });
+/**
+ * 
+ */
+export const Component = props => {
+  return <Module isComponent {...props} />;
+}
 
-/** Render a Synergy module */
-export default class Module extends React.Component {
-  constructor(props, context = {}) {
-    super(props);
+/**
+ * 
+ */
+export const SubComponent = props => {
+  return <Module isComponent {...props} />;
+}
 
-    increment++;
+/**
+ * 
+ */
+function parseStyles(styles, options) {
+  const mergedStyles = mergeStyles(styles, options);
+  const evaluatedStyles = parseCQ(mergedStyles, options, { isPainting: true });
 
-    var Synergy = window.Synergy || {};
+  return evaluatedStyles;
+}
 
-    this.REF = props.host || React.createRef();
-    this.DATA = props.styles;
-    this.THEME = evalTheme(mergeThemes(context.theme, window.theme, props.theme));
-    this.UTILS = context.utils || window.utils;
-
-    const LUCIDDEFAULTS = { generateClasses: true, generateDataAttributes: true, singleClass: false } 
-    const PROPCONFIG = (typeof props.config === 'function') ? props.config(this.THEME) : props.config;
-    const THEMECONFIG = this.THEME.modules && this.THEME.modules[props.name];
-
-    this.CONFIG = deepextend(LUCIDDEFAULTS, PROPCONFIG, THEMECONFIG);
-    this.ID = props.id || `module-${increment}`;
-    this.NAMESPACE = props.name || this.CONFIG.name || props.tag || this.ID;
-    this.TAG = (props.href && 'a') || props.component || props.as || props.tag || 'div';
-    this.MODIFIERGLUE = props.modifierGlue || this.CONFIG.modifierGlue || Synergy.modifierGlue || '--';
-    this.COMPONENTGLUE = props.componentGlue || this.CONFIG.componentGlue || Synergy.componentGlue || '__';
-    this.SINGLECLASS = props.singleClass ?? this.THEME.singleClass ?? this.CONFIG.singleClass;
-    this.GENERATECLASSES = props.generateClasses ?? this.THEME.generateClasses ?? this.CONFIG.generateClasses;
-    this.GENERATEDATAATTRS = props.generateDataAttributes ?? this.THEME.generateDataAttributes ?? this.CONFIG.generateDataAttributes;
-    this.HOSTISLUCIDELEMENT = ['React.createElement(Module', 'function Component(props)'].some(str => this.TAG.toString().includes(str));
-    this.STYLES = {};
-
-    this.state = { CHILDREN: [] };
+/**
+ * 
+ */
+function mergeStyles(styles, options, accumulator) {
+  if (typeof styles === 'function') {
+    styles = styles(options);
   }
 
-  static contextType = UIContext;
-
-  setParentChild = child => this.setState(({ CHILDREN }) => ({ CHILDREN: [...CHILDREN, child] }));
-
-  /** Get Attributes */
-
-  getEventHandlers(properties) {
-    let eventHandlers = {}
-
-    for (let prop in properties) {
-      if (Object.keys(window).includes(prop.toLowerCase())) {
-        if (prop === 'theme') {
-          continue;
-        }
-
-        // edge case
-        if (prop === 'Alert') {
-          continue;
-        }
-
-        if (prop !== 'name') {
-          eventHandlers[prop] = properties[prop];
-        }
-      }
-    }
-
-    return eventHandlers;
+  if (styles instanceof Array) {
+    styles = styles.reduce(($, set) => Object.assign($, mergeStyles(set, options, $)), accumulator || {});
   }
 
-  getInputAttributes(properties) {
-    let inputAttributes = {}
+  const evaluatedStyles = {};
 
-    const whitelist = [
-      'type',
-      'value',
-      'readonly',
-      'disabled',
-      'size',
-      'maxlength',
-      'autocomplete',
-      'autofocus',
-      'min',
-      'max',
-      'multiple',
-      'pattern',
-      'placeholder',
-      'required',
-      'step'
-    ];
-
-    for (let prop in properties) {
-      if (whitelist.includes(prop)) {
-        inputAttributes[prop] = properties[prop];
-      }
-      if (prop === 'group') {
-        inputAttributes.name = properties[prop];
-      }
+  Object.entries(styles).forEach(([key, value]) => {
+    if (value) {
+      evaluatedStyles[key] = value;
     }
 
-    return inputAttributes;
+    if (accumulator) {
+      const duplicate = accumulator[key];
+
+      if (duplicate && ['object', 'function'].some($ => typeof value === $)) {
+        evaluatedStyles[key] = duplicate instanceof Array ? duplicate.concat(value) : [duplicate, value];
+      }
+    }
+  });
+
+  return evaluatedStyles;
+}
+
+/**
+ * 
+ */
+function parseCQ(object, options, { isPainting } = {}) {
+  const { state, context } = options;
+
+  if (object instanceof Array) {
+    object = mergeStyles(object, options);
   }
 
-  getDataAttributes(properties) {
-    let dataAttributes = {}
+  const [appliedStyles, blueprints] = [{}, {}];
 
-    for (let prop in properties) {
-      if (prop.indexOf('data-') === 0) {
-        dataAttributes[prop] = properties[prop];
-      }
-    }
-
-    return dataAttributes;
-  }
-
-  /** Styling */
-
-  stylesConfig({ theme = this.THEME, config = this.CONFIG, context = this.CONTEXT, utils = this.UTILS } = {}) {
-    return {
-      theme,
-      config,
-      utils,
-      context,
-      state: { 
-        ...this.state, 
-        ...this.context[this.NAMESPACE], 
-        ...this.props,
-        ...(this.props.modifiers?.length && Object.assign(...this.props.modifiers.map((prop) => ({ [prop]: true })))),
-      }
-    }
-  }
-
-  paint(styles = {}, options, accumulator = {}, { prevNamespace } = {}) {
-    if (typeof styles === 'function') {
-      styles = styles(options);
-    }
-
-    if (styles instanceof Array) {
-      return styles.reduce((accumulator, style) => this.paint(style, options, accumulator), accumulator);
-    }
-  
-    return Object.entries(styles).reduce((accumulator, style) => {
-      const key = style[0]; let value = style[1];
-
-      /** Determine if current node is queried modifier/state */
+  for (let [key, value] of Object.entries(object)) {
+    if (typeof value === 'object') {
+      /** Determine if element is queried modifier/state */
       if (key.indexOf('is-') === 0) {
         const CONTEXT = key.replace('is-', '');
 
-        if (options.state.name === ':before' || options.state.name === ':after') {
-          options = options.context[options.state.referer];
+        if (state[CONTEXT]) {
+          Object.assign(appliedStyles, parseCQ(value, options).appliedStyles);
         }
-
-        if (options[CONTEXT] || options.state[CONTEXT]) {
-          return this.paint(value, options, accumulator);
-        }
-
-        return accumulator;
       }
 
       /** Determine if parent module/block is queried modifier/state */
       if (key.indexOf('$-is-') === 0 || key.indexOf('$:') === 0) {
-        const MODULE = options.context.NAMESPACE;
+        const MODULE = context.namespace;
         const CONTEXT = key.indexOf('$:') === 0 ? key.slice(1, key.length) : key.slice(5, key.length);
-
-        if (options.context[MODULE][CONTEXT]) {
-          return this.paint(value, options, accumulator);
-        }
-
-        return accumulator;
       }
 
       /** Determine if previously specified parent component is queried modifier/state */
       if (key.indexOf('and-is-') === 0 || key.indexOf('and:') === 0) {
         const CONTEXT = key.indexOf('and:') === 0 ? key.replace('and', '') : key.replace('and-is-', '');
-
-        if (options.context[prevNamespace][CONTEXT]) {
-          return this.paint(value, options, accumulator, { prevNamespace });
-        }
-
-        return accumulator;
       }
 
       /** Determine if specified parent component is queried modifier/state */
@@ -200,286 +301,199 @@ export default class Module extends React.Component {
         const COMPONENT = key.indexOf(':') > 0 ? key.slice(0, key.indexOf(':')) : key.slice(0, key.indexOf('-is-'));
         const CONTEXT = key.indexOf(':') > 0 ? key.slice(key.indexOf(':'), key.length) : key.slice(key.indexOf('-is-') + 4, key.length);
 
-        if (options.context[COMPONENT][CONTEXT]) {
-          return this.paint(value, options, accumulator, { prevNamespace: COMPONENT });
+        if (context[COMPONENT][CONTEXT]) {
+          Object.assign(appliedStyles, parseCQ(value, options).appliedStyles);
         }
-
-        return accumulator;
       }
 
-      /** Determine if current node is a child of the queried component/module */
+      /** Determine if element is a child of the queried component/module */
       if (key.indexOf('in-') === 0) {
         const COMPONENT = key.replace('in-', '');
-
-        if (options.context[COMPONENT]) {
-          return this.paint(value, options, accumulator, { prevNamespace: COMPONENT });
-        }
-
-        return accumulator;
-      }
-
-      /** Key defines hover pseudo-state */
-      if (key === 'hover') {
-        if (options.state[':hover']) {
-          return this.paint(value, options, accumulator);
-        }
-
-        return accumulator
       }
 
       /** Key defines pseudo-state */
       if (key.indexOf(':') === 0) {
-        if (options.state[key]) {
-          return this.paint(value, options, accumulator);
-        }
-
-        return accumulator;
-      }
-
-      const EVALUATEDKEY = /^[%*:$]/.test(key) ? key : camelCase(key);
-
-      if (typeof value === 'function' && window.getComputedStyle(document.body).getPropertyValue(key)) {
-        try {
-          value = value(accumulator[EVALUATEDKEY]);
-        } catch {
-          value = value;
+        if (state[key]) {
+          Object.assign(appliedStyles, parseCQ(value, options).appliedStyles);
         }
       }
 
-      if (typeof value === 'undefined' || value === null || EVALUATEDKEY === 'children') {
-        return accumulator;
-      }
-
-      if (accumulator.hasOwnProperty(EVALUATEDKEY) && ['object', 'function'].some($ => typeof value === $)) {
-        const PROP = accumulator[EVALUATEDKEY];
-
-        if (PROP instanceof Array) {
-          if (typeof value === 'function') {
-            value = PROP.some($ => $.toString() === value.toString()) ? PROP : PROP.concat(value);
-          } else {
-            value = PROP.includes(value) ? PROP : PROP.concat(value);
-          }
-        } else if (PROP !== value) {
-          if (!(typeof value === 'function' && PROP.toString() === value.toString())) {
-            value = [PROP, value];
-          }
+      /** Key defines hover pseudo-state */
+      if (key === 'hovered') {
+        if (state.hovered) {
+          Object.assign(appliedStyles, parseCQ(value, options).appliedStyles);
         }
       }
-
-      return Object.assign(accumulator, { [EVALUATEDKEY]: value });
-    }, accumulator);
-  }
-
-  setStyleStates(siblings = this.CONTEXT.CHILDREN || []) {
-    let target = this.ID;
-
-    if (this.NODE instanceof HTMLElement && document.body.contains(this.NODE)) {
-      target = this.NODE, siblings = [...target.parentNode.childNodes];
     }
 
-    const index = this.props.index ?? siblings.indexOf(target);
-    const [isFirstChild, isLastChild] = [index === 0, index === siblings.length - 1];
-    const isDisabled = this.props.disabled || target.disabled;
+    const kebabCaseKey = key.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2').toLowerCase();
+    const isCSSProp = Boolean(window.getComputedStyle(document.body).getPropertyValue(kebabCaseKey));
 
-    if (this.state.index !== index) {
-      this.setState({ index });
-    }
-
-    if (this.state.isFirstChild !== isFirstChild) {
-      this.setState({ isFirstChild });
-    }
-
-    if (this.state.isLastChild !== isLastChild) {
-      this.setState({ isLastChild });
-    }
-
-    if (this.state.isDisabled !== isDisabled) {
-      this.setState({ isDisabled, ':disabled': isDisabled });
-    }
-  }
-
-  /** Event Handlers */
-
-  handleMouseEnter(event) {
-    this.props.onMouseEnter && this.props.onMouseEnter(event);
-  
-    if (!this.state.isDisabled) {
-      this.setState({ isHovered: true, ':hover': true });
-    }
-  }
-
-  handleMouseLeave(event) {
-    this.props.onMouseLeave && this.props.onMouseLeave(event);
-  
-    this.setState({ isHovered: false, ':hover': false });
-  }
-
-  handleFocus(event) {
-    event.persist();
-
-    this.props.onFocus && this.props.onFocus(event);
-
-    this.setState({ isFocused: true, ':focus': true });
-
-    const handleBlur = () => {
-      this.setState({ isFocused: false, ':focus': false });
-
-      event.target.blur();
-  
-      document.removeEventListener('keydown', handleKeydown);
-      document.removeEventListener('mousedown', handleMousedown);
-    }
-
-    const handleKeydown = ({ keyCode }) => keyCode === 9 && handleBlur();
-    const handleMousedown = () => handleBlur();
-
-    document.addEventListener('keydown', handleKeydown);
-    document.addEventListener('mousedown', handleMousedown);
-  }
-
-  /** Lifecycle Methods */
-
-  componentDidMount() {
-    if (this.REF.current instanceof HTMLElement) {
-      this.NODE = this.REF.current;
-    }
-    // Last ditch effort to get underlying DOM node
-    if (!this.NODE) {
-      this.NODE = ReactDOM.findDOMNode(this.REF.current);
-    }
-
-    this.setStyleStates();
-  
-    if (this.NAMESPACE === 'body' && this.context.HOST) {
-      if (this.context.NAMESPACE === this.context[this.NAMESPACE]?.context.NAMESPACE) {
-        this.context[this.NAMESPACE].setTag(React.Fragment);
+    if (isCSSProp && (typeof value === 'function' || value instanceof Array)) {
+      try { 
+        value = evaluateValue(value, key) 
+      } catch(error) { 
+        null;
       }
     }
 
-    if (this.CONTEXT.CHILDREN && !this.CONTEXT.CHILDREN.includes(this.ID)) {
-      this.CONTEXT.SETPARENTCHILD?.(this.ID);
-    }
+    const isBlueprintType = (typeof value === 'boolean' || typeof value === 'object' || typeof value === 'function');
 
-    this.NODE && new MutationObserver(mutations => mutations.forEach(({ type, target }) => {
-      if (type === 'attributes') {
-        if (this.state.isDisabled !== target.disabled) {
-          this.setState({ isDisabled: target.disabled, ':disabled': target.disabled });
-        }
-
-        if (target.disabled) {
-          this.setState({
-            isHovered: false, ':hover': false, 
-            isFocused: false, ':focus': false 
-          });
-        }
-      }
-    })).observe(this.NODE, { attributes: true });
-  }
-
-  shouldComponentUpdate(nextProps, nextState) {
-    // one day my friend, you will be useful
-    return true;
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    this.setStyleStates();
-
-    const WRAPPERSTYLES = this.STYLES.wrapper || this.STYLES.group;
-
-    if (WRAPPERSTYLES && this.SETWRAPPERSTYLES) {
-      this.SETWRAPPERSTYLES(WRAPPERSTYLES);
+    if (isBlueprintType) {
+      blueprints[key] = value;
+    } else {
+      appliedStyles[camelCase(key)] = value;
     }
   }
 
-  render() {
-    const { props } = this;
-    const { NAMESPACE, MODIFIERGLUE, COMPONENTGLUE, SINGLECLASS, GENERATECLASSES, GENERATEDATAATTRS } = this;
+  return { appliedStyles, blueprints };
+}
 
-    return (
-      <ModuleContext.Consumer>
-        {moduleContext => {
-          this.CONTEXT = { ...this.context, ...moduleContext };
-          this.DATA = this.DATA || props.styles;
-          this.SETWRAPPERSTYLES = moduleContext.SETWRAPPERSTYLES;
-          this.STYLES = this.paint(this.DATA, this.stylesConfig());
-
-          const before = this.STYLES[':before'], after = this.STYLES[':after'];
-      
-          const ATTRIBUTES = {
-            ...this.getDataAttributes(props),
-            ...this.getEventHandlers(props),
-            ...this.getInputAttributes(props),
-            ...props.attributes,
-      
-            onMouseEnter: this.handleMouseEnter.bind(this),
-            onMouseLeave: this.handleMouseLeave.bind(this),
-            onFocus: this.handleFocus.bind(this),
-      
-            style: { ...props.style, ...this.STYLES },
-            id: props.id ? props.ID : null,
-            className: generateElementClasses(props, { NAMESPACE, GENERATECLASSES, MODIFIERGLUE, SINGLECLASS }),
-            'data-module': GENERATEDATAATTRS ? this.NAMESPACE : null,
-            
-            ...(this.HOSTISLUCIDELEMENT ? { name: props.as.name || props.as } : { ref: this.REF }),
-
-            ...((props.as || props.component) && removeLucidProps(this.props))
-          }
-
-          const contextValues = {
-            ...this.CONTEXT,
-
-            THEME: this.THEME,
-            CONFIG: this.CONFIG,
-
-            MODIFIERGLUE, 
-            COMPONENTGLUE,
-            SINGLECLASS,
-            GENERATECLASSES,
-            GENERATEDATAATTRS,
-
-            SETWRAPPERSTYLES: this.props.setWrapperStyles,
-            SETPARENTCHILD: this.setParentChild,
-            CHILDREN: this.state.CHILDREN,
-
-            STYLES: {
-              ...this.CONTEXT.STYLES,
-              ...this.STYLES
-            },
-
-            [this.NAMESPACE]: {
-              ...props,
-              ...this.state
-            },
-
-            ...(!props.permeable && { 
-              NAMESPACE: typeof props.as === 'string' ? this.CONTEXT.NAMESPACE : this.NAMESPACE 
-            }),
-
-            ...(props.as && { HOST: props.as })
-          }
-
-          const CONTENT = (typeof props.content !== 'boolean' && props.content) || props.render || props.children;
-
-          return (
-            <ModuleContext.Provider value={contextValues}>
-              {htmlVoidElements.includes(props.tag) ? <this.TAG {...ATTRIBUTES} /> : (
-                <this.TAG {...ATTRIBUTES}>
-                  {before && <Component name=':before' referer={this.NAMESPACE}>{before.content}</Component>}
-
-                  {typeof CONTENT === 'function' ? CONTENT({ 
-                    theme: this.THEME,
-                    utils: this.UTILS,
-                    config: this.CONFIG, 
-                    context: this.CONTEXT 
-                  }) : CONTENT}
-
-                  {after && <Component name=':after' referer={this.NAMESPACE}>{after.content}</Component>}
-                </this.TAG>
-              )}
-            </ModuleContext.Provider>
-          );
-        }}
-      </ModuleContext.Consumer>
-    )
+/**
+ * 
+ */
+function evaluateValue(values, key) {
+  if (typeof values === 'function') {
+    return isEventHandler(key) ? values : values()
   }
+
+  let value;
+
+  values.forEach(previous => value = (typeof previous === 'function') ? previous(value) : previous);
+
+  return value;
+}
+
+/**
+ * 
+ */
+function getEventHandlers(props) {
+  return Object.keys(props).filter(key => isEventHandler(key)).reduce((accumulator, key) => {
+    accumulator[key] = props[key]
+    
+    return accumulator;
+  }, {})
+}
+
+/**
+ * 
+ */
+function getInputAttributes(props) {
+  let inputAttributes = {}
+
+  const whitelist = [
+    'type',
+    'value',
+    'readonly',
+    'disabled',
+    'size',
+    'maxlength',
+    'autocomplete',
+    'autofocus',
+    'min',
+    'max',
+    'multiple',
+    'pattern',
+    'placeholder',
+    'selected',
+    'required',
+    'step'
+  ];
+
+  for (let prop in props) {
+    if (whitelist.includes(prop)) {
+      inputAttributes[prop] = props[prop];
+    }
+    if (prop === 'group') {
+      inputAttributes.name = props[prop];
+    }
+  }
+
+  return inputAttributes;
+}
+
+/**
+ * 
+ */
+function isEventHandler(key) {
+  return key.startsWith('on') && key[2] === key[2].toUpperCase();
+}
+
+/**
+ * 
+ */
+function getTag(props) {
+  if (typeof props.as === 'function' && props.as.name[0] === props.as.name[0].toUpperCase()) {
+    return props.as;
+  }
+
+  if (typeof props.as === 'function' && props.as?.prototype?.isReactComponent) {
+    return props.as;
+  }
+
+  if (props.component) {
+    return props.component;
+  }
+
+  if (typeof props.as === 'string') {
+    return Component;
+  }
+
+  if (props.tag) {
+    return props.tag;
+  }
+
+  return 'div';
+}
+
+/**
+ * 
+ */
+function isFunctionComponent(component) {
+  return typeof component === 'function' && component.name[0] === component.name[0].toUpperCase();
+}
+
+/**
+ * 
+ */
+function handleMouseEnter(event, onMouseEnter, setHovered, disabled) {
+  onMouseEnter?.(event);
+
+  if (!disabled) {
+    setHovered(true);
+  }
+}
+
+/**
+ * 
+ */
+function handleMouseLeave(event, onMouseLeave, setHovered) {
+  onMouseLeave?.(event);
+  setHovered(false);
+}
+
+/**
+ * 
+ */
+function handleFocus(event, onFocus, setFocused) {
+  event.persist();
+
+  onFocus && onFocus(event);
+
+  setFocused(true);
+
+  const handleBlur = () => {
+    setFocused(false);
+
+    event.target.blur();
+
+    document.removeEventListener('keydown', handleKeydown);
+    document.removeEventListener('mousedown', handleMousedown);
+  }
+
+  const handleKeydown = ({ keyCode }) => keyCode === 9 && handleBlur();
+  const handleMousedown = () => handleBlur();
+
+  document.addEventListener('keydown', handleKeydown);
+  document.addEventListener('mousedown', handleMousedown);
 }

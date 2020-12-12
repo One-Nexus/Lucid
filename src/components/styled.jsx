@@ -1,4 +1,4 @@
-import Component from './component';
+import { Component } from './module';
 
 if (typeof React === 'undefined') {
   var React = require('react');

@@ -1,14 +1,13 @@
-// import Module from './components/moduleHOC';
-// import Component, { SubComponent } from './components/component';
+import Module, { Component, SubComponent } from './components/module';
 import Wrapper, { Group } from './components/wrapper';
 import Provider from './components/provider';
 import styled from './components/styled';
+
 import useTheme from './hooks/useTheme';
 import useConfig from './hooks/useConfig';
 import useUtils from './hooks/useUtils';
-import evalTheme from './utilities/evalTheme';
 
-import Module, { Component, SubComponent } from './components/Module.new';
+import evalTheme from './utilities/evalTheme';
 
 export {
   Module,
