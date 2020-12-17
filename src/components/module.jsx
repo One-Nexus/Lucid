@@ -32,9 +32,9 @@ const Module = (props) => {
 
   const THEME  = prevContext.theme || useTheme();
   const THEMECONFIG = THEME.modules?.[name];
-  const PROPCONFIG = config?.(THEME) || {};
-  const UTILS  = prevContext.utils || useUtils();
-  const CONFIG = deepextend(PROPCONFIG, THEMECONFIG);
+  const PROPCONFIG = typeof config === 'function' ? config(THEME) : (config || {});
+  const UTILS = prevContext.utils || useUtils();
+  const CONFIG = isComponent ? prevContext.config[namespace] : deepextend(PROPCONFIG, THEMECONFIG);
 
   const STATE  = {
     ...(prevContext.isFusion && prevContext.state),
@@ -79,7 +79,8 @@ const Module = (props) => {
     theme: THEME, 
     state: STATE, 
     utils: UTILS, 
-    context: context 
+    context: context,
+    node: ref.current
   });
 
   const nextContext = {
@@ -87,6 +88,7 @@ const Module = (props) => {
 
     theme: THEME,
     state: STATE,
+    config: CONFIG,
 
     namespace,
     setWrapperStyles,
@@ -97,6 +99,7 @@ const Module = (props) => {
       ...STATE,
 
       setTag,
+      blueprints,
 
       ':hover': shouldDispatchHover && hovered,
       'hovered': styles => !shouldDispatchHover ? setShouldDispatchHover(namespace) : STATE.hovered && styles
@@ -180,13 +183,21 @@ const Module = (props) => {
       }
     }
 
+    if (prevContext.group || prevContext.wrapper) {
+      const stylesFromGroup = (prevContext.group || prevContext.wrapper).blueprints?.[namespace];
+
+      if (stylesFromGroup) {
+        Object.assign(newStyles.appliedStyles, parseStyles(stylesFromGroup, options(prevContext)).appliedStyles);
+      }
+    }
+
     setAppliedStyles(newStyles);
 
     {
       const wrapperStyles = newStyles.blueprints.wrapper || newStyles.blueprints.group;
     
-      if (wrapperStyles && prevContext.setWrapperStyles) {
-        prevContext.setWrapperStyles(wrapperStyles)
+      if (wrapperStyles && prevContext.setWrapperStyles && index === 0) {
+        prevContext.setWrapperStyles({ styles: wrapperStyles, config: CONFIG.wrapper || CONFIG.group });
       }
     }
   }, [JSON.stringify(nextContext)]);
@@ -204,6 +215,8 @@ const Module = (props) => {
 }
 
 Module.modifiers = props => ([...Object.keys(props), ...(props.modifiers || [])]);
+
+Module.findValueFromState = (object, state) => object[Object.keys(state).find($ => object[$])];
 
 export default Module; 
 
@@ -330,8 +343,8 @@ function parseCQ(object, options, { isPainting } = {}) {
     const isCSSProp = Boolean(window.getComputedStyle(document.body).getPropertyValue(kebabCaseKey));
 
     if (isCSSProp && (typeof value === 'function' || value instanceof Array)) {
-      try { 
-        value = evaluateValue(value, key) 
+      try {
+        value = evaluateValue(value, key, options.node) 
       } catch(error) { 
         null;
       }
@@ -352,14 +365,16 @@ function parseCQ(object, options, { isPainting } = {}) {
 /**
  * 
  */
-function evaluateValue(values, key) {
+function evaluateValue(values, key, node) {
+  const valFromNode = node.style?.[key] || null;
+
   if (typeof values === 'function') {
-    return isEventHandler(key) ? values : values()
+    return isEventHandler(key) ? values : values(valFromNode)
   }
 
   let value;
 
-  values.forEach(previous => value = (typeof previous === 'function') ? previous(value) : previous);
+  values.forEach(previous => value = (typeof previous === 'function') ? previous(value || valFromNode) : previous);
 
   return value;
 }
