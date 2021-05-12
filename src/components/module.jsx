@@ -34,7 +34,8 @@ const Module = (props) => {
   const THEMECONFIG = THEME.modules?.[name];
   const PROPCONFIG = typeof config === 'function' ? config(THEME) : (config || {});
   const UTILS = prevContext.utils || useUtils();
-  const CONFIG = isComponent ? prevContext.config[namespace] : deepextend(PROPCONFIG, THEMECONFIG);
+  console.log(prevContext, prevContext.config);
+  const CONFIG = isComponent ? prevContext.config?.[namespace] : deepextend(PROPCONFIG, THEMECONFIG);
 
   const STATE  = {
     ...(prevContext.isFusion && prevContext.state),
@@ -94,6 +95,8 @@ const Module = (props) => {
     setWrapperStyles,
 
     ...((!isComponent && props.as) && { owner: namespace }),
+
+    group: null, wrapper: null,
 
     [namespace]: { 
       ...STATE,
@@ -218,6 +221,13 @@ Module.modifiers = props => ([...Object.keys(props), ...(props.modifiers || [])]
 
 Module.findValueFromState = (object, state) => object[Object.keys(state).find($ => object[$])];
 
+Module.findPropFromConfig = (state, object) => {
+  const key = Module.modifiers(state).find($ => object[$])
+  const value = object[key];
+
+  return [key, value];
+}
+
 export default Module; 
 
 /**
@@ -259,7 +269,7 @@ function mergeStyles(styles, options, accumulator) {
   const evaluatedStyles = {};
 
   Object.entries(styles).forEach(([key, value]) => {
-    if (value) {
+    if (value || value === 0) {
       evaluatedStyles[key] = value;
     }
 
@@ -278,7 +288,7 @@ function mergeStyles(styles, options, accumulator) {
 /**
  * 
  */
-function parseCQ(object, options, { isPainting } = {}) {
+function parseCQ(object, options, { prevNamespace } = {}) {
   const { state, context } = options;
 
   if (object instanceof Array) {
@@ -322,6 +332,10 @@ function parseCQ(object, options, { isPainting } = {}) {
       /** Determine if element is a child of the queried component/module */
       if (key.indexOf('in-') === 0) {
         const COMPONENT = key.replace('in-', '');
+
+        if (context[COMPONENT]) {
+          Object.assign(appliedStyles, parseCQ(value, options).appliedStyles);
+        }
       }
 
       /** Key defines pseudo-state */
