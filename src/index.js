@@ -6,6 +6,7 @@ import styled from './components/styled';
 import useTheme from './hooks/useTheme';
 import useConfig from './hooks/useConfig';
 import useUtils from './hooks/useUtils';
+import useModuleContext from './hooks/useModuleContext';
 
 import evalTheme from './utilities/evalTheme';
 
@@ -20,5 +21,6 @@ export {
   useTheme,
   useConfig,
   useUtils,
+  useModuleContext,
   evalTheme,
 }

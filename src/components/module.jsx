@@ -53,7 +53,7 @@ const Module = (props) => {
   const ATTRIBUTES = Tag !== React.Fragment && {
     ...attributes,
     ...getEventHandlers(rest),
-    ...getInputAttributes(rest),
+    ...getWhitelistAttributes(rest),
 
     ...(!isFunctionComponent(Tag) && { ref }),
 
@@ -414,7 +414,7 @@ function getEventHandlers(props) {
 /**
  * 
  */
-function getInputAttributes(props) {
+function getWhitelistAttributes(props) {
   let inputAttributes = {}
 
   const whitelist = [
@@ -433,7 +433,8 @@ function getInputAttributes(props) {
     'placeholder',
     'selected',
     'required',
-    'step'
+    'step',
+    'src'
   ];
 
   for (let prop in props) {
