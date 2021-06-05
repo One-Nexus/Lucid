@@ -34,8 +34,7 @@ const Module = (props) => {
   const THEMECONFIG = THEME.modules?.[name];
   const PROPCONFIG = typeof config === 'function' ? config(THEME) : (config || {});
   const UTILS = prevContext.utils || useUtils();
-  console.log(prevContext, prevContext.config);
-  const CONFIG = isComponent ? prevContext.config?.[namespace] : deepextend(PROPCONFIG, THEMECONFIG);
+  const CONFIG = getConfig(namespace, isComponent, prevContext, [PROPCONFIG, THEMECONFIG]);
 
   const STATE  = {
     ...(prevContext.isFusion && prevContext.state),
@@ -85,20 +84,22 @@ const Module = (props) => {
   });
 
   const nextContext = {
+    group: null,
+    wrapper: null,
+
     ...prevContext,
 
     theme: THEME,
     state: STATE,
     config: CONFIG,
+    rootConfig: isComponent ? prevContext.rootConfig : CONFIG,
 
     namespace,
     setWrapperStyles,
 
     ...((!isComponent && props.as) && { owner: namespace }),
 
-    group: null, wrapper: null,
-
-    [namespace]: { 
+    [namespace]: {
       ...STATE,
 
       setTag,
@@ -167,6 +168,12 @@ const Module = (props) => {
     })).observe(node, { attributes: true });
   }, []);
 
+  // If object contains a React Element, will throw error:
+  // "TypeError: Converting circular structure to JSON"
+  const WATCH = JSON.stringify(nextContext, (key, value) => {
+    return React.isValidElement(value) ? `[REACT ELEMENT]: ${key}` : value;
+  });
+
   React.useEffect(() => {
     const newStyles = parseStyles(nextBlueprints?.[namespace] || styles || {}, options(prevContext));
 
@@ -203,7 +210,7 @@ const Module = (props) => {
         prevContext.setWrapperStyles({ styles: wrapperStyles, config: CONFIG.wrapper || CONFIG.group });
       }
     }
-  }, [JSON.stringify(nextContext)]);
+  }, [WATCH]);
 
   /**
    * 
@@ -473,6 +480,17 @@ function getTag(props) {
   }
 
   return 'div';
+}
+
+/**
+ * 
+ */
+function getConfig(namespace, isComponent, prevContext, configs) {
+  if (isComponent) {
+    return prevContext.config?.[namespace] || prevContext.rootConfig[namespace];
+  }
+
+  return deepextend(...configs);
 }
 
 /**
