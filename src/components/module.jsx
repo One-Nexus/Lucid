@@ -224,6 +224,8 @@ const Module = (props) => {
   );
 }
 
+Module.Fragment = ({ children, ...props }) => <div style={{ display: 'contents' }} {...props}>{children}</div>
+
 Module.modifiers = props => ([...Object.keys(props), ...(props.modifiers || [])]);
 
 Module.findValueFromState = (object, state) => object[Object.keys(state).find($ => object[$])];
