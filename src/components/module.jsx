@@ -237,6 +237,14 @@ Module.findPropFromConfig = (state, object) => {
   return [key, value];
 }
 
+Module.props = (props) => {
+  const newProps = { ...props };
+
+  delete newProps.component;
+
+  return newProps;
+}
+
 export default Module; 
 
 /**
@@ -251,7 +259,7 @@ export const Component = props => {
  */
 export const SubComponent = props => {
   return <Module isComponent {...props} />;
-}
+} 
 
 /**
  * 
